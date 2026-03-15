@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ page.title }} | Cécifoot La Bassée{% endblock %}
+{% block meta_description %}{{ page.metaDescription ?: (page.content|striptags|trim|slice(0, 180) ~ (page.content|striptags|length > 180 ? '...' : '')) }}{% endblock %}
+{% block og_title %}{{ page.metaTitle ?: page.title }} | Cécifoot La Bassée{% endblock %}
+{% block og_image %}{{ absolute_url(asset(page.heroImage ? 'uploads/pages/' ~ page.heroImage : 'assets/club-placeholder.svg')) }}{% endblock %}
+
+{% block hero %}
+    <section class="hero">
+        <div class="hero-card">
+            <img class="hero-media" src="{{ page.heroImage ? asset('uploads/pages/' ~ page.heroImage) : asset('assets/club-placeholder.svg') }}" alt="">
+            <div class="page-hero">
+                <div class="eyebrow">Page</div>
+                <h1>{{ page.title }}</h1>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block body %}
+    <article class="card wide html-content">
+        {{ page.content|render_page_content }}
+    </article>
+{% endblock %}

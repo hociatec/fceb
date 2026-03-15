@@ -1,0 +1,1173 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block meta_description %}Suivez l'actualité, le calendrier, le classement et la vie du Cécifoot 59 La Bassée sur un site clair et administrable.{% endblock %}">
+    <meta name="robots" content="{% if preview_mode|default(false) %}noindex, nofollow{% else %}index, follow{% endif %}">
+    <link rel="canonical" href="{% block canonical_url %}{{ app.request.uri }}{% endblock %}">
+    <link rel="icon" href="{{ asset('assets/favicon.svg') }}" type="image/svg+xml">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Cécifoot La Bassée">
+    <meta property="og:title" content="{% block og_title %}{{ block('title')|striptags }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ block('meta_description')|striptags }}{% endblock %}">
+    <meta property="og:url" content="{{ app.request.uri }}">
+    <meta property="og:image" content="{% block og_image %}{{ absolute_url(asset('assets/club-placeholder.svg')) }}{% endblock %}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ block('og_title')|striptags }}">
+    <meta name="twitter:description" content="{{ block('og_description')|striptags }}">
+    <meta name="twitter:image" content="{{ block('og_image')|striptags }}">
+    <title>{% block title %}Cécifoot La Bassée{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #efe7db;
+            --panel-strong: #fffdf9;
+            --ink: #122119;
+            --ink-soft: #5e6e67;
+            --line: rgba(18, 33, 25, 0.1);
+            --line-strong: rgba(18, 33, 25, 0.18);
+            --green-900: #0e2b23;
+            --green-800: #19483a;
+            --green-700: #225c49;
+            --green-500: #468568;
+            --green-100: #deede5;
+            --gold-500: #c08a33;
+            --gold-100: rgba(192, 138, 51, 0.12);
+            --danger: #9e3d3d;
+            --success: #1f6048;
+            --shadow-lg: 0 28px 80px rgba(14, 43, 35, 0.16);
+            --shadow-md: 0 18px 42px rgba(14, 43, 35, 0.1);
+            --radius-xl: 32px;
+            --radius-lg: 24px;
+            --radius-md: 18px;
+            --radius-sm: 14px;
+            --content-width: min(1200px, calc(100% - 2rem));
+        }
+
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            margin: 0;
+            color: var(--ink);
+            font-family: "Manrope", sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(192, 138, 51, 0.2), transparent 24%),
+                radial-gradient(circle at top right, rgba(34, 92, 73, 0.18), transparent 22%),
+                linear-gradient(180deg, #f8f1e6 0%, #edf3ef 56%, #f4eee3 100%);
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(18, 33, 25, 0.018) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(18, 33, 25, 0.018) 1px, transparent 1px);
+            background-size: 28px 28px;
+            mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.3), transparent 72%);
+        }
+
+        a { color: inherit; text-decoration: none; }
+        img { max-width: 100%; display: block; }
+
+        .shell {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 0;
+        }
+
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            backdrop-filter: blur(20px);
+            background: rgba(249, 244, 236, 0.84);
+            border-bottom: 1px solid rgba(18, 33, 25, 0.08);
+            box-shadow: 0 10px 28px rgba(14, 43, 35, 0.06);
+        }
+
+        .nav,
+        .hero,
+        .content,
+        .flash-stack,
+        .footer-inner {
+            width: var(--content-width);
+            margin: 0 auto;
+        }
+
+        .nav {
+            display: grid;
+            gap: .9rem;
+            padding: .95rem 0 1rem;
+        }
+
+        .nav-top,
+        .nav-bottom {
+            display: grid;
+            align-items: center;
+            gap: 1rem 1.4rem;
+        }
+
+        .nav-top {
+            grid-template-columns: minmax(240px, 340px) minmax(0, 1fr);
+        }
+
+        .nav-bottom {
+            grid-template-columns: 1fr;
+            padding-top: .35rem;
+        }
+
+        .brand a {
+            display: grid;
+            gap: .45rem;
+            padding: .88rem 1rem;
+            border-radius: 24px;
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 250, 242, 0.72)),
+                linear-gradient(135deg, rgba(192, 138, 51, 0.08), rgba(34, 92, 73, 0.08));
+            border: 1px solid rgba(18, 33, 25, 0.08);
+            box-shadow: 0 14px 30px rgba(14, 43, 35, 0.08);
+        }
+
+        .brand strong {
+            font-family: "Bitter", serif;
+            font-size: clamp(1.18rem, 1.5vw, 1.45rem);
+            line-height: 1.1;
+            letter-spacing: 0.02em;
+        }
+
+        .brand::after {
+            content: "";
+            display: block;
+            width: 92px;
+            height: 4px;
+            margin-top: .2rem;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--green-700), var(--gold-500));
+        }
+
+        .menu,
+        .menu-right,
+        .footer-meta {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: .7rem;
+        }
+
+        .menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: .7rem;
+            align-items: stretch;
+            width: 100%;
+            padding: .9rem;
+            border-radius: 28px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(250, 245, 236, 0.72));
+            border: 1px solid rgba(18, 33, 25, 0.08);
+            box-shadow: 0 16px 34px rgba(14, 43, 35, 0.08);
+        }
+
+        .menu-right {
+            justify-content: flex-end;
+            gap: .6rem;
+            padding: .35rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.52);
+            border: 1px solid rgba(18, 33, 25, 0.08);
+        }
+
+        .social-group {
+            display: inline-flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: .5rem;
+        }
+
+        .utility-bar {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            gap: .7rem;
+        }
+
+        .footer-link-list,
+        .footer-contact {
+            display: grid;
+            gap: .72rem;
+        }
+
+        .footer-contact-item {
+            display: inline-flex;
+            align-items: flex-start;
+            gap: .6rem;
+            color: var(--ink-soft);
+            font-weight: 600;
+            line-height: 1.55;
+        }
+
+        .footer-contact-item .icon-mark {
+            margin-top: .18rem;
+        }
+
+        .footer-contact-item a,
+        .footer-contact-item span:last-child {
+            color: inherit;
+        }
+
+        .footer-contact-item a:hover,
+        .footer-contact-item a:focus-visible {
+            color: var(--green-700);
+            outline: none;
+        }
+
+        .footer-link-list a {
+            color: var(--ink-soft);
+            font-weight: 600;
+            line-height: 1.5;
+            transition: color .18s ease;
+        }
+
+        .footer-link-list a:hover,
+        .footer-link-list a:focus-visible {
+            color: var(--green-700);
+            outline: none;
+        }
+
+        .footer {
+            margin-top: 2rem;
+        }
+
+        .footer-column {
+            padding: 1.15rem 1.2rem 1.25rem;
+            border: 1px solid rgba(18, 33, 25, 0.08);
+            border-radius: 24px;
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(247, 243, 233, 0.82));
+            box-shadow: 0 16px 34px rgba(14, 43, 35, 0.07);
+        }
+
+        .footer-column h3 {
+            display: flex;
+            align-items: center;
+            margin-bottom: .15rem;
+            color: var(--green-800);
+        }
+
+        .footer-column h3 .label-with-icon {
+            gap: .65rem;
+        }
+
+        .footer-column h3 .icon-mark {
+            width: 1.15rem;
+            height: 1.15rem;
+            color: var(--gold-600);
+        }
+
+        .footer-link-list a,
+        .footer-contact-item {
+            padding-bottom: .72rem;
+            border-bottom: 1px solid rgba(18, 33, 25, 0.08);
+        }
+
+        .footer-link-list a:last-child,
+        .footer-contact-item:last-child {
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .footer-link-list a::before {
+            width: .5rem;
+            height: .5rem;
+            box-shadow: 0 0 0 3px rgba(34, 92, 73, 0.07);
+        }
+
+        .icon-mark {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.05rem;
+            height: 1.05rem;
+            flex: 0 0 auto;
+            color: currentColor;
+        }
+
+        .icon-mark svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .label-with-icon {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .footer-link-list a {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .footer-link-list a::before {
+            content: "";
+            width: .55rem;
+            height: .55rem;
+            border-radius: 999px;
+            background: linear-gradient(135deg, var(--green-500), var(--gold-500));
+            box-shadow: 0 0 0 4px rgba(34, 92, 73, 0.08);
+            flex: 0 0 auto;
+        }
+
+        .social-link,
+        .pill,
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: .72rem 1rem;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.76);
+            color: var(--ink);
+            font-size: .92rem;
+            font-weight: 700;
+            letter-spacing: .01em;
+            transition: transform .18s ease, border-color .18s ease, background-color .18s ease, color .18s ease, box-shadow .18s ease;
+            box-shadow: 0 6px 18px rgba(14, 43, 35, 0.05);
+        }
+
+        .menu .pill {
+            min-height: 70px;
+            padding: .9rem 1rem;
+            border-radius: 20px;
+            justify-content: flex-start;
+            text-align: left;
+            background: rgba(255, 255, 255, 0.82);
+            box-shadow: none;
+        }
+
+        .menu .pill .label-with-icon {
+            width: 100%;
+            align-items: center;
+            gap: .7rem;
+        }
+
+        .menu .pill .icon-mark {
+            width: 1.15rem;
+            height: 1.15rem;
+            color: var(--gold-500);
+        }
+
+        .menu .pill:hover,
+        .menu .pill:focus-visible {
+            transform: translateY(-1px);
+            border-color: rgba(34, 92, 73, 0.24);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(240, 248, 243, 0.92));
+        }
+
+        .social-link {
+            gap: .6rem;
+            min-width: 42px;
+            padding: .72rem .9rem;
+        }
+
+        .social-link::before {
+            content: "";
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--green-500), var(--gold-500));
+            box-shadow: 0 0 0 6px rgba(34, 92, 73, 0.08);
+            flex: 0 0 auto;
+        }
+
+        .social-link span {
+            display: none;
+        }
+
+        .social-link .icon-mark {
+            width: .95rem;
+            height: .95rem;
+        }
+
+        .social-link:hover,
+        .social-link:focus-visible,
+        .pill:hover,
+        .pill:focus-visible,
+        .button:hover,
+        .button:focus-visible {
+            color: #fff;
+            background: var(--green-700);
+            border-color: var(--green-700);
+            transform: translateY(-1px);
+            box-shadow: 0 12px 24px rgba(31, 96, 72, 0.22);
+            outline: none;
+        }
+
+        .button.primary {
+            color: #fff;
+            background: var(--green-700);
+            border-color: var(--green-700);
+        }
+
+        .button.secondary { background: rgba(255, 255, 255, 0.82); }
+
+        .button.ghost {
+            background: transparent;
+            border-color: rgba(255, 255, 255, 0.16);
+            color: #fff;
+            box-shadow: none;
+        }
+
+        .button.ghost:hover,
+        .button.ghost:focus-visible {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.24);
+            color: #fff;
+        }
+
+        .hero { padding: 1.5rem 0 1.2rem; }
+
+        .hero-card,
+        .home-stage-hero {
+            position: relative;
+            overflow: hidden;
+            border-radius: var(--radius-xl);
+            padding: clamp(1.7rem, 4vw, 3rem);
+            background:
+                linear-gradient(135deg, rgba(14, 43, 35, 0.98), rgba(26, 76, 59, 0.94)),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent);
+            color: #fff;
+            box-shadow: 0 36px 96px rgba(14, 43, 35, 0.22);
+        }
+
+        .hero-card::before,
+        .home-stage-hero::before {
+            content: "";
+            position: absolute;
+            inset: auto auto -90px -40px;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(192, 138, 51, 0.34), rgba(192, 138, 51, 0));
+        }
+
+        .hero-card::after,
+        .home-stage-hero::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(120deg, transparent 0 62%, rgba(255, 255, 255, 0.06) 62% 68%, transparent 68%),
+                radial-gradient(circle at top right, rgba(70, 133, 104, 0.28), transparent 28%);
+            pointer-events: none;
+        }
+
+        .home-stage-hero > *,
+        .hero-card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            padding: .38rem .7rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.82);
+            text-transform: uppercase;
+            letter-spacing: .16em;
+            font-size: .75rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+
+        h1, h2, h3 {
+            margin: 0;
+            font-family: "Bitter", serif;
+            line-height: 1.08;
+            text-wrap: balance;
+        }
+
+        h1 {
+            font-size: clamp(2.25rem, 5vw, 4.9rem);
+            max-width: 12ch;
+            margin-bottom: .85rem;
+        }
+
+        h2 { font-size: clamp(1.45rem, 2.3vw, 2.25rem); margin-bottom: .2rem; }
+        h3 { font-size: clamp(1.08rem, 1.55vw, 1.32rem); margin-bottom: .4rem; }
+        p { margin: 0; line-height: 1.72; color: inherit; }
+
+        .content { flex: 1; padding: .9rem 0 4rem; }
+
+        .section-heading {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 1rem;
+            padding-bottom: .35rem;
+            border-bottom: 1px solid rgba(18, 33, 25, 0.08);
+        }
+
+        .section-heading p { color: var(--ink-soft); }
+
+        .card {
+            position: relative;
+            overflow: hidden;
+            border-radius: var(--radius-lg);
+            padding: 1.45rem;
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 253, 249, 0.98)),
+                var(--panel-strong);
+            border: 1px solid rgba(24, 35, 29, 0.08);
+            box-shadow: var(--shadow-md);
+            backdrop-filter: blur(10px);
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            inset: 0 0 auto 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--green-500), var(--gold-500));
+            opacity: .85;
+        }
+
+        .wide { width: 100%; }
+        .muted { color: var(--ink-soft); }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            min-height: 34px;
+            padding: .38rem .7rem;
+            border-radius: 999px;
+            background: var(--gold-100);
+            color: #7b561b;
+            font-size: .84rem;
+            font-weight: 800;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+        }
+
+        .score {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: .55rem .92rem;
+            border-radius: 999px;
+            background: var(--green-100);
+            color: var(--green-900);
+            font-weight: 800;
+            letter-spacing: .02em;
+        }
+
+        .article-link {
+            display: inline-flex;
+            align-items: center;
+            color: var(--green-700);
+            font-weight: 800;
+            line-height: 1.55;
+        }
+
+        .article-link:hover,
+        .article-link:focus-visible {
+            color: var(--green-900);
+            outline: none;
+        }
+
+        .flash-stack { display: grid; gap: .8rem; margin-top: 1rem; }
+
+        .flash {
+            padding: 1rem 1.1rem;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--line);
+            background: rgba(255, 253, 249, 0.9);
+            box-shadow: var(--shadow-md);
+        }
+
+        .flash.success { border-color: rgba(31, 96, 72, 0.18); color: var(--success); }
+        .flash.error { border-color: rgba(158, 61, 61, 0.18); color: var(--danger); }
+        .flash.preview { border-color: rgba(192, 138, 51, 0.28); color: #7b561b; }
+
+        .stack,
+        .home-stack,
+        .home-stage-main,
+        .home-stage-side,
+        .home-feature-article,
+        .home-match-grid,
+        .home-section-card,
+        .match-block,
+        .archive-card,
+        .season-stats,
+        .player-card-body,
+        .player-profile-body,
+        .partner-card,
+        .form-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .home-stack { gap: 1.45rem; }
+
+        .home-stage {
+            display: grid;
+            grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr);
+            gap: 1.3rem;
+        }
+
+        .home-stage-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .8rem;
+            margin-top: .55rem;
+        }
+
+        .page-hero,
+        .article-hero {
+            display: grid;
+            gap: 1rem;
+            max-width: 58rem;
+        }
+
+        .page-lead,
+        .article-summary {
+            max-width: 48rem;
+            font-size: clamp(1.02rem, 1.45vw, 1.16rem);
+            line-height: 1.82;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .hero-stats,
+        .metrics-row {
+            display: grid;
+            gap: .9rem;
+        }
+
+        .hero-stats {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            margin-top: .35rem;
+        }
+
+        .metrics-row {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            margin-top: .4rem;
+        }
+
+        .hero-stat,
+        .metric-card {
+            display: grid;
+            gap: .25rem;
+            padding: .95rem 1rem;
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .hero-stat strong,
+        .metric-card strong {
+            font-family: "Bitter", serif;
+            font-size: 1.35rem;
+            color: #fff;
+        }
+
+        .hero-stat span,
+        .metric-card span {
+            color: rgba(255, 255, 255, 0.78);
+            font-size: .88rem;
+            line-height: 1.5;
+        }
+
+        .home-cta-item,
+        .home-match-card,
+        .season-stat,
+        .player-card,
+        .partner-card {
+            padding: 1rem 1.05rem;
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.56);
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow-md);
+        }
+
+        .value-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: .8rem;
+        }
+
+        .value-card {
+            display: grid;
+            gap: .4rem;
+            padding: .95rem 1rem;
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.64);
+            border: 1px solid var(--line);
+        }
+
+        .value-card strong {
+            display: inline-flex;
+            align-items: center;
+            gap: .65rem;
+            font-size: .98rem;
+            color: var(--green-900);
+        }
+
+        .value-card strong::before {
+            content: "";
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--green-500), var(--gold-500));
+            box-shadow: 0 0 0 6px rgba(34, 92, 73, 0.08);
+            flex: 0 0 auto;
+        }
+
+        .value-card p {
+            color: var(--ink-soft);
+            font-size: .92rem;
+            line-height: 1.6;
+        }
+
+        .story-inline {
+            display: grid;
+            grid-template-columns: minmax(180px, 280px) minmax(0, 1fr);
+            gap: 1rem 1.2rem;
+            align-items: start;
+        }
+
+        .story-media {
+            width: 100%;
+            aspect-ratio: 16 / 8.5;
+            object-fit: cover;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--line);
+            background: rgba(223, 237, 230, 0.45);
+        }
+
+        .story-media.tall { aspect-ratio: 4 / 4.8; }
+
+        .home-meta-row,
+        .match-card-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .6rem .9rem;
+            color: var(--ink-soft);
+            font-size: .95rem;
+        }
+
+        .match-card {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 1rem 1.2rem;
+            align-items: center;
+            padding: 1.15rem 0;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .match-card:first-child { padding-top: 0; }
+        .match-card:last-child { padding-bottom: 0; border-bottom: 0; }
+        .match-card-main { display: grid; gap: .45rem; }
+        .match-card-side { display: grid; justify-items: end; gap: .6rem; }
+
+        .team-poster {
+            display: flex;
+            align-items: center;
+            gap: .8rem;
+            flex-wrap: wrap;
+        }
+
+        .team-side {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            min-width: 0;
+        }
+
+        .team-vs {
+            color: var(--ink-soft);
+            font-size: .92rem;
+            font-weight: 800;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        .team-logo {
+            width: 42px;
+            height: 42px;
+            border-radius: 999px;
+            object-fit: cover;
+            border: 1px solid rgba(24, 35, 29, 0.14);
+            background: rgba(255, 255, 255, 0.72);
+            flex: 0 0 auto;
+        }
+
+        .team-logo.small {
+            width: 34px;
+            height: 34px;
+        }
+
+        .archive-grid,
+        .player-grid,
+        .partner-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .archive-grid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+        .player-grid { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+        .partner-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+
+        .season-overview {
+            display: grid;
+            grid-template-columns: minmax(0, 1.2fr) minmax(280px, .8fr);
+            gap: 1.3rem;
+        }
+
+        .season-copy {
+            display: grid;
+            gap: .9rem;
+            max-width: 44rem;
+        }
+
+        .season-copy p {
+            color: var(--ink-soft);
+            font-size: 1rem;
+            line-height: 1.82;
+        }
+
+        .player-photo {
+            width: 100%;
+            aspect-ratio: 4 / 4.6;
+            object-fit: cover;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--line);
+            background: rgba(223, 237, 230, 0.45);
+        }
+
+        .player-photo.large {
+            max-width: 360px;
+            aspect-ratio: 4 / 5;
+            margin: 0 auto;
+        }
+
+        .player-profile {
+            display: grid;
+            grid-template-columns: minmax(240px, 360px) minmax(0, 1fr);
+            gap: 1.4rem;
+            align-items: start;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.56);
+        }
+
+        .ranking-table tbody tr:first-child { background: linear-gradient(90deg, rgba(192, 138, 51, 0.12), rgba(192, 138, 51, 0.03)); }
+        .ranking-table tbody tr:nth-child(2) { background: linear-gradient(90deg, rgba(31, 96, 72, 0.08), rgba(31, 96, 72, 0.02)); }
+
+        .ranking-position {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 999px;
+            background: rgba(24, 35, 29, 0.08);
+            font-weight: 800;
+        }
+
+        .ranking-position.top { background: var(--gold-100); color: #7b561b; }
+        .ranking-team { display: grid; gap: .18rem; }
+        .ranking-team small { color: var(--ink-soft); font-size: .84rem; }
+
+        .html-content > * + * { margin-top: 1rem; }
+        .html-content h2,
+        .html-content h3 { margin-top: 1.6rem; margin-bottom: .7rem; }
+        .html-content h2 { font-size: clamp(1.45rem, 2.3vw, 2rem); }
+        .html-content h3 { font-size: clamp(1.1rem, 1.6vw, 1.35rem); color: var(--green-800); }
+        .html-content ul,
+        .html-content ol { margin: .8rem 0 1rem 1.3rem; padding: 0; }
+        .html-content li + li { margin-top: .45rem; }
+
+        .content-quote {
+            margin: 1.4rem 0;
+            padding: 1rem 1.2rem;
+            border-left: 4px solid var(--gold-500);
+            border-radius: 0 var(--radius-md) var(--radius-md) 0;
+            background: linear-gradient(180deg, rgba(192, 138, 51, 0.08), rgba(192, 138, 51, 0.02));
+            color: var(--green-900);
+        }
+
+        .content-separator { margin: 1.8rem 0; border: 0; border-top: 1px solid var(--line-strong); }
+
+        caption {
+            padding: 0 0 1rem;
+            text-align: left;
+            font-family: "Bitter", serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        thead tr { background: rgba(223, 237, 230, 0.6); }
+        th, td { padding: .95rem .8rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
+        th { font-size: .9rem; font-weight: 800; color: var(--green-900); }
+        tbody tr:hover { background: rgba(223, 237, 230, 0.26); }
+
+        .footer {
+            margin-top: auto;
+            border-top: 1px solid var(--line);
+            background: rgba(255, 251, 244, 0.9);
+            backdrop-filter: blur(16px);
+        }
+
+        .footer-inner {
+            display: grid;
+            grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+            gap: 1.4rem 2rem;
+            padding: 1.5rem 0 2rem;
+        }
+
+        .footer-brand {
+            display: grid;
+            gap: .45rem;
+            align-content: start;
+        }
+
+        .footer-brand strong {
+            font-family: "Bitter", serif;
+            font-size: 1.15rem;
+        }
+
+        .footer-copy {
+            font-size: .92rem;
+            color: var(--ink-soft);
+            line-height: 1.6;
+        }
+
+        .footer-meta {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(180px, 1fr));
+            align-items: start;
+            gap: 1.2rem 2rem;
+        }
+
+        .footer-column {
+            display: grid;
+            gap: .7rem;
+        }
+
+        .footer-column h3 {
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .footer-bottom {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(18, 33, 25, 0.08);
+        }
+
+        @media (max-width: 1120px) {
+            .nav-top,
+            .nav-bottom { grid-template-columns: 1fr; align-items: start; }
+            .menu, .menu-right, .utility-bar { justify-content: flex-start; }
+            .menu { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .home-stage { grid-template-columns: 1fr; }
+            .footer-inner { grid-template-columns: 1fr; }
+            .footer-meta { grid-template-columns: repeat(2, minmax(180px, 1fr)); }
+        }
+
+        @media (max-width: 920px) {
+            .hero { padding-top: 1.35rem; }
+            .match-card { grid-template-columns: 1fr; }
+            .match-card-side { justify-items: start; }
+            .story-inline,
+            .season-overview,
+            .player-profile { grid-template-columns: 1fr; }
+            .metrics-row { grid-template-columns: 1fr; }
+            .value-grid { grid-template-columns: 1fr; }
+            .footer-meta { grid-template-columns: 1fr; }
+            .footer-bottom {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 640px) {
+            :root { --content-width: min(100%, calc(100% - 1rem)); }
+            .topbar { position: static; }
+            .nav { gap: .85rem; padding: .85rem 0 1rem; }
+            .brand a { padding: .75rem .85rem; }
+            .menu,
+            .menu-right,
+            .utility-bar {
+                display: grid;
+                gap: .7rem;
+            }
+            .menu, .menu-right {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                width: 100%;
+            }
+            .menu {
+                padding: .65rem;
+                border-radius: 24px;
+            }
+            .pill, .button, .social-link {
+                width: 100%;
+                text-align: center;
+                min-height: 46px;
+            }
+            .social-group {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                width: 100%;
+            }
+            .social-link span {
+                display: inline;
+            }
+            .hero-card, .card, .home-stage-hero { border-radius: 22px; }
+            .card, .home-stage-hero { padding: 1.15rem; }
+            .section-heading { align-items: start; flex-direction: column; }
+        }
+    </style>
+    {% block stylesheets %}{% endblock %}
+    {% block javascripts %}{% endblock %}
+</head>
+<body>
+<div class="shell">
+    <header class="topbar">
+        <div class="nav">
+            <div class="nav-top">
+                <div class="brand">
+                    <a href="{{ path('site_home') }}">
+                        <strong>Cécifoot La Bassée</strong>
+                    </a>
+                </div>
+                <div class="utility-bar">
+                    <div class="menu-right">
+                        {% if site.account.is_authenticated %}
+                            <a class="pill" href="{{ path('site_account') }}">Mon compte</a>
+                            {% if is_granted('ROLE_EDITOR') %}
+                                <a class="pill" href="{{ path('admin') }}">Admin</a>
+                            {% endif %}
+                            <a class="pill" href="{{ path('app_logout') }}">Déconnexion</a>
+                        {% else %}
+                            <a class="pill" href="{{ path('app_login') }}">Connexion</a>
+                            <a class="pill" href="{{ path('app_register') }}">Inscription</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="nav-bottom">
+                <nav class="menu" aria-label="Navigation principale">
+                    <a class="pill" href="{{ path('site_current_season') }}"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="15" rx="3" stroke="currentColor" stroke-width="2"/><path d="M8 3v4M16 3v4M4 10h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Saison</span></span></a>
+                    <a class="pill" href="{{ path('site_calendar') }}"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="15" rx="3" stroke="currentColor" stroke-width="2"/><path d="M7 3v4M17 3v4M3.5 10h17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 14h3M13 14h3M8 17h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Calendrier</span></span></a>
+                    <a class="pill" href="{{ path('site_ranking') }}"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 18V10M12 18V6M18 18v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M4 20h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Classement</span></span></a>
+                    <a class="pill" href="{{ path('site_players') }}"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="2"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Effectif</span></span></a>
+                    <a class="pill" href="{{ path('site_archives') }}"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="6" width="16" height="13" rx="2.5" stroke="currentColor" stroke-width="2"/><path d="M9 10h6M9 14h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Archives</span></span></a>
+                    {% for page in site.header_pages %}
+                        <a class="pill" href="{{ path('site_page', {slug: page.slug}) }}">{{ page.title }}</a>
+                    {% endfor %}
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    {% block hero %}{% endblock %}
+
+    <div class="flash-stack">
+        {% if preview_mode|default(false) %}
+            <div class="flash preview">Mode prévisualisation actif. Ce contenu n'est visible publiquement que pour les administrateurs via ce lien.</div>
+        {% endif %}
+        {% for message in app.flashes('success') %}
+            <div class="flash success">{{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="flash error">{{ message }}</div>
+        {% endfor %}
+    </div>
+
+    <main class="content">
+        {% block body %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-brand"></div>
+            <div class="footer-meta">
+                <div class="footer-column">
+                    <h3><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2"/><path d="M12 11v5M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Informations</span></span></h3>
+                    <div class="footer-contact">
+                        <div class="footer-contact-item">
+                            <span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 7.5A2.5 2.5 0 0 1 7.5 5h9A2.5 2.5 0 0 1 19 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 5 16.5v-9Z" stroke="currentColor" stroke-width="2"/><path d="m7 8 5 4 5-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                            <a href="mailto:contact@fceb.fr">contact@fceb.fr</a>
+                        </div>
+                        <div class="footer-contact-item">
+                            <span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M7.5 5.5h2l1 3-1.5 1.5a14.5 14.5 0 0 0 5 5L15.5 13l3 1v2A1.5 1.5 0 0 1 17 17.5h-.5C10.15 17.5 6.5 13.85 6.5 9.5V9A1.5 1.5 0 0 1 8 7.5h-.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                            <a href="tel:+33680313868">06 80 31 38 68</a>
+                        </div>
+                        <div class="footer-contact-item">
+                            <span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 20s6-5.2 6-10a6 6 0 1 0-12 0c0 4.8 6 10 6 10Z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="2"/></svg></span>
+                            <a href="https://www.google.com/maps/search/?api=1&query=Stade+Roland+Joly+42+rue+de+Lille+59480+La+Bassee" target="_blank" rel="noreferrer">Stade Roland Joly, 42 rue de Lille, 59480 La Bassée</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 20s6-5.2 6-10a6 6 0 1 0-12 0c0 4.8 6 10 6 10Z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="2"/></svg></span><span>Réseaux sociaux</span></span></h3>
+                    <div class="footer-link-list">
+                        {% if site.social_links is not empty %}
+                            {% for social in site.social_links %}
+                                <a href="{{ social.url }}" target="_blank" rel="noreferrer">{{ social.label }}</a>
+                            {% endfor %}
+                        {% else %}
+                            <span class="footer-copy">Aucun réseau social renseigné.</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2"/><path d="M12 9h.01M11 12h1v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>À propos</span></span></h3>
+                    <div class="footer-link-list">
+                        <a href="{{ path('site_page', {slug: 'decouvrir-le-cecifoot'}) }}">Découvrir le cécifoot</a>
+                        <a href="{{ path('site_contact') }}">Contact</a>
+                        <a href="{{ path('site_partners_static') }}">Partenaires</a>
+                        <a href="{{ path('site_terms') }}">CGU</a>
+                        <a href="{{ path('site_privacy') }}">Confidentialité</a>
+                        {% if site.footer_pages is not empty %}
+                            {% for page in site.footer_pages %}
+                                <a href="{{ path('site_page', {slug: page.slug}) }}">{{ page.title }}</a>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <span class="footer-copy">© {{ "now"|date("Y") }} Cécifoot 59 La Bassée. Tous droits réservés.</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+</div></body>
+</html>

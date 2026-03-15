@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Cécifoot La Bassée</title>
+  <desc id="desc">Visuel de secours pour les contenus du club.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#102c23"/>
+      <stop offset="100%" stop-color="#1f6048"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="20%" cy="15%" r="70%">
+      <stop offset="0%" stop-color="#d7b06a" stop-opacity=".55"/>
+      <stop offset="100%" stop-color="#d7b06a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect width="1600" height="900" fill="url(#glow)"/>
+  <g fill="none" stroke="rgba(255,255,255,.14)">
+    <path d="M0 130H1600"/>
+    <path d="M0 260H1600"/>
+    <path d="M0 390H1600"/>
+    <path d="M0 520H1600"/>
+    <path d="M0 650H1600"/>
+    <path d="M0 780H1600"/>
+    <path d="M180 0V900"/>
+    <path d="M420 0V900"/>
+    <path d="M660 0V900"/>
+    <path d="M900 0V900"/>
+    <path d="M1140 0V900"/>
+    <path d="M1380 0V900"/>
+  </g>
+  <g transform="translate(150 170)">
+    <rect x="0" y="0" width="220" height="52" rx="26" fill="rgba(255,255,255,.1)"/>
+    <text x="110" y="33" text-anchor="middle" font-family="Manrope, Arial, sans-serif" font-size="24" font-weight="700" fill="#f4ede0" letter-spacing="4">CECIFOOT</text>
+    <text x="0" y="190" font-family="Georgia, 'Times New Roman', serif" font-size="92" font-weight="700" fill="#ffffff">Cécifoot</text>
+    <text x="0" y="292" font-family="Georgia, 'Times New Roman', serif" font-size="92" font-weight="700" fill="#ffffff">La Bassée</text>
+    <text x="0" y="378" font-family="Manrope, Arial, sans-serif" font-size="34" fill="#dfe9e3">Projet sportif, actualités, saison, résultats.</text>
+    <text x="0" y="430" font-family="Manrope, Arial, sans-serif" font-size="34" fill="#dfe9e3">Ajoute une image dans l’admin pour remplacer ce visuel.</text>
+  </g>
+  <g transform="translate(1120 210)">
+    <circle cx="120" cy="120" r="120" fill="rgba(255,255,255,.09)"/>
+    <circle cx="120" cy="120" r="78" fill="none" stroke="#d7b06a" stroke-width="10"/>
+    <circle cx="120" cy="120" r="14" fill="#d7b06a"/>
+    <path d="M120 32V208M32 120H208" stroke="#ffffff" stroke-opacity=".85" stroke-width="6"/>
+  </g>
+</svg>

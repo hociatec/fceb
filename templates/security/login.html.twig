@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion | Cécifoot La Bassée{% endblock %}
+
+{% block hero %}
+    <section class="hero">
+        <div class="hero-card">
+            <div class="eyebrow">Compte</div>
+            <h1>Connexion membre</h1>
+            <p>Connecte-toi pour accéder à ton espace membre et, si besoin, à l'administration.</p>
+        </div>
+    </section>
+{% endblock %}
+
+{% block body %}
+    <article class="card wide" style="max-width: 520px; margin: 0 auto;">
+        <div class="section-heading">
+            <span class="eyebrow">Connexion</span>
+            <h2>Accès à mon compte</h2>
+        </div>
+        {% if error %}
+            <p class="muted"><strong>{{ error.messageKey|trans(error.messageData, 'security') }}</strong></p>
+        {% endif %}
+        <form method="post">
+            <label for="username"><strong>E-mail</strong></label>
+            <input type="email" id="username" name="_username" value="{{ last_username }}" required style="width: 100%; padding: .9rem 1rem; border-radius: 14px; border: 1px solid var(--line); margin: .4rem 0 1rem;">
+            <label for="password"><strong>Mot de passe</strong></label>
+            <input type="password" id="password" name="_password" required style="width: 100%; padding: .9rem 1rem; border-radius: 14px; border: 1px solid var(--line); margin: .4rem 0 1rem;">
+            <p><a class="article-link" href="{{ path('app_forgot_password') }}">Mot de passe oublié ?</a></p>
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+            <div class="meta-line">
+                <button class="button primary" type="submit">Se connecter</button>
+                <a class="button secondary" href="{{ path('app_register') }}">Créer un compte</a>
+            </div>
+        </form>
+    </article>
+{% endblock %}

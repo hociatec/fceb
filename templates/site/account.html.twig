@@ -1,0 +1,73 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon compte | Cécifoot La Bassée{% endblock %}
+{% block meta_description %}Consulte et mets à jour les informations de ton compte membre du Cécifoot La Bassée.{% endblock %}
+
+{% block hero %}
+    <section class="hero">
+        <div class="hero-card">
+            <div class="eyebrow">Compte</div>
+            <h1>Mon compte</h1>
+            <p>Consulte ton profil, mets à jour tes informations et gère la sécurité de ton compte.</p>
+        </div>
+    </section>
+{% endblock %}
+
+{% block body %}
+    <section class="split">
+        <article class="card tint">
+            <span class="tag">Profil</span>
+            <h2>{{ member.fullName }}</h2>
+            <p class="muted">{{ member.email }}</p>
+            <div class="list" style="margin-top: 1rem;">
+                <div class="list-item">
+                    <strong>Rôle{% if member.roles|length > 1 %}s{% endif %}</strong>
+                    <div class="muted">{{ member.roles|join(', ') }}</div>
+                </div>
+                {% if is_granted('ROLE_EDITOR') %}
+                    <div class="list-item">
+                        <strong>Back-office</strong>
+                        <div class="muted"><a href="{{ path('admin') }}">Ouvrir l’administration</a></div>
+                    </div>
+                {% endif %}
+                <div class="list-item">
+                    <strong>Sécurité</strong>
+                    <div class="muted"><a href="{{ path('app_logout') }}">Se déconnecter</a></div>
+                </div>
+            </div>
+        </article>
+
+        <article class="card">
+            <div class="section-heading">
+                <div>
+                    <h2>Gérer mon compte</h2>
+                </div>
+            </div>
+            {% if error %}
+                <p class="muted"><strong>{{ error }}</strong></p>
+            {% endif %}
+            <form method="post" class="form-grid" style="margin-top: 1rem;">
+                <div>
+                    <label for="full_name"><strong>Nom complet</strong></label>
+                    <input type="text" id="full_name" name="full_name" value="{{ member.fullName }}" required>
+                </div>
+                <div>
+                    <label for="email"><strong>Adresse e-mail</strong></label>
+                    <input type="email" id="email" name="email" value="{{ member.email }}" required>
+                </div>
+                <div>
+                    <label for="new_password"><strong>Nouveau mot de passe</strong></label>
+                    <input type="password" id="new_password" name="new_password" autocomplete="new-password">
+                </div>
+                <div>
+                    <label for="confirm_password"><strong>Confirmer le nouveau mot de passe</strong></label>
+                    <input type="password" id="confirm_password" name="confirm_password" autocomplete="new-password">
+                </div>
+                <div class="meta-line">
+                    <button class="button primary" type="submit">Enregistrer les modifications</button>
+                    <a class="button secondary" href="{{ path('app_forgot_password') }}">Mot de passe oublié</a>
+                </div>
+            </form>
+        </article>
+    </section>
+{% endblock %}

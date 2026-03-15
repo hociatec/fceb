@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Archives | Cécifoot La Bassée{% endblock %}
+
+{% block hero %}
+    <section class="hero">
+        <div class="hero-card">
+            <div class="page-hero">
+                <div class="eyebrow">Archives</div>
+                <h1>Anciennes saisons</h1>
+                <p class="page-lead">Retrouve l’historique du club, les actualités et les résultats des saisons passées dans une archive simple à parcourir.</p>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block body %}
+    <section class="stack">
+        <article class="card wide">
+            <div class="section-heading">
+                <div>
+                    <h2>Historique des saisons</h2>
+                </div>
+            </div>
+
+            {% if seasons is not empty %}
+                <div class="archive-grid">
+                    {% for season in seasons %}
+                        <article class="card tint archive-card">
+                            <span class="tag">Archive</span>
+                            <h3>{{ season.name }}</h3>
+                            <p class="archive-dates">{{ season.startDate|date('d/m/Y') }} - {{ season.endDate|date('d/m/Y') }}</p>
+                            <p class="muted">Retrouver les articles et les matchs de cette saison.</p>
+                            <p><a class="button secondary" href="{{ path('site_archive_show', {slug: season.slug}) }}">Voir l’archive</a></p>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>Aucune archive disponible.</p>
+            {% endif %}
+        </article>
+    </section>
+{% endblock %}

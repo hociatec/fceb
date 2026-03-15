@@ -1,0 +1,119 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Calendrier | Cécifoot La Bassée{% endblock %}
+
+{% block hero %}
+    <section class="hero">
+        <div class="hero-card">
+            <div class="page-hero">
+                <div class="eyebrow"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="15" rx="3" stroke="currentColor" stroke-width="2"/><path d="M7 3v4M17 3v4M3.5 10h17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Calendrier</span></span></div>
+                <h1>Calendrier de la saison</h1>
+                {% if season %}
+                    <p class="page-lead">{{ season.name }}. Retrouve les prochaines rencontres, les matchs déjà joués et les comptes-rendus publiés quand ils sont disponibles.</p>
+                    <div class="hero-stats">
+                        <div class="hero-stat">
+                            <strong>{{ upcomingMatches|length }}</strong>
+                            <span>match{% if upcomingMatches|length > 1 %}s{% endif %} à venir</span>
+                        </div>
+                        <div class="hero-stat">
+                            <strong>{{ pastMatches|length }}</strong>
+                            <span>match{% if pastMatches|length > 1 %}s{% endif %} déjà joué{% if pastMatches|length > 1 %}s{% endif %}</span>
+                        </div>
+                    </div>
+                {% else %}
+                    <p class="page-lead">Aucune saison n'est actuellement disponible.</p>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block body %}
+    <section class="stack">
+        <article class="card wide">
+            <div class="section-heading">
+                <div>
+                    <h2>Matchs à venir</h2>
+                    <p class="muted">Toutes les rencontres programmées pour la suite de la saison.</p>
+                </div>
+            </div>
+            <div class="match-block">
+                {% for match in upcomingMatches %}
+                    <article class="match-card">
+                        <div class="match-card-main">
+                            <div class="team-poster">
+                                <div class="team-side">
+                                    <img class="team-logo" src="{{ asset(team_logo(match.homeTeamName)) }}" alt="{{ match.homeTeamName }}">
+                                    <strong>{{ match.homeTeamName }}</strong>
+                                </div>
+                                <span class="team-vs">vs</span>
+                                <div class="team-side">
+                                    <img class="team-logo" src="{{ asset(team_logo(match.awayTeamName)) }}" alt="{{ match.awayTeamName }}">
+                                    <strong>{{ match.awayTeamName }}</strong>
+                                </div>
+                            </div>
+                            <div class="match-card-meta">
+                                <span>{{ match.matchDate|date('d/m/Y H:i') }}</span>
+                                {% if match.location %}<span>{{ match.location }}</span>{% endif %}
+                                {% if match.competition %}<span>{{ match.competition }}</span>{% endif %}
+                            </div>
+                        </div>
+                        <div class="match-card-side">
+                            <span class="tag"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2"/></svg></span><span>À venir</span></span></span>
+                        </div>
+                    </article>
+                {% else %}
+                    <p>Aucun match à venir n'est encore disponible.</p>
+                {% endfor %}
+            </div>
+        </article>
+
+        <article class="card wide">
+            <div class="section-heading">
+                <div>
+                    <h2>Matchs passés</h2>
+                    <p class="muted">Scores enregistrés et liens vers les comptes-rendus publiés.</p>
+                </div>
+            </div>
+            <div class="match-block">
+                {% for match in pastMatches %}
+                    {% set linkedArticle = matchArticles[match.id] ?? null %}
+                    <article class="match-card">
+                        <div class="match-card-main">
+                            <div class="team-poster">
+                                <div class="team-side">
+                                    <img class="team-logo" src="{{ asset(team_logo(match.homeTeamName)) }}" alt="{{ match.homeTeamName }}">
+                                    <strong>{{ match.homeTeamName }}</strong>
+                                </div>
+                                <span class="team-vs">vs</span>
+                                <div class="team-side">
+                                    <img class="team-logo" src="{{ asset(team_logo(match.awayTeamName)) }}" alt="{{ match.awayTeamName }}">
+                                    <strong>{{ match.awayTeamName }}</strong>
+                                </div>
+                            </div>
+                            <div class="match-card-meta">
+                                <span>{{ match.matchDate|date('d/m/Y H:i') }}</span>
+                                {% if match.location %}<span>{{ match.location }}</span>{% endif %}
+                                {% if match.competition %}<span>{{ match.competition }}</span>{% endif %}
+                            </div>
+                            {% if linkedArticle %}
+                                <p>
+                                    <a class="article-link" href="{{ path('site_article', {slug: linkedArticle.slug}) }}">
+                                        {{ linkedArticle.excerpt ?: 'Compte-rendu du match' }}
+                                    </a>
+                                </p>
+                            {% endif %}
+                        </div>
+                        <div class="match-card-side">
+                            {% if match.ourScore is not null %}
+                                <span class="score">{{ match.ourScore }} - {{ match.opponentScore }}</span>
+                            {% endif %}
+                        </div>
+                    </article>
+                {% else %}
+                    <p>Aucun match passé n'est encore disponible.</p>
+                {% endfor %}
+            </div>
+        </article>
+    </section>
+{% endblock %}

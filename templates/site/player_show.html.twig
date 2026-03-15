@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ player.name }} | Effectif | Cécifoot La Bassée{% endblock %}
+{% block meta_description %}{{ player.metaDescription ?: (player.description|trim|slice(0, 180) ~ (player.description|length > 180 ? '...' : '')) }}{% endblock %}
+{% block og_title %}{{ player.metaTitle ?: player.name }} | Effectif | Cécifoot La Bassée{% endblock %}
+{% block og_image %}{{ absolute_url(asset(player.photo ? 'uploads/players/' ~ player.photo : 'assets/club-placeholder.svg')) }}{% endblock %}
+
+{% block hero %}
+    <section class="hero">
+        <div class="hero-card">
+            <img class="hero-media" src="{{ player.photo ? asset('uploads/players/' ~ player.photo) : asset('assets/club-placeholder.svg') }}" alt="">
+            <div class="page-hero">
+                <div class="eyebrow"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="2"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Effectif</span></span></div>
+                <h1>{{ player.name }}</h1>
+                <div class="hero-stats">
+                    {% if player.age %}
+                        <div class="hero-stat">
+                            <strong>{{ player.age }} ans</strong>
+                            <span>âge du joueur</span>
+                        </div>
+                    {% endif %}
+                    <div class="hero-stat">
+                        <strong>Collectif</strong>
+                        <span>un profil au service du projet du club</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block body %}
+    <section class="stack">
+        <article class="card wide player-profile">
+            <div class="player-profile-media">
+                <img class="player-photo large" src="{{ player.photo ? asset('uploads/players/' ~ player.photo) : asset('assets/club-placeholder.svg') }}" alt="{{ player.name }}">
+            </div>
+            <div class="player-profile-body">
+                <div class="section-heading">
+                    <div>
+                        <h2>En savoir plus sur {{ player.name }}</h2>
+                        <p class="muted">Présentation du joueur, de son rôle dans le collectif et de son parcours.</p>
+                    </div>
+                </div>
+                <div class="html-content">
+                    {% for paragraph in player.description|split("\n") %}
+                        {% if paragraph|trim is not empty %}
+                            <p>{{ paragraph|trim }}</p>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <div>
+                    <a class="button secondary" href="{{ path('site_players') }}">Retour à l'effectif</a>
+                </div>
+            </div>
+        </article>
+    </section>
+{% endblock %}

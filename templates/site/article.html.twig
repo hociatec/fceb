@@ -1,0 +1,40 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ article.title }} | Cécifoot La Bassée{% endblock %}
+{% block meta_description %}{{ article.metaDescription ?: article.excerpt ?: "Actualité du Cécifoot La Bassée." }}{% endblock %}
+{% block og_title %}{{ article.metaTitle ?: article.title }} | Cécifoot La Bassée{% endblock %}
+{% block og_image %}{{ absolute_url(asset(article.coverImage ? 'uploads/articles/' ~ article.coverImage : 'assets/club-placeholder.svg')) }}{% endblock %}
+
+{% block hero %}
+    <section class="hero">
+        <div class="hero-card">
+            <img class="hero-media" src="{{ article.coverImage ? asset('uploads/articles/' ~ article.coverImage) : asset('assets/club-placeholder.svg') }}" alt="">
+            <div class="article-hero">
+                <div class="eyebrow">Actualité</div>
+                <h1>{{ article.title }}</h1>
+                <div class="article-meta">
+                    <span><strong>Date de publication :</strong> {{ article.publishedAt|date('d/m/Y H:i') }}</span>
+                    {% if article.season %}
+                        <span class="tag">{{ article.season.name }}</span>
+                    {% endif %}
+                </div>
+                {% if article.excerpt %}
+                    <p class="article-summary">{{ article.excerpt }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block body %}
+    <section class="article-shell">
+        <article class="card article-body html-content">
+            {% if article.excerpt %}
+                <div class="article-intro">
+                    <p>{{ article.excerpt }}</p>
+                </div>
+            {% endif %}
+            {{ article.content|render_page_content }}
+        </article>
+    </section>
+{% endblock %}

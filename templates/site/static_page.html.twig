@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ title }} | Cécifoot La Bassée{% endblock %}
+
+{% block hero %}
+    <section class="hero">
+        <div class="hero-card">
+            <div class="page-hero">
+                <div class="eyebrow">{{ eyebrow }}</div>
+                <h1>{{ title }}</h1>
+                <p class="page-lead">Une page d’information claire pour retrouver les repères utiles du club, ses partenaires et ses contenus pratiques.</p>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block body %}
+    <section class="stack">
+        <article class="card wide">
+            <div class="section-heading">
+                <div>
+                    <h2>{{ title }}</h2>
+                </div>
+            </div>
+            <div class="html-content" style="margin-top: 1rem;">
+                {% for paragraph in content %}
+                    <p>{{ paragraph }}</p>
+                {% endfor %}
+            </div>
+        </article>
+
+        {% if partners is defined and partners is not empty %}
+            <article class="card wide">
+                <div class="section-heading">
+                    <div>
+                        <h2>Structures présentées</h2>
+                        <p class="muted">Partenaires, soutiens et liens utiles affichés sur le site.</p>
+                    </div>
+                </div>
+                <div class="partner-grid" style="margin-top: 1rem;">
+                    {% for partner in partners %}
+                        <article class="partner-card">
+                            {% if partner.logoUrl %}
+                                <img class="partner-logo" src="{{ partner.logoUrl starts with 'http' ? partner.logoUrl : asset('uploads/partners/' ~ partner.logoUrl) }}" alt="{{ partner.name }}">
+                            {% endif %}
+                            <h3>{{ partner.name }}</h3>
+                            {% if partner.websiteUrl %}
+                                <p><a class="article-link" href="{{ partner.websiteUrl }}" target="_blank" rel="noreferrer">Visiter le site</a></p>
+                            {% endif %}
+                        </article>
+                    {% endfor %}
+                </div>
+            </article>
+        {% endif %}
+    </section>
+{% endblock %}

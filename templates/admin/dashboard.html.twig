@@ -1,0 +1,135 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content_title %}Tableau de bord{% endblock %}
+
+{% block main %}
+    <style>
+        .admin-shell {
+            display: grid;
+            gap: 1.5rem;
+        }
+        .admin-hero {
+            display: grid;
+            gap: 1rem;
+            padding: 2rem;
+            border-radius: 24px;
+            background: linear-gradient(135deg, #123a2c, #1f6048);
+            color: #fff;
+            box-shadow: 0 24px 60px rgba(18, 58, 44, .18);
+        }
+        .admin-hero h1 {
+            margin: 0;
+            font-size: clamp(2rem, 4vw, 3rem);
+        }
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+        .admin-card {
+            background: #fff;
+            border: 1px solid rgba(15, 35, 24, .08);
+            border-radius: 20px;
+            padding: 1.25rem;
+            box-shadow: 0 12px 30px rgba(15, 35, 24, .06);
+        }
+        .admin-card h2, .admin-card h3 {
+            margin: 0 0 .5rem;
+        }
+        .admin-stat {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+        .admin-stat strong {
+            font-size: 2rem;
+        }
+        .admin-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .75rem;
+        }
+        .admin-links a {
+            display: inline-flex;
+            align-items: center;
+            padding: .75rem 1rem;
+            border-radius: 999px;
+            background: #eff6f2;
+            color: #123a2c;
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .admin-list {
+            display: grid;
+            gap: .75rem;
+        }
+        .admin-list-item {
+            padding-top: .75rem;
+            border-top: 1px solid rgba(15, 35, 24, .08);
+        }
+        .admin-list-item:first-child {
+            border-top: 0;
+            padding-top: 0;
+        }
+        .admin-meta {
+            color: #61766b;
+            font-size: .95rem;
+        }
+    </style>
+
+    <div class="admin-shell">
+        <section class="admin-hero">
+            <div class="admin-meta">Administration du site, de l'API et des comptes</div>
+            <h1>Cécifoot La Bassée</h1>
+            <div class="admin-meta">
+                {% if currentSeason %}
+                    Saison en cours : {{ currentSeason.name }}
+                {% else %}
+                    Aucune saison en cours définie
+                {% endif %}
+                · {{ socialCount }} réseaux sociaux configurés
+            </div>
+        </section>
+
+        <section class="admin-grid">
+            {% for stat in stats %}
+                <article class="admin-card">
+                    <div class="admin-stat">
+                        <div>
+                            <div class="admin-meta">{{ stat.label }}</div>
+                            <strong>{{ stat.value }}</strong>
+                        </div>
+                        <i class="{{ stat.icon }}"></i>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <a href="{{ stat.url }}">Ouvrir</a>
+                    </div>
+                </article>
+            {% endfor %}
+        </section>
+
+        <section class="admin-card">
+            <h2>Actions rapides</h2>
+            <div class="admin-links" style="margin-top: 1rem;">
+                {% for link in quickLinks %}
+                    <a href="{{ link.url }}">{{ link.label }}</a>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="admin-card">
+            <h2>Derniers articles publiés</h2>
+            <div class="admin-list" style="margin-top: 1rem;">
+                {% for article in latestArticles %}
+                    <div class="admin-list-item">
+                        <h3>{{ article.title }}</h3>
+                        <div class="admin-meta">{{ article.publishedAt|date('d/m/Y H:i') }}{% if article.season %} · {{ article.season.name }}{% endif %}</div>
+                    </div>
+                {% else %}
+                    <p>Aucun article disponible.</p>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+{% endblock %}

@@ -1,0 +1,140 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ season.name }} | Cécifoot La Bassée{% endblock %}
+
+{% block hero %}
+    <section class="hero">
+        <div class="hero-card">
+            <div class="page-hero">
+                <div class="eyebrow">{% if isArchive %}Archives{% else %}Saison en cours{% endif %}</div>
+                <h1>{{ season.name }}</h1>
+                <p class="page-lead">Du {{ season.startDate|date('d/m/Y') }} au {{ season.endDate|date('d/m/Y') }}, retrouve l’ensemble des articles, matchs et temps forts de la saison.</p>
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <strong>{{ articles|length }}</strong>
+                        <span>article{% if articles|length > 1 %}s{% endif %} publié{% if articles|length > 1 %}s{% endif %}</span>
+                    </div>
+                    <div class="hero-stat">
+                        <strong>{{ matches|length }}</strong>
+                        <span>match{% if matches|length > 1 %}s{% endif %} enregistré{% if matches|length > 1 %}s{% endif %}</span>
+                    </div>
+                    <div class="hero-stat">
+                        <strong>{% if isArchive %}Archive{% else %}Active{% endif %}</strong>
+                        <span>saison {% if isArchive %}archivée{% else %}en cours{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block body %}
+    <section class="stack">
+        <section class="season-overview">
+            <article class="card">
+                <div class="season-copy">
+                    <span class="tag">Vue d’ensemble</span>
+                    <h2>Une saison suivie avec plus de clarté.</h2>
+                    <p>Cette page rassemble les publications liées à l’effectif, les comptes-rendus, les rencontres déjà jouées et le calendrier de la saison. Elle permet de suivre l’évolution sportive du club dans un seul espace.</p>
+                    <p>Au fil des semaines, les articles et les résultats viennent enrichir cette saison pour garder une lecture claire du projet sportif, du rythme des compétitions et des moments marquants.</p>
+                </div>
+            </article>
+            <aside class="season-stats">
+                <article class="season-stat">
+                    <strong>{{ articles|length }}</strong>
+                    <span>article{% if articles|length > 1 %}s{% endif %} publié{% if articles|length > 1 %}s{% endif %}</span>
+                </article>
+                <article class="season-stat">
+                    <strong>{{ matches|length }}</strong>
+                    <span>match{% if matches|length > 1 %}s{% endif %} enregistré{% if matches|length > 1 %}s{% endif %}</span>
+                </article>
+                <article class="season-stat">
+                    <strong>{% if isArchive %}Archive{% else %}Actuelle{% endif %}</strong>
+                    <span>saison {% if isArchive %}archivée{% else %}en cours{% endif %}</span>
+                </article>
+            </aside>
+        </section>
+
+        <article class="card wide">
+            <div class="section-heading">
+                <div>
+                    <h2>Articles de la saison</h2>
+                    <p class="muted">Comptes-rendus, actualités et contenus publiés au fil de la saison.</p>
+                </div>
+            </div>
+            <div class="stack" style="margin-top: 1rem;">
+                {% for article in articles %}
+                    <article class="story-inline">
+                        <img class="story-media tall" src="{{ article.coverImage ? asset('uploads/articles/' ~ article.coverImage) : asset('assets/club-placeholder.svg') }}" alt="{{ article.title }}">
+                        <div class="home-feature-article">
+                            <span class="tag">Publication</span>
+                            <h3>{{ article.title }}</h3>
+                            {% if article.excerpt %}
+                                <p>
+                                    <a class="article-link" href="{{ path('site_article', {slug: article.slug}) }}">{{ article.excerpt }}</a>
+                                </p>
+                            {% endif %}
+                            <div class="home-meta-row">
+                                <span>{{ article.publishedAt|date('d/m/Y H:i') }}</span>
+                                <span>{{ season.name }}</span>
+                            </div>
+                            <a class="button secondary" href="{{ path('site_article', {slug: article.slug}) }}">Lire l’article</a>
+                        </div>
+                    </article>
+                {% else %}
+                    <p>Aucun article pour cette saison.</p>
+                {% endfor %}
+            </div>
+        </article>
+
+        <article class="card wide">
+            <div class="section-heading">
+                <div>
+                    <h2>Matchs de la saison</h2>
+                    <p class="muted">Rencontres programmées, résultats enregistrés et comptes-rendus liés.</p>
+                </div>
+            </div>
+            <div class="match-block">
+                {% for match in matches %}
+                    {% set linkedArticle = matchArticles[match.id] ?? null %}
+                    <article class="match-card">
+                        <div class="match-card-main">
+                            <div class="team-poster">
+                                <div class="team-side">
+                                    <img class="team-logo" src="{{ asset(team_logo(match.homeTeamName)) }}" alt="{{ match.homeTeamName }}">
+                                    <strong>{{ match.homeTeamName }}</strong>
+                                </div>
+                                <span class="team-vs">vs</span>
+                                <div class="team-side">
+                                    <img class="team-logo" src="{{ asset(team_logo(match.awayTeamName)) }}" alt="{{ match.awayTeamName }}">
+                                    <strong>{{ match.awayTeamName }}</strong>
+                                </div>
+                            </div>
+                            <div class="match-card-meta">
+                                <span>{{ match.matchDate|date('d/m/Y H:i') }}</span>
+                                {% if match.competition %}<span>{{ match.competition }}</span>{% endif %}
+                                {% if match.location %}<span>{{ match.location }}</span>{% endif %}
+                            </div>
+                            {% if linkedArticle %}
+                                <p>
+                                    <a class="article-link" href="{{ path('site_article', {slug: linkedArticle.slug}) }}">
+                                        {{ linkedArticle.excerpt ?: 'Lire le compte-rendu du match.' }}
+                                    </a>
+                                </p>
+                            {% endif %}
+                        </div>
+                        <div class="match-card-side">
+                            {% if match.ourScore is not null %}
+                                <span class="score">{{ match.ourScore }} - {{ match.opponentScore }}</span>
+                            {% else %}
+                                <span class="tag">À venir</span>
+                            {% endif %}
+                        </div>
+                    </article>
+                {% else %}
+                    <p>Aucun match enregistré.</p>
+                {% endfor %}
+            </div>
+        </article>
+    </section>
+{% endblock %}

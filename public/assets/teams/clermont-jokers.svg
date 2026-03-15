@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">Clermont Jokers</title>
+  <circle cx="64" cy="64" r="60" fill="#7a1118"/>
+  <circle cx="64" cy="64" r="49" fill="none" stroke="#f3d9b1" stroke-width="7"/>
+  <path d="M40 88c6-24 14-38 24-52 10 14 18 28 24 52-14-6-34-6-48 0z" fill="#f3d9b1"/>
+  <circle cx="54" cy="57" r="4" fill="#7a1118"/>
+  <circle cx="74" cy="57" r="4" fill="#7a1118"/>
+  <text x="64" y="109" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" font-weight="700" fill="#fff">CJ</text>
+</svg>

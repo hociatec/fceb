@@ -1,0 +1,138 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil | Cécifoot La Bassée{% endblock %}
+
+{% block body %}
+    <section class="home-stack">
+        {% if discoverPage %}
+            <article class="card wide home-section-card">
+                <div class="section-heading">
+                    <div>
+                        <h2>Cécifoot La Bassée</h2>
+                    </div>
+                </div>
+                <div class="story-inline">
+                    <img class="story-media tall" src="{{ discoverPage.heroImage ? asset('uploads/pages/' ~ discoverPage.heroImage) : asset('assets/club-placeholder.svg') }}" alt="{{ discoverPage.title }}">
+                    <div class="home-feature-article">
+                        <span class="tag">Valeurs du club</span>
+                        <p>À La Bassée, le cécifoot se construit autour de valeurs claires : engagement, solidarité, écoute, progression et exigence collective. Le club défend une pratique accessible mais ambitieuse, où chacun trouve sa place dans un cadre sérieux, formateur et tourné vers le jeu.</p>
+                        <div class="value-grid">
+                            <article class="value-card">
+                                <strong>Engagement</strong>
+                                <p>Chaque séance et chaque match reposent sur l’implication de tous.</p>
+                            </article>
+                            <article class="value-card">
+                                <strong>Solidarité</strong>
+                                <p>Le collectif prime, dans les repères du jeu comme dans la vie du groupe.</p>
+                            </article>
+                            <article class="value-card">
+                                <strong>Progression</strong>
+                                <p>Le club accompagne les joueurs avec exigence et envie de faire grandir chacun.</p>
+                            </article>
+                            <article class="value-card">
+                                <strong>Ouverture</strong>
+                                <p>Le cécifoot se découvre, se partage et se transmet sur le terrain comme en dehors.</p>
+                            </article>
+                        </div>
+                        <a class="button secondary" href="{{ path('site_page', {slug: discoverPage.slug}) }}">{{ discoverPage.title }}</a>
+                    </div>
+                </div>
+            </article>
+        {% endif %}
+
+        {% for section in homeSections %}
+            <article class="card wide home-section-card">
+                <div class="section-heading">
+                    <div>
+                        <h2>{{ section.title }}</h2>
+                    </div>
+                </div>
+
+                {% if section.key == 'latest_article' %}
+                    {% if latestArticle %}
+                        <div class="story-inline">
+                            <img class="story-media tall" src="{{ latestArticle.coverImage ? asset('uploads/articles/' ~ latestArticle.coverImage) : asset('assets/club-placeholder.svg') }}" alt="{{ latestArticle.title }}">
+                            <div class="home-feature-article">
+                                <span class="tag">À la une</span>
+                                <h3>{{ latestArticle.title }}</h3>
+                                {% if latestArticle.excerpt %}
+                                    <p>
+                                        <a class="article-link" href="{{ path('site_article', {slug: latestArticle.slug}) }}">{{ latestArticle.excerpt }}</a>
+                                    </p>
+                                {% endif %}
+                                <div class="home-meta-row">
+                                    <span>{{ latestArticle.publishedAt|date('d/m/Y H:i') }}</span>
+                                    {% if latestArticle.season %}
+                                        <span>{{ latestArticle.season.name }}</span>
+                                    {% endif %}
+                                </div>
+                                <a class="button secondary" href="{{ path('site_article', {slug: latestArticle.slug}) }}">Lire l’article</a>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p>Aucune actualité publiée.</p>
+                    {% endif %}
+                {% elseif section.key == 'upcoming_matches' %}
+                    {% if upcomingMatches is not empty %}
+                        <div class="home-match-grid">
+                            {% for match in upcomingMatches %}
+                                <article class="home-match-card">
+                                    <div class="team-poster">
+                                        <div class="team-side">
+                                            <img class="team-logo small" src="{{ asset(team_logo(match.homeTeamName)) }}" alt="{{ match.homeTeamName }}">
+                                            <strong>{{ match.homeTeamName }}</strong>
+                                        </div>
+                                        <span class="team-vs">vs</span>
+                                        <div class="team-side">
+                                            <img class="team-logo small" src="{{ asset(team_logo(match.awayTeamName)) }}" alt="{{ match.awayTeamName }}">
+                                            <strong>{{ match.awayTeamName }}</strong>
+                                        </div>
+                                    </div>
+                                    <p class="muted">{{ match.matchDate|date('d/m/Y H:i') }}{% if match.location %} · {{ match.location }}{% endif %}</p>
+                                    {% if match.competition %}
+                                        <p>{{ match.competition }}</p>
+                                    {% endif %}
+                                </article>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p>Aucun match programmé.</p>
+                    {% endif %}
+                {% elseif section.key == 'last_match' %}
+                    {% if lastMatch %}
+                        <div class="story-inline">
+                            {% if lastMatchArticle %}
+                                <img class="story-media tall" src="{{ lastMatchArticle.coverImage ? asset('uploads/articles/' ~ lastMatchArticle.coverImage) : asset('assets/club-placeholder.svg') }}" alt="{{ lastMatch.poster }}">
+                            {% endif %}
+                            <div class="home-feature-article">
+                                <span class="tag">Dernier résultat</span>
+                                <div class="team-poster">
+                                    <div class="team-side">
+                                        <img class="team-logo" src="{{ asset(team_logo(lastMatch.homeTeamName)) }}" alt="{{ lastMatch.homeTeamName }}">
+                                        <strong>{{ lastMatch.homeTeamName }}</strong>
+                                    </div>
+                                    <span class="team-vs">vs</span>
+                                    <div class="team-side">
+                                        <img class="team-logo" src="{{ asset(team_logo(lastMatch.awayTeamName)) }}" alt="{{ lastMatch.awayTeamName }}">
+                                        <strong>{{ lastMatch.awayTeamName }}</strong>
+                                    </div>
+                                </div>
+                                {% if lastMatchArticle %}
+                                    <p>
+                                        <a class="article-link" href="{{ path('site_article', {slug: lastMatchArticle.slug}) }}">
+                                            {{ lastMatchArticle.excerpt ?: 'Lire le compte-rendu du match.' }}
+                                        </a>
+                                    </p>
+                                {% endif %}
+                                <p class="muted">{{ lastMatch.matchDate|date('d/m/Y H:i') }}{% if lastMatch.location %} · {{ lastMatch.location }}{% endif %}</p>
+                                <p><span class="score">{{ lastMatch.ourScore }} - {{ lastMatch.opponentScore }}</span></p>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p>Aucun résultat disponible.</p>
+                    {% endif %}
+                {% endif %}
+            </article>
+        {% endfor %}
+    </section>
+{% endblock %}

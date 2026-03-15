@@ -1,0 +1,86 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Classement | Cécifoot La Bassée{% endblock %}
+
+{% block hero %}
+    <section class="hero">
+        <div class="hero-card">
+            <div class="page-hero">
+                <div class="eyebrow">Classement</div>
+                <h1>Classement des équipes</h1>
+                {% if season %}
+                    <p class="page-lead">{{ season.name }}. Consulte la dynamique de la poule avec les points, les victoires, les défaites et la différence de buts.</p>
+                    <div class="hero-stats">
+                        <div class="hero-stat">
+                            <strong>{{ entries|length }}</strong>
+                            <span>équipe{% if entries|length > 1 %}s{% endif %} classée{% if entries|length > 1 %}s{% endif %}</span>
+                        </div>
+                        <div class="hero-stat">
+                            <strong>{% if entries is not empty %}{{ entries[0].teamName }}{% else %}-{% endif %}</strong>
+                            <span>leader actuel</span>
+                        </div>
+                    </div>
+                {% else %}
+                    <p class="page-lead">Aucun classement disponible pour le moment.</p>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block body %}
+    <section class="stack">
+        <article class="card wide">
+            <div class="section-heading">
+                <div>
+                    <h2>Tableau du classement</h2>
+                    {% if season %}
+                        <p class="muted">{{ season.name }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if entries %}
+                <div class="table-wrap">
+                    <table class="ranking-table">
+                        <caption>Classement {% if season %}de {{ season.name }}{% endif %}</caption>
+                        <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Équipe</th>
+                            <th scope="col">Points</th>
+                            <th scope="col">Victoires</th>
+                            <th scope="col">Défaites</th>
+                            <th scope="col">Différence de buts</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for entry in entries %}
+                            <tr>
+                                <td>
+                                    <span class="ranking-position{% if loop.first %} top{% endif %}">{{ loop.index }}</span>
+                                </td>
+                                <th scope="row">
+                                    <div class="ranking-team">
+                                        <div class="team-side">
+                                            <img class="team-logo small" src="{{ asset(team_logo(entry.teamName)) }}" alt="{{ entry.teamName }}">
+                                            <span>{{ entry.teamName }}</span>
+                                        </div>
+                                        <small>{{ entry.points }} point{% if entry.points > 1 %}s{% endif %}</small>
+                                    </div>
+                                </th>
+                                <td>{{ entry.points }}</td>
+                                <td>{{ entry.wins }}</td>
+                                <td>{{ entry.losses }}</td>
+                                <td>{{ entry.goalDifference }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>Aucune ligne de classement n'a encore été enregistrée.</p>
+            {% endif %}
+        </article>
+    </section>
+{% endblock %}
