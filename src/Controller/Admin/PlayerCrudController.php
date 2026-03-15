@@ -9,6 +9,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
@@ -75,6 +76,32 @@ class PlayerCrudController extends AbstractCrudController
             ->setHelp('Rempli automatiquement depuis le nom, modifiable si besoin.')
             ->hideOnIndex();
 
+        yield DateField::new('birthDate', 'Date de naissance')
+            ->setColumns(4)
+            ->setFormat('dd/MM/yyyy')
+            ->setHelp('L’âge affiché sur le site est calculé automatiquement à partir de cette date.');
+
+        yield TextField::new('nationality', 'Nationalité')
+            ->setColumns(4)
+            ->setHelp('Nationalité affichée sur la fiche joueur.');
+
+        yield TextField::new('preferredPosition', 'Poste préférentiel')
+            ->setColumns(4)
+            ->setHelp('Poste ou rôle de jeu préféré du joueur.');
+
+        yield TextField::new('preferredFoot', 'Pied préférentiel')
+            ->setColumns(4)
+            ->setHelp('Exemple : droitier, gaucher, ambidextre.');
+
+        yield IntegerField::new('age', 'Âge')
+            ->setColumns(4)
+            ->setFormTypeOption('attr', [
+                'readonly' => true,
+                'aria-label' => 'Âge du joueur',
+            ])
+            ->setHelp('Champ conservé pour compatibilité. L’âge est désormais calculé depuis la date de naissance.')
+            ->hideOnForm();
+
         yield ImageField::new('photo', 'Photo')
             ->setColumns(12)
             ->setBasePath('uploads/players')
@@ -107,16 +134,6 @@ class PlayerCrudController extends AbstractCrudController
         yield FormField::addFieldset('Affichage')
             ->setHelp("Définis l'ordre d'apparition, la visibilité publique et le statut du joueur.");
 
-        yield IntegerField::new('age', 'Âge')
-            ->setColumns(4)
-            ->setFormTypeOption('attr', [
-                'min' => 1,
-                'inputmode' => 'numeric',
-                'aria-label' => 'Âge du joueur',
-            ])
-            ->setHelp('Âge affiché sur la carte du joueur et dans sa fiche.')
-            ->hideOnIndex();
-
         yield IntegerField::new('displayOrder', 'Ordre')
             ->setColumns(4)
             ->setFormTypeOption('attr', [
@@ -133,7 +150,7 @@ class PlayerCrudController extends AbstractCrudController
                 'Archivé' => ContentStatus::Archived,
             ])
             ->renderExpanded()
-            ->setColumns(4)
+            ->setColumns(8)
             ->setHelp('Définit si le joueur est en brouillon, visible publiquement ou archivé.');
     }
 }

@@ -1047,6 +1047,40 @@
             align-items: start;
         }
 
+        .player-card-meta {
+            display: grid;
+            gap: .55rem;
+        }
+
+        .player-chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .55rem;
+        }
+
+        .player-facts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .55rem .8rem;
+            color: var(--ink-soft);
+            font-size: .92rem;
+            line-height: 1.5;
+        }
+
+        .player-facts span {
+            display: inline-flex;
+            align-items: center;
+            min-height: 34px;
+            padding: .35rem .7rem;
+            border-radius: 999px;
+            background: rgba(226, 239, 232, 0.72);
+            border: 1px solid rgba(16, 32, 25, 0.08);
+        }
+
+        .player-facts-detailed {
+            margin-top: -.2rem;
+        }
+
         .table-wrap {
             overflow-x: auto;
             border-radius: var(--radius-md);

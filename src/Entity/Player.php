@@ -44,6 +44,21 @@ class Player
     #[Assert\Positive]
     private ?int $age = null;
 
+    #[ORM\Column(type: 'date_immutable', nullable: true)]
+    private ?\DateTimeImmutable $birthDate = null;
+
+    #[ORM\Column(length: 120, nullable: true)]
+    #[Assert\Length(max: 120)]
+    private ?string $nationality = null;
+
+    #[ORM\Column(length: 120, nullable: true)]
+    #[Assert\Length(max: 120)]
+    private ?string $preferredPosition = null;
+
+    #[ORM\Column(length: 40, nullable: true)]
+    #[Assert\Length(max: 40)]
+    private ?string $preferredFoot = null;
+
     #[ORM\Column]
     #[Assert\PositiveOrZero]
     private int $displayOrder = 0;
@@ -138,12 +153,64 @@ class Player
 
     public function getAge(): ?int
     {
+        if ($this->birthDate instanceof \DateTimeImmutable) {
+            return $this->birthDate->diff(new \DateTimeImmutable('today'))->y;
+        }
+
         return $this->age;
     }
 
     public function setAge(?int $age): static
     {
         $this->age = $age;
+
+        return $this;
+    }
+
+    public function getBirthDate(): ?\DateTimeImmutable
+    {
+        return $this->birthDate;
+    }
+
+    public function setBirthDate(?\DateTimeImmutable $birthDate): static
+    {
+        $this->birthDate = $birthDate;
+
+        return $this;
+    }
+
+    public function getNationality(): ?string
+    {
+        return $this->nationality;
+    }
+
+    public function setNationality(?string $nationality): static
+    {
+        $this->nationality = $nationality;
+
+        return $this;
+    }
+
+    public function getPreferredPosition(): ?string
+    {
+        return $this->preferredPosition;
+    }
+
+    public function setPreferredPosition(?string $preferredPosition): static
+    {
+        $this->preferredPosition = $preferredPosition;
+
+        return $this;
+    }
+
+    public function getPreferredFoot(): ?string
+    {
+        return $this->preferredFoot;
+    }
+
+    public function setPreferredFoot(?string $preferredFoot): static
+    {
+        $this->preferredFoot = $preferredFoot;
 
         return $this;
     }

@@ -19,10 +19,18 @@
                             <span>âge du joueur</span>
                         </div>
                     {% endif %}
-                    <div class="hero-stat">
-                        <strong>Collectif</strong>
-                        <span>un profil au service du projet du club</span>
-                    </div>
+                    {% if player.preferredPosition %}
+                        <div class="hero-stat">
+                            <strong>{{ player.preferredPosition }}</strong>
+                            <span>poste préférentiel</span>
+                        </div>
+                    {% endif %}
+                    {% if player.preferredFoot %}
+                        <div class="hero-stat">
+                            <strong>{{ player.preferredFoot }}</strong>
+                            <span>pied préférentiel</span>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -41,6 +49,20 @@
                         <h2>En savoir plus sur {{ player.name }}</h2>
                         <p class="muted">Présentation du joueur, de son rôle dans le collectif et de son parcours.</p>
                     </div>
+                </div>
+                <div class="player-facts player-facts-detailed">
+                    {% if player.birthDate %}
+                        <span>Date de naissance : {{ player.birthDate|date('d/m/Y') }}</span>
+                    {% endif %}
+                    {% if player.nationality %}
+                        <span>Nationalité : {{ player.nationality }}</span>
+                    {% endif %}
+                    {% if player.preferredPosition %}
+                        <span>Poste préférentiel : {{ player.preferredPosition }}</span>
+                    {% endif %}
+                    {% if player.preferredFoot %}
+                        <span>Pied préférentiel : {{ player.preferredFoot }}</span>
+                    {% endif %}
                 </div>
                 <div class="html-content">
                     {% for paragraph in player.description|split("\n") %}
