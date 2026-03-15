@@ -35,13 +35,12 @@ class RankingEntryRepository extends ServiceEntityRepository
     public function findLatestSeasonWithEntries(): ?Season
     {
         $result = $this->createQueryBuilder('r')
-            ->select('s')
             ->join('r.season', 's')
             ->orderBy('s.startDate', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
 
-        return $result instanceof Season ? $result : null;
+        return $result instanceof RankingEntry ? $result->getSeason() : null;
     }
 }
