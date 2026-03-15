@@ -60,6 +60,11 @@
             font-weight: 700;
             text-decoration: none;
         }
+        .admin-links a:hover,
+        .admin-links a:focus-visible {
+            background: #dcebe4;
+            outline: none;
+        }
         .admin-list {
             display: grid;
             gap: .75rem;
@@ -75,6 +80,35 @@
         .admin-meta {
             color: #61766b;
             font-size: .95rem;
+        }
+        .admin-checks {
+            display: grid;
+            gap: .85rem;
+        }
+        .admin-check {
+            display: grid;
+            gap: .35rem;
+            padding: 1rem 1.05rem;
+            border-radius: 16px;
+            border: 1px solid rgba(15, 35, 24, .08);
+            background: #fff;
+        }
+        .admin-check.warning {
+            border-color: rgba(198, 148, 47, .28);
+            background: #fff7ea;
+        }
+        .admin-check.info {
+            border-color: rgba(18, 58, 44, .12);
+            background: #f6fbf8;
+        }
+        .admin-check strong {
+            color: #123a2c;
+        }
+        .admin-check a {
+            width: fit-content;
+            font-weight: 700;
+            color: #123a2c;
+            text-decoration: none;
         }
     </style>
 
@@ -114,6 +148,27 @@
             <div class="admin-links" style="margin-top: 1rem;">
                 {% for link in quickLinks %}
                     <a href="{{ link.url }}">{{ link.label }}</a>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="admin-card">
+            <h2>État du contenu</h2>
+            <div class="admin-meta" style="margin-top: .4rem;">
+                {{ draftArticles }} article{% if draftArticles > 1 %}s{% endif %} en brouillon · {{ draftPages }} page{% if draftPages > 1 %}s{% endif %} en brouillon
+            </div>
+            <div class="admin-checks" style="margin-top: 1rem;">
+                {% for check in contentChecks %}
+                    <article class="admin-check {{ check.level }}">
+                        <strong>{{ check.label }}</strong>
+                        <div>{{ check.message }}</div>
+                        <a href="{{ check.url }}">Ouvrir</a>
+                    </article>
+                {% else %}
+                    <div class="admin-check info">
+                        <strong>Tout est en place</strong>
+                        <div>Les éléments essentiels de contenu sont présents dans l'administration.</div>
+                    </div>
                 {% endfor %}
             </div>
         </section>

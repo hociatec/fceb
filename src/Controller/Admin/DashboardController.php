@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin;
 
+use App\Enum\ContentStatus;
 use App\Repository\ArticleRepository;
 use App\Repository\HomeSectionRepository;
 use App\Repository\MatchGameRepository;
@@ -14,6 +15,7 @@ use App\Repository\SocialLinkRepository;
 use App\Repository\TeamIdentityRepository;
 use App\Repository\UserRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
@@ -42,29 +44,68 @@ class DashboardController extends AbstractDashboardController
 
     public function index(): Response
     {
+        $currentSeason = $this->seasonRepository->findCurrentSeason();
+        $publishedArticles = $this->articleRepository->count(['status' => ContentStatus::Published]);
+        $draftArticles = $this->articleRepository->count(['status' => ContentStatus::Draft]);
+        $publishedPages = $this->pageRepository->count(['status' => ContentStatus::Published]);
+        $draftPages = $this->pageRepository->count(['status' => ContentStatus::Draft]);
+        $playerCount = $this->playerRepository->count([]);
+        $partnerCount = $this->partnerRepository->count([]);
+        $socialCount = $this->socialLinkRepository->count([]);
+        $homeSectionCount = $this->homeSectionRepository->count([]);
+        $teamIdentityCount = $this->teamIdentityRepository->count([]);
+
         $stats = [
             ['label' => 'Saisons', 'value' => $this->seasonRepository->count([]), 'icon' => 'fa fa-calendar', 'url' => $this->crudUrl(SeasonCrudController::class)],
-            ['label' => 'Articles', 'value' => $this->articleRepository->count([]), 'icon' => 'fa fa-newspaper', 'url' => $this->crudUrl(ArticleCrudController::class)],
-            ['label' => 'Accueil', 'value' => $this->homeSectionRepository->count([]), 'icon' => 'fa fa-panorama', 'url' => $this->crudUrl(HomeSectionCrudController::class)],
+            ['label' => 'Articles publiés', 'value' => $publishedArticles, 'icon' => 'fa fa-newspaper', 'url' => $this->crudUrl(ArticleCrudController::class)],
+            ['label' => 'Blocs accueil', 'value' => $homeSectionCount, 'icon' => 'fa fa-panorama', 'url' => $this->crudUrl(HomeSectionCrudController::class)],
             ['label' => 'Matchs', 'value' => $this->matchGameRepository->count([]), 'icon' => 'fa fa-futbol', 'url' => $this->crudUrl(MatchGameCrudController::class)],
             ['label' => 'Classement', 'value' => $this->rankingEntryRepository->count([]), 'icon' => 'fa fa-list-ol', 'url' => $this->crudUrl(RankingEntryCrudController::class)],
-            ['label' => 'Effectif', 'value' => $this->playerRepository->count([]), 'icon' => 'fa fa-user-group', 'url' => $this->crudUrl(PlayerCrudController::class)],
-            ['label' => 'Pages', 'value' => $this->pageRepository->count([]), 'icon' => 'fa fa-file-lines', 'url' => $this->crudUrl(PageCrudController::class)],
-            ['label' => 'Équipes', 'value' => $this->teamIdentityRepository->count([]), 'icon' => 'fa fa-shield-halved', 'url' => $this->crudUrl(TeamIdentityCrudController::class)],
-            ['label' => 'Partenaires', 'value' => $this->partnerRepository->count([]), 'icon' => 'fa fa-handshake', 'url' => $this->crudUrl(PartnerCrudController::class)],
+            ['label' => 'Effectif', 'value' => $playerCount, 'icon' => 'fa fa-user-group', 'url' => $this->crudUrl(PlayerCrudController::class)],
+            ['label' => 'Pages publiées', 'value' => $publishedPages, 'icon' => 'fa fa-file-lines', 'url' => $this->crudUrl(PageCrudController::class)],
+            ['label' => 'Équipes', 'value' => $teamIdentityCount, 'icon' => 'fa fa-shield-halved', 'url' => $this->crudUrl(TeamIdentityCrudController::class)],
+            ['label' => 'Partenaires', 'value' => $partnerCount, 'icon' => 'fa fa-handshake', 'url' => $this->crudUrl(PartnerCrudController::class)],
         ];
 
         $quickLinks = [
-            ['label' => 'Gérer les saisons', 'url' => $this->crudUrl(SeasonCrudController::class)],
-            ['label' => 'Gérer les articles', 'url' => $this->crudUrl(ArticleCrudController::class)],
+            ['label' => 'Nouvel article', 'url' => $this->crudActionUrl(ArticleCrudController::class, Action::NEW)],
+            ['label' => 'Nouveau match', 'url' => $this->crudActionUrl(MatchGameCrudController::class, Action::NEW)],
+            ['label' => 'Nouveau joueur', 'url' => $this->crudActionUrl(PlayerCrudController::class, Action::NEW)],
+            ['label' => 'Nouvelle page', 'url' => $this->crudActionUrl(PageCrudController::class, Action::NEW)],
             ['label' => "Gérer l'accueil", 'url' => $this->crudUrl(HomeSectionCrudController::class)],
-            ['label' => 'Gérer les matchs', 'url' => $this->crudUrl(MatchGameCrudController::class)],
             ['label' => 'Gérer le classement', 'url' => $this->crudUrl(RankingEntryCrudController::class)],
-            ['label' => "Gérer l'effectif", 'url' => $this->crudUrl(PlayerCrudController::class)],
-            ['label' => 'Gérer les pages', 'url' => $this->crudUrl(PageCrudController::class)],
-            ['label' => 'Gérer les équipes', 'url' => $this->crudUrl(TeamIdentityCrudController::class)],
             ['label' => 'Voir le site public', 'url' => '/'],
         ];
+
+        $contentChecks = [];
+
+        if (!$currentSeason) {
+            $contentChecks[] = ['level' => 'warning', 'label' => 'Saison en cours', 'message' => "Aucune saison n'est définie comme saison en cours.", 'url' => $this->crudUrl(SeasonCrudController::class)];
+        }
+
+        if (0 === $publishedArticles) {
+            $contentChecks[] = ['level' => 'warning', 'label' => 'Actualités', 'message' => "Aucun article publié n'est visible sur le site.", 'url' => $this->crudUrl(ArticleCrudController::class)];
+        }
+
+        if (0 === $playerCount) {
+            $contentChecks[] = ['level' => 'warning', 'label' => 'Effectif', 'message' => "L'effectif est vide : aucune fiche joueur n'est encore renseignée.", 'url' => $this->crudUrl(PlayerCrudController::class)];
+        }
+
+        if (0 === $partnerCount) {
+            $contentChecks[] = ['level' => 'info', 'label' => 'Partenaires', 'message' => "Aucun partenaire n'est encore affiché publiquement.", 'url' => $this->crudUrl(PartnerCrudController::class)];
+        }
+
+        if (0 === $socialCount) {
+            $contentChecks[] = ['level' => 'info', 'label' => 'Réseaux sociaux', 'message' => "Aucun réseau social n'est configuré dans le footer.", 'url' => $this->crudUrl(SocialLinkCrudController::class)];
+        }
+
+        if (0 === $homeSectionCount) {
+            $contentChecks[] = ['level' => 'info', 'label' => 'Accueil', 'message' => "Aucun bloc d'accueil administrable n'est configuré.", 'url' => $this->crudUrl(HomeSectionCrudController::class)];
+        }
+
+        if (0 === $teamIdentityCount) {
+            $contentChecks[] = ['level' => 'info', 'label' => 'Identités équipe', 'message' => "Les logos d'équipe ne sont pas encore renseignés.", 'url' => $this->crudUrl(TeamIdentityCrudController::class)];
+        }
 
         if ($this->isGranted('ROLE_ADMIN')) {
             $stats[] = ['label' => 'Utilisateurs', 'value' => $this->userRepository->count([]), 'icon' => 'fa fa-users', 'url' => $this->crudUrl(UserCrudController::class)];
@@ -75,8 +116,11 @@ class DashboardController extends AbstractDashboardController
             'stats' => $stats,
             'quickLinks' => $quickLinks,
             'latestArticles' => $this->articleRepository->findLatestPublished(5),
-            'currentSeason' => $this->seasonRepository->findCurrentSeason(),
-            'socialCount' => $this->socialLinkRepository->count([]),
+            'currentSeason' => $currentSeason,
+            'socialCount' => $socialCount,
+            'draftArticles' => $draftArticles,
+            'draftPages' => $draftPages,
+            'contentChecks' => $contentChecks,
         ]);
     }
 
@@ -123,6 +167,15 @@ class DashboardController extends AbstractDashboardController
         return $this->adminUrlGenerator
             ->unsetAll()
             ->setController($controllerFqcn)
+            ->generateUrl();
+    }
+
+    private function crudActionUrl(string $controllerFqcn, string $action): string
+    {
+        return $this->adminUrlGenerator
+            ->unsetAll()
+            ->setController($controllerFqcn)
+            ->setAction($action)
             ->generateUrl();
     }
 }
