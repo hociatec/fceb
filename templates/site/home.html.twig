@@ -34,7 +34,11 @@
                                 <p>Le cécifoot se découvre, se partage et se transmet sur le terrain comme en dehors.</p>
                             </article>
                         </div>
-                        <a class="button secondary" href="{{ path('site_page', {slug: discoverPage.slug}) }}">{{ discoverPage.title }}</a>
+                        <div class="form-actions">
+                            <a class="button secondary" href="{{ path('site_page', {slug: discoverPage.slug}) }}">{{ discoverPage.title }}</a>
+                            <a class="button primary" href="{{ path('site_join') }}">Rejoindre le club</a>
+                            <a class="button secondary" href="{{ path('site_trial_request') }}">Séance d’essai</a>
+                        </div>
                     </div>
                 </div>
             </article>

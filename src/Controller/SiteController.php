@@ -9,8 +9,10 @@ use App\Entity\Player;
 use App\Entity\User;
 use App\Form\AccountProfileFormType;
 use App\Form\ContactFormType;
+use App\Form\Model\TrialRequestData;
 use App\Form\Model\AccountProfileData;
 use App\Form\Model\ContactData;
+use App\Form\TrialRequestFormType;
 use App\Repository\ArticleRepository;
 use App\Repository\HomeSectionRepository;
 use App\Repository\MatchGameRepository;
@@ -275,6 +277,50 @@ class SiteController extends AbstractController
                 'Tu pourras ensuite compléter cette rubrique avec les soutiens institutionnels, les partenaires privés et les liens utiles du club.',
             ],
             'partners' => $partnerRepository->findVisibleOrdered(),
+        ]);
+    }
+
+    #[Route('/rejoindre-le-club', name: 'site_join', methods: ['GET'])]
+    public function join(): Response
+    {
+        return $this->render('site/join.html.twig', [
+            ...$this->siteContextBuilder->build(),
+        ]);
+    }
+
+    #[Route('/seance-decouverte', name: 'site_trial_request', methods: ['GET', 'POST'])]
+    public function trialRequest(Request $request, MailerInterface $mailer): Response
+    {
+        $data = new TrialRequestData();
+        $form = $this->createForm(TrialRequestFormType::class, $data);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $email = (new Email())
+                ->from((string) $this->getParameter('app.contact_from_email'))
+                ->to((string) $this->getParameter('app.contact_to_email'))
+                ->replyTo((string) $data->email)
+                ->subject('[Séance découverte] '.trim((string) $data->name))
+                ->text(implode(PHP_EOL.PHP_EOL, [
+                    'Nouvelle demande de séance découverte.',
+                    'Nom : '.trim((string) $data->name),
+                    'E-mail : '.trim((string) $data->email),
+                    'Téléphone : '.trim((string) ($data->phone ?: 'Non renseigné')),
+                    'Profil : '.trim((string) $data->profile),
+                    'Disponibilités : '.trim((string) ($data->availability ?: 'Non renseignées')),
+                    'Message :',
+                    trim((string) ($data->message ?: 'Aucun message complémentaire.')),
+                ]));
+
+            $mailer->send($email);
+            $this->addFlash('success', 'Votre demande a bien été envoyée. Le club reviendra vers vous rapidement.');
+
+            return $this->redirectToRoute('site_trial_request');
+        }
+
+        return $this->render('site/trial_request.html.twig', [
+            ...$this->siteContextBuilder->build(),
+            'trialRequestForm' => $form->createView(),
         ]);
     }
 

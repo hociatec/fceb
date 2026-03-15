@@ -1,0 +1,89 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Séance d’essai | Cécifoot La Bassée{% endblock %}
+{% block meta_description %}Demande une séance découverte pour venir essayer le cécifoot avec le club de La Bassée.{% endblock %}
+
+{% block hero %}
+    <section class="hero">
+        <div class="hero-card">
+            <div class="page-hero">
+                <div class="eyebrow">Séance d’essai</div>
+                <h1>Demander une séance découverte</h1>
+                <p class="page-lead">Un premier contact simple pour venir découvrir le club, le cadre d’entraînement et les conditions d’accueil.</p>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block body %}
+    <section class="season-overview">
+        <article class="card wide">
+            <div class="section-heading">
+                <div>
+                    <h2>Formulaire de demande</h2>
+                    <p class="muted">Le club utilisera ces informations pour revenir vers toi et proposer un premier échange.</p>
+                </div>
+            </div>
+
+            {{ form_start(trialRequestForm, {attr: {class: 'form-grid', style: 'margin-top: 1rem;'}}) }}
+                <div class="form-errors">{{ form_errors(trialRequestForm) }}</div>
+
+                <div class="field">
+                    {{ form_label(trialRequestForm.name) }}
+                    {{ form_widget(trialRequestForm.name) }}
+                    <div class="field-errors">{{ form_errors(trialRequestForm.name) }}</div>
+                </div>
+
+                <div class="field">
+                    {{ form_label(trialRequestForm.email) }}
+                    {{ form_widget(trialRequestForm.email) }}
+                    <div class="field-errors">{{ form_errors(trialRequestForm.email) }}</div>
+                </div>
+
+                <div class="field">
+                    {{ form_label(trialRequestForm.phone) }}
+                    {{ form_widget(trialRequestForm.phone) }}
+                    <div class="field-errors">{{ form_errors(trialRequestForm.phone) }}</div>
+                </div>
+
+                <div class="field">
+                    {{ form_label(trialRequestForm.profile) }}
+                    {{ form_widget(trialRequestForm.profile) }}
+                    <div class="field-errors">{{ form_errors(trialRequestForm.profile) }}</div>
+                </div>
+
+                <div class="field">
+                    {{ form_label(trialRequestForm.availability) }}
+                    {{ form_widget(trialRequestForm.availability) }}
+                    <div class="field-errors">{{ form_errors(trialRequestForm.availability) }}</div>
+                </div>
+
+                <div class="field">
+                    {{ form_label(trialRequestForm.message) }}
+                    {{ form_widget(trialRequestForm.message) }}
+                    <div class="field-errors">{{ form_errors(trialRequestForm.message) }}</div>
+                </div>
+
+                <div class="form-actions">
+                    <button class="button primary" type="submit">Envoyer ma demande</button>
+                    <a class="button secondary" href="{{ path('site_join') }}">Voir comment rejoindre le club</a>
+                </div>
+            {{ form_end(trialRequestForm) }}
+        </article>
+
+        <aside class="season-stats">
+            <article class="season-stat">
+                <strong>Ce que le club attend</strong>
+                <span>Un premier contact simple pour comprendre ton profil et te proposer le bon créneau.</span>
+            </article>
+            <article class="season-stat">
+                <strong>Réponse</strong>
+                <span>Le club reviendra vers toi par e-mail ou téléphone selon les informations transmises.</span>
+            </article>
+            <article class="season-stat">
+                <strong>Contact direct</strong>
+                <span>{{ site.contact.email }} · {{ site.contact.phone }}</span>
+            </article>
+        </aside>
+    </section>
+{% endblock %}

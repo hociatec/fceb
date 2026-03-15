@@ -1,0 +1,81 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Rejoindre le club | Cécifoot La Bassée{% endblock %}
+{% block meta_description %}Découvre comment rejoindre le Cécifoot La Bassée comme joueur, bénévole, encadrant ou partenaire du club.{% endblock %}
+
+{% block hero %}
+    <section class="hero">
+        <div class="hero-card">
+            <div class="page-hero">
+                <div class="eyebrow">Rejoindre le club</div>
+                <h1>Trouver sa place au Cécifoot La Bassée</h1>
+                <p class="page-lead">Le club accueille des joueurs, des bénévoles, des proches et des personnes qui veulent découvrir le cécifoot dans un cadre structuré et accessible.</p>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block body %}
+    <section class="stack">
+        <article class="card wide">
+            <div class="section-heading">
+                <div>
+                    <h2>Pour qui ?</h2>
+                    <p class="muted">Plusieurs profils peuvent rejoindre la dynamique du club.</p>
+                </div>
+            </div>
+            <div class="partner-grid" style="margin-top: 1rem;">
+                <article class="partner-card">
+                    <h3>Joueur ou joueuse</h3>
+                    <p>Tu veux découvrir le cécifoot, reprendre une activité sportive ou intégrer un collectif engagé.</p>
+                </article>
+                <article class="partner-card">
+                    <h3>Bénévole</h3>
+                    <p>Tu veux aider le club les jours de match, sur les événements ou dans l’organisation associative.</p>
+                </article>
+                <article class="partner-card">
+                    <h3>Parent ou proche</h3>
+                    <p>Tu souhaites mieux comprendre le fonctionnement du club, l’encadrement et les conditions d’accueil.</p>
+                </article>
+                <article class="partner-card">
+                    <h3>Éducateur ou encadrant</h3>
+                    <p>Tu veux apporter une compétence sportive, pédagogique ou logistique au projet du club.</p>
+                </article>
+            </div>
+        </article>
+
+        <section class="season-overview">
+            <article class="card wide">
+                <div class="section-heading">
+                    <div>
+                        <h2>Comment ça se passe ?</h2>
+                    </div>
+                </div>
+                <div class="html-content" style="margin-top: 1rem;">
+                    <p>Le plus simple est de commencer par une prise de contact ou une séance découverte. Cela permet d’échanger sur ton profil, tes attentes et le fonctionnement du club.</p>
+                    <p>Le club peut ensuite t’orienter vers le bon créneau, t’expliquer le matériel nécessaire et te présenter les conditions d’accueil.</p>
+                    <p>Que tu viennes pour jouer, aider ou découvrir, l’objectif est de te donner un point d’entrée clair et humain.</p>
+                </div>
+                <div class="form-actions" style="margin-top: 1rem;">
+                    <a class="button primary" href="{{ path('site_trial_request') }}">Demander une séance d’essai</a>
+                    <a class="button secondary" href="{{ path('site_contact') }}">Contacter le club</a>
+                </div>
+            </article>
+
+            <aside class="season-stats">
+                <article class="season-stat">
+                    <strong>Adresse</strong>
+                    <span>{{ site.contact.address }}</span>
+                </article>
+                <article class="season-stat">
+                    <strong>E-mail</strong>
+                    <span>{{ site.contact.email }}</span>
+                </article>
+                <article class="season-stat">
+                    <strong>Téléphone</strong>
+                    <span>{{ site.contact.phone }}</span>
+                </article>
+            </aside>
+        </section>
+    </section>
+{% endblock %}
