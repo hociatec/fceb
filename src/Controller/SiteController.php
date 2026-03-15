@@ -9,9 +9,9 @@ use App\Entity\Player;
 use App\Entity\User;
 use App\Form\AccountProfileFormType;
 use App\Form\ContactFormType;
-use App\Form\Model\TrialRequestData;
 use App\Form\Model\AccountProfileData;
 use App\Form\Model\ContactData;
+use App\Form\Model\TrialRequestData;
 use App\Form\TrialRequestFormType;
 use App\Repository\ArticleRepository;
 use App\Repository\HomeSectionRepository;
@@ -25,6 +25,7 @@ use App\Service\SiteContextBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Attribute\IsGranted;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -224,7 +225,21 @@ class SiteController extends AbstractController
         return $this->render('site/article.html.twig', [
             ...$this->siteContextBuilder->build(),
             'article' => $article,
+            'previousArticle' => $articleRepository->findPreviousPublished($article),
+            'nextArticle' => $articleRepository->findNextPublished($article),
             'preview_mode' => $this->canPreview($request),
+        ]);
+    }
+
+    #[Route('/actualites', name: 'site_articles', methods: ['GET'])]
+    public function articles(ArticleRepository $articleRepository): Response
+    {
+        $articles = $articleRepository->findLatestPublished(18);
+
+        return $this->render('site/articles.html.twig', [
+            ...$this->siteContextBuilder->build(),
+            'featuredArticle' => $articles[0] ?? null,
+            'articles' => array_slice($articles, 1),
         ]);
     }
 
@@ -267,15 +282,8 @@ class SiteController extends AbstractController
     #[Route('/partenaires', name: 'site_partners_static', methods: ['GET'])]
     public function partnersStatic(PartnerRepository $partnerRepository): Response
     {
-        return $this->render('site/static_page.html.twig', [
+        return $this->render('site/partners.html.twig', [
             ...$this->siteContextBuilder->build(),
-            'eyebrow' => 'Partenaires',
-            'title' => 'Partenaires et soutiens',
-            'content' => [
-                "Le club s'inscrit dans l'écosystème sportif local de La Bassée et dans le réseau handisport.",
-                "Cette page présente les structures qui accompagnent le développement du cécifoot, la vie associative et l'accueil des joueurs.",
-                'Tu pourras ensuite compléter cette rubrique avec les soutiens institutionnels, les partenaires privés et les liens utiles du club.',
-            ],
             'partners' => $partnerRepository->findVisibleOrdered(),
         ]);
     }
@@ -374,7 +382,7 @@ class SiteController extends AbstractController
             $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => mb_strtolower((string) $data->email)]);
 
             if ($existingUser instanceof User && $existingUser->getId() !== $user->getId()) {
-                $form->get('email')->addError(new \Symfony\Component\Form\FormError('Cette adresse e-mail est déjà utilisée par un autre compte.'));
+                $form->get('email')->addError(new FormError('Cette adresse e-mail est déjà utilisée par un autre compte.'));
             } else {
                 $user
                     ->setFullName((string) $data->fullName)

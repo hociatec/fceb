@@ -48,6 +48,18 @@
                     <a class="button secondary" href="mailto:?subject={{ share_text|url_encode }}&body={{ ('Je te partage cet article : ' ~ article_url)|url_encode }}">Envoyer par e-mail</a>
                 </div>
             </div>
+
+            {% if previousArticle or nextArticle %}
+                <div class="article-nav">
+                    {% if previousArticle %}
+                        <a class="button secondary" href="{{ path('site_article', {slug: previousArticle.slug}) }}">Article précédent</a>
+                    {% endif %}
+                    <a class="button secondary" href="{{ path('site_articles') }}">Toutes les actualités</a>
+                    {% if nextArticle %}
+                        <a class="button secondary" href="{{ path('site_article', {slug: nextArticle.slug}) }}">Article suivant</a>
+                    {% endif %}
+                </div>
+            {% endif %}
         </article>
     </section>
 {% endblock %}

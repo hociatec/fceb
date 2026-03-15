@@ -69,4 +69,34 @@ class ArticleRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findPreviousPublished(Article $article): ?Article
+    {
+        return $this->createQueryBuilder('a')
+            ->andWhere('a.status = :status')
+            ->andWhere('a.publishedAt < :publishedAt OR (a.publishedAt = :publishedAt AND a.id < :id)')
+            ->setParameter('status', ContentStatus::Published)
+            ->setParameter('publishedAt', $article->getPublishedAt())
+            ->setParameter('id', $article->getId())
+            ->orderBy('a.publishedAt', 'DESC')
+            ->addOrderBy('a.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    public function findNextPublished(Article $article): ?Article
+    {
+        return $this->createQueryBuilder('a')
+            ->andWhere('a.status = :status')
+            ->andWhere('a.publishedAt > :publishedAt OR (a.publishedAt = :publishedAt AND a.id > :id)')
+            ->setParameter('status', ContentStatus::Published)
+            ->setParameter('publishedAt', $article->getPublishedAt())
+            ->setParameter('id', $article->getId())
+            ->orderBy('a.publishedAt', 'ASC')
+            ->addOrderBy('a.id', 'ASC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

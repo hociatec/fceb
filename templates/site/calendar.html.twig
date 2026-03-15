@@ -9,7 +9,7 @@
                 <div class="eyebrow"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="15" rx="3" stroke="currentColor" stroke-width="2"/><path d="M7 3v4M17 3v4M3.5 10h17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Calendrier</span></span></div>
                 <h1>Calendrier de la saison</h1>
                 {% if season %}
-                    <p class="page-lead">{{ season.name }}. Retrouve les prochaines rencontres, les matchs déjà joués et les comptes-rendus publiés quand ils sont disponibles.</p>
+                    <p class="page-lead">{{ season.name }}. Le prochain rendez-vous ressort immédiatement, puis le reste du programme et les derniers résultats sont présentés plus clairement.</p>
                     <div class="hero-stats">
                         <div class="hero-stat">
                             <strong>{{ upcomingMatches|length }}</strong>
@@ -29,16 +29,79 @@
 {% endblock %}
 
 {% block body %}
+    {% set nextMatch = upcomingMatches|first %}
+    {% set nextMatches = upcomingMatches|slice(1) %}
+
     <section class="stack">
+        <section class="season-overview">
+            <article class="card wide">
+                <div class="section-heading">
+                    <div>
+                        <h2>Prochain rendez-vous</h2>
+                        <p class="muted">Le prochain match mis en avant avec les informations pratiques.</p>
+                    </div>
+                </div>
+
+                {% if nextMatch %}
+                    <div class="story-inline" style="margin-top: 1rem;">
+                        <div class="home-feature-article">
+                            <span class="tag">À venir</span>
+                            <div class="team-poster">
+                                <div class="team-side">
+                                    <img class="team-logo" src="{{ asset(team_logo(nextMatch.homeTeamName)) }}" alt="{{ nextMatch.homeTeamName }}">
+                                    <strong>{{ nextMatch.homeTeamName }}</strong>
+                                </div>
+                                <span class="team-vs">vs</span>
+                                <div class="team-side">
+                                    <img class="team-logo" src="{{ asset(team_logo(nextMatch.awayTeamName)) }}" alt="{{ nextMatch.awayTeamName }}">
+                                    <strong>{{ nextMatch.awayTeamName }}</strong>
+                                </div>
+                            </div>
+                            <p><strong>{{ nextMatch.matchDate|date('d/m/Y H:i') }}</strong></p>
+                            {% if nextMatch.location %}
+                                <p>{{ nextMatch.location }}</p>
+                            {% endif %}
+                            {% if nextMatch.competition %}
+                                <p class="muted">{{ nextMatch.competition }}</p>
+                            {% endif %}
+                            <div class="form-actions">
+                                {% if nextMatch.location %}
+                                    <a class="button secondary" href="https://www.google.com/maps/search/?api=1&query={{ nextMatch.location|url_encode }}" target="_blank" rel="noopener noreferrer">Voir l’accès</a>
+                                {% endif %}
+                                <a class="button secondary" href="{{ path('site_trial_request') }}">Venir découvrir le club</a>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <p style="margin-top: 1rem;">Aucun match à venir n'est encore disponible.</p>
+                {% endif %}
+            </article>
+
+            <aside class="season-stats">
+                <article class="season-stat">
+                    <strong>Saison</strong>
+                    <span>{{ season ? season.name : 'Non renseignée' }}</span>
+                </article>
+                <article class="season-stat">
+                    <strong>À venir</strong>
+                    <span>{{ upcomingMatches|length }} match{% if upcomingMatches|length > 1 %}s{% endif %}</span>
+                </article>
+                <article class="season-stat">
+                    <strong>Résultats enregistrés</strong>
+                    <span>{{ pastMatches|length }} match{% if pastMatches|length > 1 %}s{% endif %}</span>
+                </article>
+            </aside>
+        </section>
+
         <article class="card wide">
             <div class="section-heading">
                 <div>
-                    <h2>Matchs à venir</h2>
-                    <p class="muted">Toutes les rencontres programmées pour la suite de la saison.</p>
+                    <h2>Suite du programme</h2>
+                    <p class="muted">Les prochaines rencontres déjà planifiées après le prochain rendez-vous.</p>
                 </div>
             </div>
             <div class="match-block">
-                {% for match in upcomingMatches %}
+                {% for match in nextMatches %}
                     <article class="match-card">
                         <div class="match-card-main">
                             <div class="team-poster">
@@ -59,11 +122,11 @@
                             </div>
                         </div>
                         <div class="match-card-side">
-                            <span class="tag"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2"/></svg></span><span>À venir</span></span></span>
+                            <span class="tag">À venir</span>
                         </div>
                     </article>
                 {% else %}
-                    <p>Aucun match à venir n'est encore disponible.</p>
+                    <p>Aucun autre match à venir n'est encore disponible.</p>
                 {% endfor %}
             </div>
         </article>
@@ -71,8 +134,8 @@
         <article class="card wide">
             <div class="section-heading">
                 <div>
-                    <h2>Matchs passés</h2>
-                    <p class="muted">Scores enregistrés et liens vers les comptes-rendus publiés.</p>
+                    <h2>Derniers résultats</h2>
+                    <p class="muted">Scores enregistrés et comptes-rendus publiés quand ils existent.</p>
                 </div>
             </div>
             <div class="match-block">
@@ -97,11 +160,7 @@
                                 {% if match.competition %}<span>{{ match.competition }}</span>{% endif %}
                             </div>
                             {% if linkedArticle %}
-                                <p>
-                                    <a class="article-link" href="{{ path('site_article', {slug: linkedArticle.slug}) }}">
-                                        {{ linkedArticle.excerpt ?: 'Compte-rendu du match' }}
-                                    </a>
-                                </p>
+                                <p><a class="article-link" href="{{ path('site_article', {slug: linkedArticle.slug}) }}">{{ linkedArticle.excerpt ?: 'Lire le compte-rendu du match' }}</a></p>
                             {% endif %}
                         </div>
                         <div class="match-card-side">

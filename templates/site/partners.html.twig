@@ -1,0 +1,78 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Partenaires | Cécifoot La Bassée{% endblock %}
+{% block meta_description %}Découvre les structures qui soutiennent le Cécifoot La Bassée et les différentes manières d’accompagner le club.{% endblock %}
+
+{% block hero %}
+    <section class="hero">
+        <div class="hero-card">
+            <div class="page-hero">
+                <div class="eyebrow">Partenaires</div>
+                <h1>Accompagner le développement du club</h1>
+                <p class="page-lead">Le club s’appuie sur un écosystème local, associatif et institutionnel. Cette page sert autant à remercier les soutiens existants qu’à ouvrir la porte à de nouveaux partenaires.</p>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block body %}
+    <section class="stack">
+        <section class="season-overview">
+            <article class="card wide">
+                <div class="section-heading">
+                    <div>
+                        <h2>Pourquoi soutenir le club ?</h2>
+                    </div>
+                </div>
+                <div class="html-content" style="margin-top: 1rem;">
+                    <p>Soutenir le Cécifoot La Bassée, c’est contribuer à une pratique sportive inclusive, à la vie associative locale et au développement d’un cadre exigeant pour les joueurs.</p>
+                    <p>Le soutien peut prendre plusieurs formes : aide financière, relais de visibilité, prêt de matériel, accompagnement logistique ou mise en réseau.</p>
+                    <p>Le club peut construire un échange adapté au profil du partenaire, qu’il soit institutionnel, associatif ou privé.</p>
+                </div>
+                <div class="form-actions" style="margin-top: 1rem;">
+                    <a class="button primary" href="{{ path('site_contact') }}">Devenir partenaire</a>
+                    <a class="button secondary" href="{{ path('site_join') }}">Découvrir le club</a>
+                </div>
+            </article>
+
+            <aside class="season-stats">
+                <article class="season-stat">
+                    <strong>Contact</strong>
+                    <span>{{ site.contact.email }}</span>
+                </article>
+                <article class="season-stat">
+                    <strong>Téléphone</strong>
+                    <span>{{ site.contact.phone }}</span>
+                </article>
+                <article class="season-stat">
+                    <strong>Implantation</strong>
+                    <span>{{ site.contact.address }}</span>
+                </article>
+            </aside>
+        </section>
+
+        <article class="card wide">
+            <div class="section-heading">
+                <div>
+                    <h2>Partenaires et soutiens</h2>
+                    <p class="muted">Structures déjà visibles sur le site du club.</p>
+                </div>
+            </div>
+            <div class="partner-grid" style="margin-top: 1rem;">
+                {% for partner in partners %}
+                    <article class="partner-card">
+                        {% if partner.logoUrl %}
+                            <img class="partner-logo" src="{{ partner.logoUrl starts with 'http' ? partner.logoUrl : asset('uploads/partners/' ~ partner.logoUrl) }}" alt="{{ partner.name }}">
+                        {% endif %}
+                        <h3>{{ partner.name }}</h3>
+                        {% if partner.websiteUrl %}
+                            <p><a class="article-link" href="{{ partner.websiteUrl }}" target="_blank" rel="noreferrer">Visiter le site</a></p>
+                        {% endif %}
+                    </article>
+                {% else %}
+                    <p>Aucun partenaire n’est encore affiché publiquement.</p>
+                {% endfor %}
+            </div>
+        </article>
+    </section>
+{% endblock %}

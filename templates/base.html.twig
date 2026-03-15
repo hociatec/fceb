@@ -751,6 +751,31 @@
             gap: .75rem;
         }
 
+        .article-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .75rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--line);
+        }
+
+        .article-list-grid {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        }
+
+        .article-list-card {
+            display: grid;
+            gap: 1rem;
+            padding: 1rem 1.05rem;
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.56);
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow-md);
+        }
+
         .page-lead,
         .article-summary {
             max-width: 48rem;
@@ -1194,6 +1219,7 @@
             <div class="nav-bottom">
                 <nav class="menu" aria-label="Navigation principale">
                     <a class="pill" href="{{ path('site_current_season') }}"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="15" rx="3" stroke="currentColor" stroke-width="2"/><path d="M8 3v4M16 3v4M4 10h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Saison</span></span></a>
+                    <a class="pill" href="{{ path('site_articles') }}"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 7h12M6 12h12M6 17h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Actualités</span></span></a>
                     <a class="pill" href="{{ path('site_calendar') }}"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="15" rx="3" stroke="currentColor" stroke-width="2"/><path d="M7 3v4M17 3v4M3.5 10h17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 14h3M13 14h3M8 17h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Calendrier</span></span></a>
                     <a class="pill" href="{{ path('site_ranking') }}"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 18V10M12 18V6M18 18v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M4 20h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Classement</span></span></a>
                     <a class="pill" href="{{ path('site_players') }}"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="2"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Effectif</span></span></a>

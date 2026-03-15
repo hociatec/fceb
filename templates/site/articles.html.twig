@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Actualités | Cécifoot La Bassée{% endblock %}
+{% block meta_description %}Retrouve les dernières actualités du club, les comptes-rendus et les informations importantes du Cécifoot La Bassée.{% endblock %}
+
+{% block hero %}
+    <section class="hero">
+        <div class="hero-card">
+            <div class="page-hero">
+                <div class="eyebrow">Actualités</div>
+                <h1>Suivre la vie du club</h1>
+                <p class="page-lead">Comptes-rendus, annonces, résultats et temps forts du Cécifoot La Bassée regroupés dans une page plus claire.</p>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block body %}
+    <section class="stack">
+        {% if featuredArticle %}
+            <article class="card wide">
+                <div class="section-heading">
+                    <div>
+                        <h2>À la une</h2>
+                    </div>
+                </div>
+                <div class="story-inline" style="margin-top: 1rem;">
+                    <img class="story-media tall" src="{{ featuredArticle.coverImage ? asset('uploads/articles/' ~ featuredArticle.coverImage) : asset('assets/club-placeholder.svg') }}" alt="{{ featuredArticle.title }}">
+                    <div class="home-feature-article">
+                        <span class="tag">Article principal</span>
+                        <h3><a class="article-link" href="{{ path('site_article', {slug: featuredArticle.slug}) }}">{{ featuredArticle.title }}</a></h3>
+                        {% if featuredArticle.excerpt %}
+                            <p>{{ featuredArticle.excerpt }}</p>
+                        {% endif %}
+                        <div class="home-meta-row">
+                            <span>{{ featuredArticle.publishedAt|date('d/m/Y H:i') }}</span>
+                            {% if featuredArticle.season %}
+                                <span>{{ featuredArticle.season.name }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </article>
+        {% endif %}
+
+        <article class="card wide">
+            <div class="section-heading">
+                <div>
+                    <h2>Toutes les actualités</h2>
+                </div>
+            </div>
+            <div class="article-list-grid" style="margin-top: 1rem;">
+                {% for article in articles %}
+                    <article class="article-list-card">
+                        <img class="story-media" src="{{ article.coverImage ? asset('uploads/articles/' ~ article.coverImage) : asset('assets/club-placeholder.svg') }}" alt="{{ article.title }}">
+                        <div class="home-feature-article">
+                            <h3><a class="article-link" href="{{ path('site_article', {slug: article.slug}) }}">{{ article.title }}</a></h3>
+                            <p class="muted">{{ article.publishedAt|date('d/m/Y H:i') }}{% if article.season %} · {{ article.season.name }}{% endif %}</p>
+                            {% if article.excerpt %}
+                                <p>{{ article.excerpt }}</p>
+                            {% endif %}
+                        </div>
+                    </article>
+                {% else %}
+                    <p>Aucune actualité publiée pour le moment.</p>
+                {% endfor %}
+            </div>
+        </article>
+    </section>
+{% endblock %}
