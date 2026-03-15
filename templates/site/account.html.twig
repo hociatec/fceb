@@ -32,7 +32,12 @@
                 {% endif %}
                 <div class="list-item">
                     <strong>Sécurité</strong>
-                    <div class="muted"><a href="{{ path('app_logout') }}">Se déconnecter</a></div>
+                    <div class="muted">
+                        <form class="inline-form" method="post" action="{{ path('app_logout') }}">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+                            <button class="button secondary" type="submit">Se déconnecter</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </article>
@@ -43,31 +48,42 @@
                     <h2>Gérer mon compte</h2>
                 </div>
             </div>
-            {% if error %}
-                <p class="muted"><strong>{{ error }}</strong></p>
-            {% endif %}
-            <form method="post" class="form-grid" style="margin-top: 1rem;">
-                <div>
-                    <label for="full_name"><strong>Nom complet</strong></label>
-                    <input type="text" id="full_name" name="full_name" value="{{ member.fullName }}" required>
+
+            {{ form_start(accountForm, {attr: {class: 'form-grid', style: 'margin-top: 1rem;'}}) }}
+                <div class="form-errors">{{ form_errors(accountForm) }}</div>
+
+                <div class="field">
+                    {{ form_label(accountForm.fullName) }}
+                    {{ form_widget(accountForm.fullName) }}
+                    <div class="field-errors">{{ form_errors(accountForm.fullName) }}</div>
                 </div>
-                <div>
-                    <label for="email"><strong>Adresse e-mail</strong></label>
-                    <input type="email" id="email" name="email" value="{{ member.email }}" required>
+
+                <div class="field">
+                    {{ form_label(accountForm.email) }}
+                    {{ form_widget(accountForm.email) }}
+                    <div class="field-errors">{{ form_errors(accountForm.email) }}</div>
                 </div>
-                <div>
-                    <label for="new_password"><strong>Nouveau mot de passe</strong></label>
-                    <input type="password" id="new_password" name="new_password" autocomplete="new-password">
+
+                <div class="field">
+                    {{ form_label(accountForm.newPassword.first) }}
+                    {{ form_widget(accountForm.newPassword.first) }}
+                    <div class="field-errors">{{ form_errors(accountForm.newPassword.first) }}</div>
                 </div>
-                <div>
-                    <label for="confirm_password"><strong>Confirmer le nouveau mot de passe</strong></label>
-                    <input type="password" id="confirm_password" name="confirm_password" autocomplete="new-password">
+
+                <div class="field">
+                    {{ form_label(accountForm.newPassword.second) }}
+                    {{ form_widget(accountForm.newPassword.second) }}
+                    <div class="field-errors">
+                        {{ form_errors(accountForm.newPassword.second) }}
+                        {{ form_errors(accountForm.newPassword) }}
+                    </div>
                 </div>
-                <div class="meta-line">
+
+                <div class="form-actions">
                     <button class="button primary" type="submit">Enregistrer les modifications</button>
                     <a class="button secondary" href="{{ path('app_forgot_password') }}">Mot de passe oublié</a>
                 </div>
-            </form>
+            {{ form_end(accountForm) }}
         </article>
     </section>
 {% endblock %}

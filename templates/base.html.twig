@@ -623,6 +623,72 @@
             gap: 1rem;
         }
 
+        .field {
+            display: grid;
+            gap: .45rem;
+        }
+
+        .field label {
+            font-weight: 700;
+        }
+
+        .field input,
+        .field textarea,
+        .field select {
+            width: 100%;
+            padding: .9rem 1rem;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.88);
+            color: var(--ink);
+            font: inherit;
+            transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+        }
+
+        .field textarea {
+            min-height: 10rem;
+            resize: vertical;
+        }
+
+        .field input:focus,
+        .field textarea:focus,
+        .field select:focus {
+            outline: none;
+            border-color: rgba(34, 92, 73, 0.34);
+            box-shadow: 0 0 0 4px rgba(34, 92, 73, 0.1);
+            background: #fff;
+        }
+
+        .form-errors,
+        .field-errors {
+            display: grid;
+            gap: .35rem;
+            color: var(--danger);
+            font-size: .92rem;
+            line-height: 1.5;
+        }
+
+        .field-errors:empty,
+        .form-errors:empty {
+            display: none;
+        }
+
+        .form-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .8rem;
+            align-items: center;
+        }
+
+        .inline-form {
+            margin: 0;
+        }
+
+        .inline-form .pill,
+        .inline-form .button {
+            cursor: pointer;
+        }
+
         .home-stack { gap: 1.45rem; }
 
         .home-stage {
@@ -1074,7 +1140,10 @@
                             {% if is_granted('ROLE_EDITOR') %}
                                 <a class="pill" href="{{ path('admin') }}">Admin</a>
                             {% endif %}
-                            <a class="pill" href="{{ path('app_logout') }}">Déconnexion</a>
+                            <form class="inline-form" method="post" action="{{ path('app_logout') }}">
+                                <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+                                <button class="pill" type="submit">Déconnexion</button>
+                            </form>
                         {% else %}
                             <a class="pill" href="{{ path('app_login') }}">Connexion</a>
                             <a class="pill" href="{{ path('app_register') }}">Inscription</a>
@@ -1124,15 +1193,15 @@
                     <div class="footer-contact">
                         <div class="footer-contact-item">
                             <span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 7.5A2.5 2.5 0 0 1 7.5 5h9A2.5 2.5 0 0 1 19 7.5v9a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 5 16.5v-9Z" stroke="currentColor" stroke-width="2"/><path d="m7 8 5 4 5-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                            <a href="mailto:contact@fceb.fr">contact@fceb.fr</a>
+                            <a href="mailto:{{ site.contact.email }}">{{ site.contact.email }}</a>
                         </div>
                         <div class="footer-contact-item">
                             <span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M7.5 5.5h2l1 3-1.5 1.5a14.5 14.5 0 0 0 5 5L15.5 13l3 1v2A1.5 1.5 0 0 1 17 17.5h-.5C10.15 17.5 6.5 13.85 6.5 9.5V9A1.5 1.5 0 0 1 8 7.5h-.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                            <a href="tel:+33680313868">06 80 31 38 68</a>
+                            <a href="tel:{{ site.contact.phone|replace({' ': ''}) }}">{{ site.contact.phone }}</a>
                         </div>
                         <div class="footer-contact-item">
                             <span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 20s6-5.2 6-10a6 6 0 1 0-12 0c0 4.8 6 10 6 10Z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="2"/></svg></span>
-                            <a href="https://www.google.com/maps/search/?api=1&query=Stade+Roland+Joly+42+rue+de+Lille+59480+La+Bassee" target="_blank" rel="noreferrer">Stade Roland Joly, 42 rue de Lille, 59480 La Bassée</a>
+                            <a href="{{ site.contact.map_url }}" target="_blank" rel="noreferrer">{{ site.contact.address }}</a>
                         </div>
                     </div>
                 </div>

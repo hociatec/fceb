@@ -7,6 +7,10 @@ use App\Entity\HomeSection;
 use App\Entity\MatchGame;
 use App\Entity\Player;
 use App\Entity\User;
+use App\Form\AccountProfileFormType;
+use App\Form\ContactFormType;
+use App\Form\Model\AccountProfileData;
+use App\Form\Model\ContactData;
 use App\Repository\ArticleRepository;
 use App\Repository\HomeSectionRepository;
 use App\Repository\MatchGameRepository;
@@ -61,8 +65,11 @@ class SiteController extends AbstractController
     }
 
     #[Route('/saison-en-cours', name: 'site_current_season', methods: ['GET'])]
-    public function currentSeason(SeasonRepository $seasonRepository, ArticleRepository $articleRepository, MatchGameRepository $matchRepository): Response
-    {
+    public function currentSeason(
+        SeasonRepository $seasonRepository,
+        ArticleRepository $articleRepository,
+        MatchGameRepository $matchRepository
+    ): Response {
         $season = $seasonRepository->findCurrentSeason();
         if (!$season) {
             throw new NotFoundHttpException('Aucune saison en cours.');
@@ -152,8 +159,12 @@ class SiteController extends AbstractController
     }
 
     #[Route('/archives/{slug}', name: 'site_archive_show', methods: ['GET'])]
-    public function archiveShow(string $slug, SeasonRepository $seasonRepository, ArticleRepository $articleRepository, MatchGameRepository $matchRepository): Response
-    {
+    public function archiveShow(
+        string $slug,
+        SeasonRepository $seasonRepository,
+        ArticleRepository $articleRepository,
+        MatchGameRepository $matchRepository
+    ): Response {
         $season = $seasonRepository->findOneBy(['slug' => $slug]);
         if (!$season) {
             throw new NotFoundHttpException('Saison introuvable.');
@@ -211,56 +222,36 @@ class SiteController extends AbstractController
     #[Route('/contact', name: 'site_contact', methods: ['GET', 'POST'])]
     public function contact(Request $request, MailerInterface $mailer): Response
     {
-        $data = [
-            'name' => trim((string) $request->request->get('name')),
-            'email' => trim((string) $request->request->get('email')),
-            'subject' => trim((string) $request->request->get('subject')),
-            'message' => trim((string) $request->request->get('message')),
-        ];
+        $data = new ContactData();
+        $form = $this->createForm(ContactFormType::class, $data);
+        $form->handleRequest($request);
 
-        if ($request->isMethod('POST')) {
-            if ('' === $data['name'] || '' === $data['email'] || '' === $data['message']) {
-                $this->addFlash('error', 'Merci de remplir les champs obligatoires du formulaire.');
-            } elseif (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-                $this->addFlash('error', 'Merci de renseigner une adresse e-mail valide.');
-            } else {
-                $payload = [
-                    'submitted_at' => (new \DateTimeImmutable())->format(\DateTimeInterface::ATOM),
-                    'ip' => $request->getClientIp(),
-                    ...$data,
-                ];
+        if ($form->isSubmitted() && $form->isValid()) {
+            $subject = trim((string) $data->subject);
 
-                $email = (new Email())
-                    ->from((string) $this->getParameter('app.contact_from_email'))
-                    ->to((string) $this->getParameter('app.contact_to_email'))
-                    ->replyTo($data['email'])
-                    ->subject('[Contact site] '.$data['subject'])
-                    ->text(implode(PHP_EOL.PHP_EOL, [
-                        'Nouveau message de contact reçu depuis le site.',
-                        'Nom : '.$data['name'],
-                        'E-mail : '.$data['email'],
-                        'Objet : '.$data['subject'],
-                        'Message :',
-                        $data['message'],
-                    ]));
+            $email = (new Email())
+                ->from((string) $this->getParameter('app.contact_from_email'))
+                ->to((string) $this->getParameter('app.contact_to_email'))
+                ->replyTo((string) $data->email)
+                ->subject('[Contact site] '.($subject !== '' ? $subject : 'Sans objet'))
+                ->text(implode(PHP_EOL.PHP_EOL, [
+                    'Nouveau message de contact reçu depuis le site.',
+                    'Nom : '.trim((string) $data->name),
+                    'E-mail : '.trim((string) $data->email),
+                    'Objet : '.($subject !== '' ? $subject : 'Sans objet'),
+                    'Message :',
+                    trim((string) $data->message),
+                ]));
 
-                file_put_contents(
-                    $this->getParameter('kernel.project_dir').'/var/contact_messages.log',
-                    json_encode($payload, JSON_UNESCAPED_UNICODE).PHP_EOL,
-                    FILE_APPEND
-                );
+            $mailer->send($email);
+            $this->addFlash('success', 'Votre message a bien été envoyé au club.');
 
-                $mailer->send($email);
-
-                $this->addFlash('success', 'Votre message a bien été envoyé au club.');
-
-                return $this->redirectToRoute('site_contact');
-            }
+            return $this->redirectToRoute('site_contact');
         }
 
         return $this->render('site/contact.html.twig', [
             ...$this->siteContextBuilder->build(),
-            'formData' => $data,
+            'contactForm' => $form->createView(),
         ]);
     }
 
@@ -316,42 +307,28 @@ class SiteController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         UserPasswordHasherInterface $passwordHasher,
-    ): Response
-    {
+    ): Response {
         /** @var User $user */
         $user = $this->getUser();
-        $error = null;
+        $data = new AccountProfileData();
+        $data->fullName = $user->getFullName();
+        $data->email = $user->getEmail();
 
-        if ($request->isMethod('POST')) {
-            $fullName = trim((string) $request->request->get('full_name'));
-            $email = trim((string) $request->request->get('email'));
-            $newPassword = (string) $request->request->get('new_password');
-            $confirmPassword = (string) $request->request->get('confirm_password');
+        $form = $this->createForm(AccountProfileFormType::class, $data);
+        $form->handleRequest($request);
 
-            if ('' === $fullName || '' === $email) {
-                $error = 'Le nom complet et l’adresse e-mail sont obligatoires.';
-            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                $error = 'Merci de renseigner une adresse e-mail valide.';
+        if ($form->isSubmitted() && $form->isValid()) {
+            $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => mb_strtolower((string) $data->email)]);
+
+            if ($existingUser instanceof User && $existingUser->getId() !== $user->getId()) {
+                $form->get('email')->addError(new \Symfony\Component\Form\FormError('Cette adresse e-mail est déjà utilisée par un autre compte.'));
             } else {
-                $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => mb_strtolower($email)]);
-                if ($existingUser instanceof User && $existingUser->getId() !== $user->getId()) {
-                    $error = 'Cette adresse e-mail est déjà utilisée par un autre compte.';
-                } elseif ('' !== $newPassword || '' !== $confirmPassword) {
-                    if ($newPassword !== $confirmPassword) {
-                        $error = 'Les deux mots de passe ne correspondent pas.';
-                    } elseif (mb_strlen($newPassword) < 8) {
-                        $error = 'Le nouveau mot de passe doit contenir au moins 8 caractères.';
-                    }
-                }
-            }
-
-            if (null === $error) {
                 $user
-                    ->setFullName($fullName)
-                    ->setEmail($email);
+                    ->setFullName((string) $data->fullName)
+                    ->setEmail((string) $data->email);
 
-                if ('' !== $newPassword) {
-                    $user->setPassword($passwordHasher->hashPassword($user, $newPassword));
+                if (null !== $data->newPassword && '' !== $data->newPassword) {
+                    $user->setPassword($passwordHasher->hashPassword($user, $data->newPassword));
                 }
 
                 $entityManager->flush();
@@ -364,7 +341,7 @@ class SiteController extends AbstractController
         return $this->render('site/account.html.twig', [
             ...$this->siteContextBuilder->build(),
             'member' => $user,
-            'error' => $error,
+            'accountForm' => $form->createView(),
         ]);
     }
 

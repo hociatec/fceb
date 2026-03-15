@@ -5,6 +5,7 @@ namespace App\Controller\Api;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Attribute\IsGranted;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -25,7 +26,7 @@ class AuthController extends AbstractController
         }
 
         if ($entityManager->getRepository(User::class)->findOneBy(['email' => mb_strtolower($payload['email'])])) {
-            return $this->json(['message' => 'Cette adresse e-mail existe deja.'], 409);
+            return $this->json(['message' => 'Cette adresse e-mail existe déjà.'], 409);
         }
 
         $user = (new User())
@@ -38,7 +39,7 @@ class AuthController extends AbstractController
         $entityManager->flush();
 
         return $this->json([
-            'message' => 'Compte cree.',
+            'message' => 'Compte créé.',
             'user' => [
                 'email' => $user->getEmail(),
                 'full_name' => $user->getFullName(),
@@ -46,19 +47,20 @@ class AuthController extends AbstractController
         ], 201);
     }
 
+    #[IsGranted('ROLE_USER')]
     #[Route('/me', name: 'me', methods: ['GET'])]
     public function me(): JsonResponse
     {
-        /** @var User|null $user */
+        /** @var User $user */
         $user = $this->getUser();
 
         return $this->json([
-            'authenticated' => null !== $user,
-            'user' => $user ? [
+            'authenticated' => true,
+            'user' => [
                 'email' => $user->getEmail(),
                 'full_name' => $user->getFullName(),
                 'roles' => $user->getRoles(),
-            ] : null,
+            ],
         ]);
     }
 }

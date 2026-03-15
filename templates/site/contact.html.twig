@@ -23,45 +23,56 @@
                     <p class="muted">Utilise ce formulaire pour une demande d'information, une prise de contact ou un message adressé au club.</p>
                 </div>
             </div>
-            <form method="post" class="form-grid" style="margin-top: 1rem;">
-                <div>
-                    <label for="name"><strong>Nom</strong></label>
-                    <input id="name" name="name" type="text" value="{{ formData.name }}" required>
+
+            {{ form_start(contactForm, {attr: {class: 'form-grid', style: 'margin-top: 1rem;'}}) }}
+                <div class="form-errors">{{ form_errors(contactForm) }}</div>
+
+                <div class="field">
+                    {{ form_label(contactForm.name) }}
+                    {{ form_widget(contactForm.name) }}
+                    <div class="field-errors">{{ form_errors(contactForm.name) }}</div>
                 </div>
-                <div>
-                    <label for="email"><strong>E-mail</strong></label>
-                    <input id="email" name="email" type="email" value="{{ formData.email }}" required>
+
+                <div class="field">
+                    {{ form_label(contactForm.email) }}
+                    {{ form_widget(contactForm.email) }}
+                    <div class="field-errors">{{ form_errors(contactForm.email) }}</div>
                 </div>
-                <div>
-                    <label for="subject"><strong>Objet</strong></label>
-                    <input id="subject" name="subject" type="text" value="{{ formData.subject }}">
+
+                <div class="field">
+                    {{ form_label(contactForm.subject) }}
+                    {{ form_widget(contactForm.subject) }}
+                    <div class="field-errors">{{ form_errors(contactForm.subject) }}</div>
                 </div>
-                <div>
-                    <label for="message"><strong>Message</strong></label>
-                    <textarea id="message" name="message" required>{{ formData.message }}</textarea>
+
+                <div class="field">
+                    {{ form_label(contactForm.message) }}
+                    {{ form_widget(contactForm.message) }}
+                    <div class="field-errors">{{ form_errors(contactForm.message) }}</div>
                 </div>
-                <div>
+
+                <div class="form-actions">
                     <button class="button primary" type="submit">Envoyer le message</button>
                 </div>
-            </form>
+            {{ form_end(contactForm) }}
         </article>
 
         <aside class="season-stats">
             <article class="season-stat">
                 <strong>Club</strong>
-                <span>Cécifoot La Bassée</span>
+                <span>{{ site.name }}</span>
             </article>
             <article class="season-stat">
                 <strong>E-mail</strong>
-                <span>martine.cecifoot59@gmail.com</span>
+                <span>{{ site.contact.email }}</span>
             </article>
             <article class="season-stat">
                 <strong>Téléphone</strong>
-                <span>06 86 94 74 77</span>
+                <span>{{ site.contact.phone }}</span>
             </article>
             <article class="season-stat">
                 <strong>Adresse</strong>
-                <span>Mairie de La Bassée, place du Général de Gaulle, 59480 La Bassée</span>
+                <span>{{ site.contact.address }}</span>
             </article>
         </aside>
     </section>

@@ -22,6 +22,7 @@ security:
                 default_target_path: site_account
             logout:
                 path: app_logout
+                enable_csrf: true
 
     access_control:
         - { path: ^/admin/user, roles: ROLE_ADMIN }
