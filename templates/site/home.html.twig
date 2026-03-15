@@ -8,16 +8,16 @@
             <article class="card wide home-section-card">
                 <div class="section-heading">
                     <div>
-                        <h2>Cécifoot La Bassée</h2>
-                        <p class="muted">Un club qui assume à la fois l’exigence sportive, l’accessibilité et l’ancrage local.</p>
+                        <h2>{{ site.homepage.intro_title }}</h2>
+                        <p class="muted">{{ site.homepage.intro_subtitle }}</p>
                     </div>
                 </div>
                 <div class="story-inline">
                     <img class="story-media tall" src="{{ discoverPage.heroImage ? asset('uploads/pages/' ~ discoverPage.heroImage) : asset('assets/club-placeholder.svg') }}" alt="Visuel de présentation du club et de la pratique du cécifoot à La Bassée">
                     <div class="home-feature-article">
                         <span class="tag">Valeurs du club</span>
-                        <p>À La Bassée, le cécifoot se construit autour d’un cadre clair : engagement, solidarité, écoute, progression et goût du jeu. Le club défend une pratique accessible, sérieuse et vivante, pensée pour accueillir durablement les joueurs, les proches, les bénévoles et les partenaires.</p>
-                        <p class="muted">Chaque visuel publié sur le site a vocation à montrer le terrain, les temps forts du collectif et la réalité de la vie du club.</p>
+                        <p>{{ site.homepage.intro_lead }}</p>
+                        <p class="muted">{{ site.homepage.intro_media_note }}</p>
                         <div class="value-grid">
                             <article class="value-card">
                                 <strong>Engagement</strong>
@@ -50,8 +50,8 @@
             <article class="card home-stage-main">
                 <div class="section-heading">
                     <div>
-                        <h2>Actualité à la une</h2>
-                        <p>Le contenu principal à retenir en ce moment, avec un angle éditorial plus net.</p>
+                        <h2>{{ site.homepage.featured_title }}</h2>
+                        <p>{{ site.homepage.featured_subtitle }}</p>
                     </div>
                 </div>
 
@@ -105,8 +105,8 @@
                 <article class="card">
                     <div class="section-heading">
                         <div>
-                            <h2>Prochain match</h2>
-                            <p>Le prochain rendez-vous sportif du club, avec les repères utiles en un coup d’œil.</p>
+                            <h2>{{ site.homepage.upcoming_title }}</h2>
+                            <p>{{ site.homepage.upcoming_subtitle }}</p>
                         </div>
                     </div>
 
@@ -179,8 +179,8 @@
         <article class="card wide home-section-card">
             <div class="section-heading">
                 <div>
-                    <h2>Dernier résultat</h2>
-                    <p>Le dernier score enregistré, avec son compte-rendu quand il existe.</p>
+                    <h2>{{ site.homepage.last_result_title }}</h2>
+                    <p>{{ site.homepage.last_result_subtitle }}</p>
                 </div>
             </div>
 

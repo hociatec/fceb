@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Enum\ContentStatus;
 use App\Repository\ArticleRepository;
+use App\Repository\ClubSettingsRepository;
 use App\Repository\HomeSectionRepository;
 use App\Repository\MatchGameRepository;
 use App\Repository\PageRepository;
@@ -30,6 +31,7 @@ class DashboardController extends AbstractDashboardController
         private readonly SeasonRepository $seasonRepository,
         private readonly ArticleRepository $articleRepository,
         private readonly HomeSectionRepository $homeSectionRepository,
+        private readonly ClubSettingsRepository $clubSettingsRepository,
         private readonly MatchGameRepository $matchGameRepository,
         private readonly PageRepository $pageRepository,
         private readonly SocialLinkRepository $socialLinkRepository,
@@ -53,12 +55,14 @@ class DashboardController extends AbstractDashboardController
         $partnerCount = $this->partnerRepository->count([]);
         $socialCount = $this->socialLinkRepository->count([]);
         $homeSectionCount = $this->homeSectionRepository->count([]);
+        $clubSettingsCount = $this->clubSettingsRepository->count([]);
         $teamIdentityCount = $this->teamIdentityRepository->count([]);
 
         $stats = [
             ['label' => 'Saisons', 'value' => $this->seasonRepository->count([]), 'icon' => 'fa fa-calendar', 'url' => $this->crudUrl(SeasonCrudController::class)],
             ['label' => 'Articles publiés', 'value' => $publishedArticles, 'icon' => 'fa fa-newspaper', 'url' => $this->crudUrl(ArticleCrudController::class)],
             ['label' => 'Blocs accueil', 'value' => $homeSectionCount, 'icon' => 'fa fa-panorama', 'url' => $this->crudUrl(HomeSectionCrudController::class)],
+            ['label' => 'Paramètres club', 'value' => $clubSettingsCount, 'icon' => 'fa fa-sliders', 'url' => $this->crudUrl(ClubSettingsCrudController::class)],
             ['label' => 'Matchs', 'value' => $this->matchGameRepository->count([]), 'icon' => 'fa fa-futbol', 'url' => $this->crudUrl(MatchGameCrudController::class)],
             ['label' => 'Classement', 'value' => $this->rankingEntryRepository->count([]), 'icon' => 'fa fa-list-ol', 'url' => $this->crudUrl(RankingEntryCrudController::class)],
             ['label' => 'Effectif', 'value' => $playerCount, 'icon' => 'fa fa-user-group', 'url' => $this->crudUrl(PlayerCrudController::class)],
@@ -73,6 +77,7 @@ class DashboardController extends AbstractDashboardController
             ['label' => 'Nouveau joueur', 'url' => $this->crudActionUrl(PlayerCrudController::class, Action::NEW)],
             ['label' => 'Nouvelle page', 'url' => $this->crudActionUrl(PageCrudController::class, Action::NEW)],
             ['label' => "Gérer l'accueil", 'url' => $this->crudUrl(HomeSectionCrudController::class)],
+            ['label' => 'Paramètres du club', 'url' => $this->crudUrl(ClubSettingsCrudController::class)],
             ['label' => 'Gérer le classement', 'url' => $this->crudUrl(RankingEntryCrudController::class)],
             ['label' => 'Voir le site public', 'url' => '/'],
         ];
@@ -101,6 +106,10 @@ class DashboardController extends AbstractDashboardController
 
         if (0 === $homeSectionCount) {
             $contentChecks[] = ['level' => 'info', 'label' => 'Accueil', 'message' => "Aucun bloc d'accueil administrable n'est configuré.", 'url' => $this->crudUrl(HomeSectionCrudController::class)];
+        }
+
+        if (0 === $clubSettingsCount) {
+            $contentChecks[] = ['level' => 'warning', 'label' => 'Paramètres du club', 'message' => "Les paramètres globaux du club ne sont pas encore initialisés.", 'url' => $this->crudUrl(ClubSettingsCrudController::class)];
         }
 
         if (0 === $teamIdentityCount) {
@@ -146,6 +155,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkTo(SeasonCrudController::class, 'Saisons', 'fa fa-calendar');
         yield MenuItem::linkTo(ArticleCrudController::class, 'Articles', 'fa fa-newspaper');
         yield MenuItem::linkTo(HomeSectionCrudController::class, 'Accueil', 'fa fa-panorama');
+        yield MenuItem::linkTo(ClubSettingsCrudController::class, 'Paramètres du club', 'fa fa-sliders');
         yield MenuItem::linkTo(MatchGameCrudController::class, 'Matchs', 'fa fa-futbol');
         yield MenuItem::linkTo(RankingEntryCrudController::class, 'Classement', 'fa fa-list-ol');
         yield MenuItem::linkTo(PlayerCrudController::class, 'Effectif', 'fa fa-user-group');
