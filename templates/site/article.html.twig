@@ -1,8 +1,12 @@
 {% extends 'base.html.twig' %}
 
+{% set article_url = absolute_url(path('site_article', {slug: article.slug})) %}
+{% set share_text = article.title ~ ' | Cécifoot La Bassée' %}
+
 {% block title %}{{ article.title }} | Cécifoot La Bassée{% endblock %}
 {% block meta_description %}{{ article.metaDescription ?: article.excerpt ?: "Actualité du Cécifoot La Bassée." }}{% endblock %}
 {% block og_title %}{{ article.metaTitle ?: article.title }} | Cécifoot La Bassée{% endblock %}
+{% block canonical_url %}{{ article_url }}{% endblock %}
 {% block og_image %}{{ absolute_url(asset(article.coverImage ? 'uploads/articles/' ~ article.coverImage : 'assets/club-placeholder.svg')) }}{% endblock %}
 
 {% block hero %}
@@ -35,6 +39,15 @@
                 </div>
             {% endif %}
             {{ article.content|render_page_content }}
+
+            <div class="share-panel">
+                <h2>Partager cet article</h2>
+                <div class="share-links">
+                    <a class="button secondary" href="https://www.facebook.com/sharer/sharer.php?u={{ article_url|url_encode }}" target="_blank" rel="noopener noreferrer">Facebook</a>
+                    <a class="button secondary" href="https://twitter.com/intent/tweet?url={{ article_url|url_encode }}&text={{ share_text|url_encode }}" target="_blank" rel="noopener noreferrer">X / Twitter</a>
+                    <a class="button secondary" href="mailto:?subject={{ share_text|url_encode }}&body={{ ('Je te partage cet article : ' ~ article_url)|url_encode }}">Envoyer par e-mail</a>
+                </div>
+            </div>
         </article>
     </section>
 {% endblock %}
