@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Devenir partenaire | Cécifoot La Bassée{% endblock %}
+{% block meta_description %}Prends contact avec le club pour construire un partenariat sportif, associatif ou local avec le Cécifoot La Bassée.{% endblock %}
+
+{% block hero %}
+    <section class="hero">
+        <div class="hero-card">
+            <div class="page-hero">
+                <div class="eyebrow">Partenariat</div>
+                <h1>Construire un partenariat avec le club</h1>
+                <p class="page-lead">Une porte d’entrée simple pour échanger sur un soutien financier, matériel, événementiel ou de visibilité autour du projet du club.</p>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block body %}
+    <section class="season-overview">
+        <article class="card wide">
+            <div class="section-heading">
+                <div>
+                    <h2>Demande de partenariat</h2>
+                    <p class="muted">Le club reviendra vers toi pour construire un échange adapté au profil de la structure.</p>
+                </div>
+            </div>
+
+            {{ form_start(partnerRequestForm, {attr: {class: 'form-grid', style: 'margin-top: 1rem;'}}) }}
+                <div class="form-errors">{{ form_errors(partnerRequestForm) }}</div>
+                <div class="field">{{ form_label(partnerRequestForm.organization) }}{{ form_widget(partnerRequestForm.organization) }}<div class="field-errors">{{ form_errors(partnerRequestForm.organization) }}</div></div>
+                <div class="field">{{ form_label(partnerRequestForm.contactName) }}{{ form_widget(partnerRequestForm.contactName) }}<div class="field-errors">{{ form_errors(partnerRequestForm.contactName) }}</div></div>
+                <div class="field">{{ form_label(partnerRequestForm.email) }}{{ form_widget(partnerRequestForm.email) }}<div class="field-errors">{{ form_errors(partnerRequestForm.email) }}</div></div>
+                <div class="field">{{ form_label(partnerRequestForm.phone) }}{{ form_widget(partnerRequestForm.phone) }}<div class="field-errors">{{ form_errors(partnerRequestForm.phone) }}</div></div>
+                <div class="field">{{ form_label(partnerRequestForm.supportType) }}{{ form_widget(partnerRequestForm.supportType) }}<div class="field-errors">{{ form_errors(partnerRequestForm.supportType) }}</div></div>
+                <div class="field">{{ form_label(partnerRequestForm.website) }}{{ form_widget(partnerRequestForm.website) }}<div class="field-errors">{{ form_errors(partnerRequestForm.website) }}</div></div>
+                <div class="field">{{ form_label(partnerRequestForm.message) }}{{ form_widget(partnerRequestForm.message) }}<div class="field-errors">{{ form_errors(partnerRequestForm.message) }}</div></div>
+                <div class="form-actions">
+                    <button class="button primary" type="submit">Envoyer ma demande</button>
+                    <a class="button secondary" href="{{ path('site_partners_static') }}">Voir les partenaires</a>
+                </div>
+            {{ form_end(partnerRequestForm) }}
+        </article>
+
+        <aside class="season-stats">
+            <article class="season-stat"><strong>Formes de soutien</strong><span>Financier, matériel, visibilité, événementiel ou mise en réseau.</span></article>
+            <article class="season-stat"><strong>Échange</strong><span>Le club peut adapter la proposition selon la structure et le niveau d’implication souhaité.</span></article>
+            <article class="season-stat"><strong>Contact direct</strong><span>{{ site.contact.email }} · {{ site.contact.phone }}</span></article>
+        </aside>
+    </section>
+{% endblock %}

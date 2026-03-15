@@ -8,7 +8,7 @@
             <div class="page-hero">
                 <div class="eyebrow">{{ eyebrow }}</div>
                 <h1>{{ title }}</h1>
-                <p class="page-lead">Une page d’information claire pour retrouver les repères utiles du club, ses partenaires et ses contenus pratiques.</p>
+                <p class="page-lead">{{ lead|default('Une page d’information claire pour retrouver les repères utiles du club, ses partenaires et ses contenus pratiques.') }}</p>
             </div>
         </div>
     </section>

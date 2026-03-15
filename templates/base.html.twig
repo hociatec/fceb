@@ -1223,6 +1223,7 @@
                     <a class="pill" href="{{ path('site_calendar') }}"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="15" rx="3" stroke="currentColor" stroke-width="2"/><path d="M7 3v4M17 3v4M3.5 10h17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 14h3M13 14h3M8 17h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Calendrier</span></span></a>
                     <a class="pill" href="{{ path('site_ranking') }}"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 18V10M12 18V6M18 18v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M4 20h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Classement</span></span></a>
                     <a class="pill" href="{{ path('site_players') }}"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="2"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Effectif</span></span></a>
+                    <a class="pill" href="{{ path('site_join') }}"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 6v12M6 12h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Rejoindre</span></span></a>
                     <a class="pill" href="{{ path('site_archives') }}"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="6" width="16" height="13" rx="2.5" stroke="currentColor" stroke-width="2"/><path d="M9 10h6M9 14h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Archives</span></span></a>
                     {% for page in site.header_pages %}
                         <a class="pill" href="{{ path('site_page', {slug: page.slug}) }}">{{ page.title }}</a>
@@ -1290,6 +1291,12 @@
                         <a href="{{ path('site_contact') }}">Contact</a>
                         <a href="{{ path('site_join') }}">Rejoindre le club</a>
                         <a href="{{ path('site_trial_request') }}">Séance d’essai</a>
+                        <a href="{{ path('site_volunteer') }}">Bénévolat</a>
+                        <a href="{{ path('site_partner_request') }}">Devenir partenaire</a>
+                        <a href="{{ path('site_training') }}">Entraînements</a>
+                        <a href="{{ path('site_access') }}">Accès</a>
+                        <a href="{{ path('site_staff') }}">Encadrement</a>
+                        <a href="{{ path('site_faq') }}">FAQ</a>
                         <a href="{{ path('site_partners_static') }}">Partenaires</a>
                         <a href="{{ path('site_terms') }}">CGU</a>
                         <a href="{{ path('site_privacy') }}">Confidentialité</a>

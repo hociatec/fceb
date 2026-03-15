@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Bénévolat | Cécifoot La Bassée{% endblock %}
+{% block meta_description %}Propose ton aide au club comme bénévole pour les événements, l’organisation ou la vie sportive du Cécifoot La Bassée.{% endblock %}
+
+{% block hero %}
+    <section class="hero">
+        <div class="hero-card">
+            <div class="page-hero">
+                <div class="eyebrow">Bénévolat</div>
+                <h1>Donner un coup de main au club</h1>
+                <p class="page-lead">Le club peut s’appuyer sur des bénévoles pour la logistique, les événements, la vie associative et le soutien les jours de match.</p>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block body %}
+    <section class="season-overview">
+        <article class="card wide">
+            <div class="section-heading">
+                <div>
+                    <h2>Proposer son aide</h2>
+                    <p class="muted">Quelques informations simples suffisent pour lancer un premier échange.</p>
+                </div>
+            </div>
+
+            {{ form_start(volunteerForm, {attr: {class: 'form-grid', style: 'margin-top: 1rem;'}}) }}
+                <div class="form-errors">{{ form_errors(volunteerForm) }}</div>
+                <div class="field">{{ form_label(volunteerForm.name) }}{{ form_widget(volunteerForm.name) }}<div class="field-errors">{{ form_errors(volunteerForm.name) }}</div></div>
+                <div class="field">{{ form_label(volunteerForm.email) }}{{ form_widget(volunteerForm.email) }}<div class="field-errors">{{ form_errors(volunteerForm.email) }}</div></div>
+                <div class="field">{{ form_label(volunteerForm.phone) }}{{ form_widget(volunteerForm.phone) }}<div class="field-errors">{{ form_errors(volunteerForm.phone) }}</div></div>
+                <div class="field">{{ form_label(volunteerForm.availability) }}{{ form_widget(volunteerForm.availability) }}<div class="field-errors">{{ form_errors(volunteerForm.availability) }}</div></div>
+                <div class="field">{{ form_label(volunteerForm.skills) }}{{ form_widget(volunteerForm.skills) }}<div class="field-errors">{{ form_errors(volunteerForm.skills) }}</div></div>
+                <div class="field">{{ form_label(volunteerForm.message) }}{{ form_widget(volunteerForm.message) }}<div class="field-errors">{{ form_errors(volunteerForm.message) }}</div></div>
+                <div class="form-actions">
+                    <button class="button primary" type="submit">Envoyer ma proposition</button>
+                    <a class="button secondary" href="{{ path('site_join') }}">Rejoindre le club</a>
+                </div>
+            {{ form_end(volunteerForm) }}
+        </article>
+
+        <aside class="season-stats">
+            <article class="season-stat"><strong>Types d’aide</strong><span>Événements, accueil, organisation, soutien les jours de match, relais local.</span></article>
+            <article class="season-stat"><strong>Souplesse</strong><span>Le club peut construire un engagement ponctuel ou régulier selon les disponibilités.</span></article>
+            <article class="season-stat"><strong>Contact direct</strong><span>{{ site.contact.email }} · {{ site.contact.phone }}</span></article>
+        </aside>
+    </section>
+{% endblock %}

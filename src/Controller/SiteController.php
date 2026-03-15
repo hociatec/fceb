@@ -11,8 +11,12 @@ use App\Form\AccountProfileFormType;
 use App\Form\ContactFormType;
 use App\Form\Model\AccountProfileData;
 use App\Form\Model\ContactData;
+use App\Form\Model\PartnerRequestData;
 use App\Form\Model\TrialRequestData;
+use App\Form\Model\VolunteerRequestData;
+use App\Form\PartnerRequestFormType;
 use App\Form\TrialRequestFormType;
+use App\Form\VolunteerRequestFormType;
 use App\Repository\ArticleRepository;
 use App\Repository\HomeSectionRepository;
 use App\Repository\MatchGameRepository;
@@ -329,6 +333,143 @@ class SiteController extends AbstractController
         return $this->render('site/trial_request.html.twig', [
             ...$this->siteContextBuilder->build(),
             'trialRequestForm' => $form->createView(),
+        ]);
+    }
+
+    #[Route('/benevolat', name: 'site_volunteer', methods: ['GET', 'POST'])]
+    public function volunteer(Request $request, MailerInterface $mailer): Response
+    {
+        $data = new VolunteerRequestData();
+        $form = $this->createForm(VolunteerRequestFormType::class, $data);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $email = (new Email())
+                ->from((string) $this->getParameter('app.contact_from_email'))
+                ->to((string) $this->getParameter('app.contact_to_email'))
+                ->replyTo((string) $data->email)
+                ->subject('[Bénévolat] '.trim((string) $data->name))
+                ->text(implode(PHP_EOL.PHP_EOL, [
+                    'Nouvelle proposition de bénévolat.',
+                    'Nom : '.trim((string) $data->name),
+                    'E-mail : '.trim((string) $data->email),
+                    'Téléphone : '.trim((string) ($data->phone ?: 'Non renseigné')),
+                    'Disponibilités : '.trim((string) ($data->availability ?: 'Non renseignées')),
+                    'Compétences : '.trim((string) ($data->skills ?: 'Non renseignées')),
+                    'Message :',
+                    trim((string) $data->message),
+                ]));
+
+            $mailer->send($email);
+            $this->addFlash('success', 'Votre proposition de bénévolat a bien été envoyée.');
+
+            return $this->redirectToRoute('site_volunteer');
+        }
+
+        return $this->render('site/volunteer.html.twig', [
+            ...$this->siteContextBuilder->build(),
+            'volunteerForm' => $form->createView(),
+        ]);
+    }
+
+    #[Route('/devenir-partenaire', name: 'site_partner_request', methods: ['GET', 'POST'])]
+    public function partnerRequest(Request $request, MailerInterface $mailer): Response
+    {
+        $data = new PartnerRequestData();
+        $form = $this->createForm(PartnerRequestFormType::class, $data);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $email = (new Email())
+                ->from((string) $this->getParameter('app.contact_from_email'))
+                ->to((string) $this->getParameter('app.contact_to_email'))
+                ->replyTo((string) $data->email)
+                ->subject('[Partenariat] '.trim((string) $data->organization))
+                ->text(implode(PHP_EOL.PHP_EOL, [
+                    'Nouvelle demande de partenariat.',
+                    'Structure : '.trim((string) $data->organization),
+                    'Contact : '.trim((string) $data->contactName),
+                    'E-mail : '.trim((string) $data->email),
+                    'Téléphone : '.trim((string) ($data->phone ?: 'Non renseigné')),
+                    'Type de soutien : '.trim((string) $data->supportType),
+                    'Site web : '.trim((string) ($data->website ?: 'Non renseigné')),
+                    'Message :',
+                    trim((string) $data->message),
+                ]));
+
+            $mailer->send($email);
+            $this->addFlash('success', 'Votre demande de partenariat a bien été envoyée.');
+
+            return $this->redirectToRoute('site_partner_request');
+        }
+
+        return $this->render('site/partner_request.html.twig', [
+            ...$this->siteContextBuilder->build(),
+            'partnerRequestForm' => $form->createView(),
+        ]);
+    }
+
+    #[Route('/faq', name: 'site_faq', methods: ['GET'])]
+    public function faq(): Response
+    {
+        return $this->render('site/static_page.html.twig', [
+            ...$this->siteContextBuilder->build(),
+            'eyebrow' => 'FAQ',
+            'title' => 'Questions fréquentes',
+            'lead' => 'Des réponses simples aux questions les plus courantes sur le club, l’accueil et la découverte du cécifoot.',
+            'content' => [
+                'Le club accueille des joueurs, des proches, des bénévoles et des personnes qui souhaitent découvrir le cécifoot dans un cadre structuré.',
+                'Le plus simple pour commencer est de passer par la page de séance découverte ou la page de contact afin d’échanger sur ton profil et tes attentes.',
+                'Le matériel, les créneaux et les modalités d’accueil peuvent être précisés directement par le club après un premier échange.',
+            ],
+        ]);
+    }
+
+    #[Route('/entrainements', name: 'site_training', methods: ['GET'])]
+    public function training(): Response
+    {
+        return $this->render('site/static_page.html.twig', [
+            ...$this->siteContextBuilder->build(),
+            'eyebrow' => 'Entraînements',
+            'title' => 'Entraînements et rythme du club',
+            'lead' => 'Une page pour présenter le cadre de pratique, le rythme général et la logique d’accueil des nouveaux arrivants.',
+            'content' => [
+                'Les entraînements s’organisent autour d’un cadre collectif, de repères de jeu précis et d’un accompagnement progressif selon le profil de chacun.',
+                'Les nouveaux arrivants peuvent être orientés vers une première prise de contact avant d’intégrer un créneau régulier.',
+                'Le club peut préciser les horaires, le matériel utile et les conditions de présence au moment de l’échange.',
+            ],
+        ]);
+    }
+
+    #[Route('/acces', name: 'site_access', methods: ['GET'])]
+    public function access(): Response
+    {
+        return $this->render('site/static_page.html.twig', [
+            ...$this->siteContextBuilder->build(),
+            'eyebrow' => 'Accès',
+            'title' => 'Venir au club',
+            'lead' => 'Adresse, repères de venue et informations pratiques pour rejoindre le site d’entraînement ou de match.',
+            'content' => [
+                'Le club est implanté à La Bassée et centralise ses informations de contact pour faciliter la première venue.',
+                'L’objectif est de rendre l’accès lisible, avec une prise de contact préalable si un accompagnement spécifique est utile.',
+                'Pour préparer un déplacement, le plus simple est d’utiliser la carte de contact ou d’écrire directement au club.',
+            ],
+        ]);
+    }
+
+    #[Route('/encadrement', name: 'site_staff', methods: ['GET'])]
+    public function staff(): Response
+    {
+        return $this->render('site/static_page.html.twig', [
+            ...$this->siteContextBuilder->build(),
+            'eyebrow' => 'Encadrement',
+            'title' => 'Encadrement et vie du club',
+            'lead' => 'Une présentation du cadre humain du club, de la logique d’accompagnement et de la place des bénévoles.',
+            'content' => [
+                'Le club repose sur un encadrement sportif, associatif et bénévole qui permet de structurer les séances, les matchs et l’accueil.',
+                'Les proches, bénévoles et partenaires peuvent aussi contribuer à la vie du club selon leurs disponibilités.',
+                'Le projet du club cherche un équilibre entre exigence sportive, accessibilité et continuité associative.',
+            ],
         ]);
     }
 
