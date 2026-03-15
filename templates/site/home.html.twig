@@ -9,13 +9,15 @@
                 <div class="section-heading">
                     <div>
                         <h2>Cécifoot La Bassée</h2>
+                        <p class="muted">Un club qui assume à la fois l’exigence sportive, l’accessibilité et l’ancrage local.</p>
                     </div>
                 </div>
                 <div class="story-inline">
-                    <img class="story-media tall" src="{{ discoverPage.heroImage ? asset('uploads/pages/' ~ discoverPage.heroImage) : asset('assets/club-placeholder.svg') }}" alt="{{ discoverPage.title }}">
+                    <img class="story-media tall" src="{{ discoverPage.heroImage ? asset('uploads/pages/' ~ discoverPage.heroImage) : asset('assets/club-placeholder.svg') }}" alt="Visuel de présentation du club et de la pratique du cécifoot à La Bassée">
                     <div class="home-feature-article">
                         <span class="tag">Valeurs du club</span>
-                        <p>À La Bassée, le cécifoot se construit autour de valeurs claires : engagement, solidarité, écoute, progression et exigence collective. Le club défend une pratique accessible mais ambitieuse, où chacun trouve sa place dans un cadre sérieux, formateur et tourné vers le jeu.</p>
+                        <p>À La Bassée, le cécifoot se construit autour d’un cadre clair : engagement, solidarité, écoute, progression et goût du jeu. Le club défend une pratique accessible, sérieuse et vivante, pensée pour accueillir durablement les joueurs, les proches, les bénévoles et les partenaires.</p>
+                        <p class="muted">Chaque visuel publié sur le site a vocation à montrer le terrain, les temps forts du collectif et la réalité de la vie du club.</p>
                         <div class="value-grid">
                             <article class="value-card">
                                 <strong>Engagement</strong>
@@ -49,13 +51,13 @@
                 <div class="section-heading">
                     <div>
                         <h2>Actualité à la une</h2>
-                        <p>Le contenu principal à retenir en ce moment.</p>
+                        <p>Le contenu principal à retenir en ce moment, avec un angle éditorial plus net.</p>
                     </div>
                 </div>
 
                 {% if latestArticle %}
                     <div class="story-inline">
-                        <img class="story-media tall" src="{{ latestArticle.coverImage ? asset('uploads/articles/' ~ latestArticle.coverImage) : asset('assets/club-placeholder.svg') }}" alt="{{ latestArticle.title }}">
+                        <img class="story-media tall" src="{{ latestArticle.coverImage ? asset('uploads/articles/' ~ latestArticle.coverImage) : asset('assets/club-placeholder.svg') }}" alt="Illustration de l’actualité {{ latestArticle.title }}">
                         <div class="home-feature-article">
                             <span class="tag">À la une</span>
                             <h3><a class="article-link" href="{{ path('site_article', {slug: latestArticle.slug}) }}">{{ latestArticle.title }}</a></h3>
@@ -68,6 +70,7 @@
                                     <span>{{ latestArticle.season.name }}</span>
                                 {% endif %}
                             </div>
+                            <p class="muted">Les actualités doivent montrer ce qui se passe réellement au club : matchs, événements, coulisses et vie associative.</p>
                         </div>
                     </div>
                 {% else %}
@@ -103,7 +106,7 @@
                     <div class="section-heading">
                         <div>
                             <h2>Prochain match</h2>
-                            <p>Le prochain rendez-vous sportif du club.</p>
+                            <p>Le prochain rendez-vous sportif du club, avec les repères utiles en un coup d’œil.</p>
                         </div>
                     </div>
 
@@ -112,12 +115,12 @@
                             <span class="tag">À venir</span>
                             <div class="team-poster">
                                 <div class="team-side">
-                                    <img class="team-logo" src="{{ asset(team_logo(nextMatch.homeTeamName)) }}" alt="{{ nextMatch.homeTeamName }}">
+                                    <img class="team-logo" src="{{ asset(team_logo(nextMatch.homeTeamName)) }}" alt="Logo de {{ nextMatch.homeTeamName }}">
                                     <strong>{{ nextMatch.homeTeamName }}</strong>
                                 </div>
                                 <span class="team-vs">vs</span>
                                 <div class="team-side">
-                                    <img class="team-logo" src="{{ asset(team_logo(nextMatch.awayTeamName)) }}" alt="{{ nextMatch.awayTeamName }}">
+                                    <img class="team-logo" src="{{ asset(team_logo(nextMatch.awayTeamName)) }}" alt="Logo de {{ nextMatch.awayTeamName }}">
                                     <strong>{{ nextMatch.awayTeamName }}</strong>
                                 </div>
                             </div>
@@ -138,7 +141,7 @@
                     <div class="section-heading">
                         <div>
                             <h2>Matchs à venir</h2>
-                            <p>Les prochaines rencontres déjà programmées.</p>
+                            <p>Les prochaines rencontres déjà programmées après le prochain rendez-vous.</p>
                         </div>
                     </div>
 
@@ -148,12 +151,12 @@
                                 <article class="home-match-card">
                                     <div class="team-poster">
                                         <div class="team-side">
-                                            <img class="team-logo small" src="{{ asset(team_logo(match.homeTeamName)) }}" alt="{{ match.homeTeamName }}">
+                                            <img class="team-logo small" src="{{ asset(team_logo(match.homeTeamName)) }}" alt="Logo de {{ match.homeTeamName }}">
                                             <strong>{{ match.homeTeamName }}</strong>
                                         </div>
                                         <span class="team-vs">vs</span>
                                         <div class="team-side">
-                                            <img class="team-logo small" src="{{ asset(team_logo(match.awayTeamName)) }}" alt="{{ match.awayTeamName }}">
+                                            <img class="team-logo small" src="{{ asset(team_logo(match.awayTeamName)) }}" alt="Logo de {{ match.awayTeamName }}">
                                             <strong>{{ match.awayTeamName }}</strong>
                                         </div>
                                     </div>
@@ -177,25 +180,25 @@
             <div class="section-heading">
                 <div>
                     <h2>Dernier résultat</h2>
-                    <p>Le dernier résultat disponible du club.</p>
+                    <p>Le dernier score enregistré, avec son compte-rendu quand il existe.</p>
                 </div>
             </div>
 
             {% if lastMatch %}
                 <div class="story-inline">
                     {% if lastMatchArticle %}
-                        <img class="story-media tall" src="{{ lastMatchArticle.coverImage ? asset('uploads/articles/' ~ lastMatchArticle.coverImage) : asset('assets/club-placeholder.svg') }}" alt="{{ lastMatch.poster }}">
+                        <img class="story-media tall" src="{{ lastMatchArticle.coverImage ? asset('uploads/articles/' ~ lastMatchArticle.coverImage) : asset('assets/club-placeholder.svg') }}" alt="Illustration liée au dernier résultat du club">
                     {% endif %}
                     <div class="home-feature-article">
                         <span class="tag">Dernier résultat</span>
                         <div class="team-poster">
                             <div class="team-side">
-                                <img class="team-logo" src="{{ asset(team_logo(lastMatch.homeTeamName)) }}" alt="{{ lastMatch.homeTeamName }}">
+                                <img class="team-logo" src="{{ asset(team_logo(lastMatch.homeTeamName)) }}" alt="Logo de {{ lastMatch.homeTeamName }}">
                                 <strong>{{ lastMatch.homeTeamName }}</strong>
                             </div>
                             <span class="team-vs">vs</span>
                             <div class="team-side">
-                                <img class="team-logo" src="{{ asset(team_logo(lastMatch.awayTeamName)) }}" alt="{{ lastMatch.awayTeamName }}">
+                                <img class="team-logo" src="{{ asset(team_logo(lastMatch.awayTeamName)) }}" alt="Logo de {{ lastMatch.awayTeamName }}">
                                 <strong>{{ lastMatch.awayTeamName }}</strong>
                             </div>
                         </div>

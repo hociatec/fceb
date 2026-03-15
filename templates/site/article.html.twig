@@ -12,7 +12,7 @@
 {% block hero %}
     <section class="hero">
         <div class="hero-card">
-            <img class="hero-media" src="{{ article.coverImage ? asset('uploads/articles/' ~ article.coverImage) : asset('assets/club-placeholder.svg') }}" alt="">
+            <img class="hero-media" src="{{ article.coverImage ? asset('uploads/articles/' ~ article.coverImage) : asset('assets/club-placeholder.svg') }}" alt="Illustration de l’article {{ article.title }}">
             <div class="article-hero">
                 <div class="eyebrow">Actualité</div>
                 <h1>{{ article.title }}</h1>

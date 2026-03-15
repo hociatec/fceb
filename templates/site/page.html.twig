@@ -8,7 +8,7 @@
 {% block hero %}
     <section class="hero">
         <div class="hero-card">
-            <img class="hero-media" src="{{ page.heroImage ? asset('uploads/pages/' ~ page.heroImage) : asset('assets/club-placeholder.svg') }}" alt="">
+            <img class="hero-media" src="{{ page.heroImage ? asset('uploads/pages/' ~ page.heroImage) : asset('assets/club-placeholder.svg') }}" alt="Visuel de la page {{ page.title }}">
             <div class="page-hero">
                 <div class="eyebrow">Page</div>
                 <h1>{{ page.title }}</h1>

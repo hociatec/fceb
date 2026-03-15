@@ -9,7 +9,7 @@
             <div class="page-hero">
                 <div class="eyebrow">Actualités</div>
                 <h1>Suivre la vie du club</h1>
-                <p class="page-lead">Comptes-rendus, annonces, résultats et temps forts du Cécifoot La Bassée regroupés dans une page plus claire.</p>
+                <p class="page-lead">Comptes-rendus, annonces, résultats et temps forts du Cécifoot La Bassée regroupés dans une page plus lisible et plus vivante.</p>
             </div>
         </div>
     </section>
@@ -22,10 +22,11 @@
                 <div class="section-heading">
                     <div>
                         <h2>À la une</h2>
+                        <p class="muted">L’article principal met en avant le sujet le plus important du moment.</p>
                     </div>
                 </div>
                 <div class="story-inline" style="margin-top: 1rem;">
-                    <img class="story-media tall" src="{{ featuredArticle.coverImage ? asset('uploads/articles/' ~ featuredArticle.coverImage) : asset('assets/club-placeholder.svg') }}" alt="{{ featuredArticle.title }}">
+                    <img class="story-media tall" src="{{ featuredArticle.coverImage ? asset('uploads/articles/' ~ featuredArticle.coverImage) : asset('assets/club-placeholder.svg') }}" alt="Visuel de l’article {{ featuredArticle.title }}">
                     <div class="home-feature-article">
                         <span class="tag">Article principal</span>
                         <h3><a class="article-link" href="{{ path('site_article', {slug: featuredArticle.slug}) }}">{{ featuredArticle.title }}</a></h3>
@@ -38,6 +39,7 @@
                                 <span>{{ featuredArticle.season.name }}</span>
                             {% endif %}
                         </div>
+                        <p class="muted">Les visuels associés aux articles doivent montrer le terrain, les matchs, les événements et les moments de club, pas seulement illustrer le texte.</p>
                     </div>
                 </div>
             </article>
@@ -47,12 +49,13 @@
             <div class="section-heading">
                 <div>
                     <h2>Toutes les actualités</h2>
+                    <p class="muted">Un historique simple à parcourir pour retrouver les sujets importants et les comptes-rendus.</p>
                 </div>
             </div>
             <div class="article-list-grid" style="margin-top: 1rem;">
                 {% for article in articles %}
                     <article class="article-list-card">
-                        <img class="story-media" src="{{ article.coverImage ? asset('uploads/articles/' ~ article.coverImage) : asset('assets/club-placeholder.svg') }}" alt="{{ article.title }}">
+                        <img class="story-media" src="{{ article.coverImage ? asset('uploads/articles/' ~ article.coverImage) : asset('assets/club-placeholder.svg') }}" alt="Illustration de l’article {{ article.title }}">
                         <div class="home-feature-article">
                             <h3><a class="article-link" href="{{ path('site_article', {slug: article.slug}) }}">{{ article.title }}</a></h3>
                             <p class="muted">{{ article.publishedAt|date('d/m/Y H:i') }}{% if article.season %} · {{ article.season.name }}{% endif %}</p>
