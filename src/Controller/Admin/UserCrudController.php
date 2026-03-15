@@ -34,6 +34,7 @@ class UserCrudController extends AbstractCrudController
             ->setEntityLabelInPlural('Utilisateurs')
             ->setDefaultSort(['id' => 'DESC'])
             ->setPaginatorPageSize(10)
+            ->setSearchFields(['fullName', 'email'])
             ->showEntityActionsInlined();
     }
 
@@ -49,8 +50,8 @@ class UserCrudController extends AbstractCrudController
     {
         yield IdField::new('id', 'ID')->hideOnForm();
 
-        yield FormField::addFieldset('Identité')
-            ->setHelp("Renseigne les informations de connexion et d'affichage du compte.");
+        yield FormField::addFieldset('Informations du compte')
+            ->setHelp("Renseigne le nom affiché et l'adresse e-mail de connexion.");
 
         yield TextField::new('fullName', 'Nom complet')
             ->setColumns(6)
@@ -71,9 +72,9 @@ class UserCrudController extends AbstractCrudController
             ->setHelp('Adresse utilisée pour la connexion.');
 
         yield FormField::addFieldset('Droits et sécurité')
-            ->setHelp("Définis les droits d'accès et le mot de passe du compte.");
+            ->setHelp("Choisis les droits d'accès du compte et définis son mot de passe.");
 
-        yield ChoiceField::new('roles', 'Rôles')
+        yield ChoiceField::new('roles', 'Droits du compte')
             ->setChoices([
                 'Utilisateur' => 'ROLE_USER',
                 'Éditeur' => 'ROLE_EDITOR',
@@ -82,7 +83,7 @@ class UserCrudController extends AbstractCrudController
             ->allowMultipleChoices()
             ->renderExpanded()
             ->setColumns(6)
-            ->setHelp("Choisit les droits d'accès de l'utilisateur.");
+            ->setHelp("Sélectionne un ou plusieurs niveaux d'accès.");
 
         yield TextField::new('plainPassword', 'Mot de passe')
             ->setFormType(PasswordType::class)
@@ -94,7 +95,7 @@ class UserCrudController extends AbstractCrudController
                 'aria-label' => "Mot de passe de l'utilisateur",
                 'placeholder' => 'Nouveau mot de passe',
             ])
-            ->setHelp('Laisser vide pour conserver le mot de passe actuel lors de la modification.');
+            ->setHelp('Laisse vide en modification pour conserver le mot de passe actuel.');
     }
 
     public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void

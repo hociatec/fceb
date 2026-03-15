@@ -30,6 +30,7 @@ class PageCrudController extends AbstractCrudController
             ->setEntityLabelInPlural('Pages')
             ->setDefaultSort(['menuOrder' => 'ASC'])
             ->setPaginatorPageSize(10)
+            ->setSearchFields(['title', 'slug'])
             ->showEntityActionsInlined();
     }
 
@@ -54,7 +55,7 @@ class PageCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         yield FormField::addFieldset('Contenu de la page')
-            ->setHelp('Crée une page statique et définis sa place dans la navigation.');
+            ->setHelp('Crée ou modifie une page d’information visible sur le site.');
 
         yield TextField::new('title', 'Titre')
             ->setColumns(8)
@@ -62,39 +63,29 @@ class PageCrudController extends AbstractCrudController
                 'data-slug-source' => 'page',
                 'autocomplete' => 'off',
                 'aria-label' => 'Titre de la page',
-                'placeholder' => 'Exemple : Discipline',
+                'placeholder' => 'Exemple : Découvrir le cécifoot',
             ])
-            ->setHelp('Titre visible dans le menu et sur la page.');
+            ->setHelp('Titre visible dans la page et éventuellement dans la navigation.');
 
-        yield TextField::new('slug', 'Slug')
+        yield TextField::new('slug', 'Adresse web')
             ->setColumns(4)
             ->setFormTypeOption('attr', [
                 'data-slug-target' => 'page',
                 'autocomplete' => 'off',
-                'aria-label' => 'Slug de la page',
+                'aria-label' => 'Adresse web de la page',
             ])
-            ->setHelp('Rempli automatiquement depuis le titre, modifiable si besoin.')
+            ->setHelp('Générée automatiquement depuis le titre, modifiable si besoin.')
             ->hideOnIndex();
 
-        yield TextField::new('metaTitle', 'Meta title')
-            ->setColumns(6)
-            ->setHelp('Titre SEO facultatif. Si vide, le titre de la page est utilisé.')
-            ->hideOnIndex();
-
-        yield TextField::new('metaDescription', 'Meta description')
-            ->setColumns(6)
-            ->setHelp('Description SEO facultative. Si vide, un extrait du contenu est utilisé.')
-            ->hideOnIndex();
-
-        yield ImageField::new('heroImage', 'Image hero')
+        yield ImageField::new('heroImage', "Image d'en-tête")
             ->setColumns(12)
             ->setBasePath('uploads/pages')
             ->setUploadDir('public/uploads/pages')
             ->setUploadedFileNamePattern('[contenthash].[extension]')
-            ->setHelp("Image d'illustration de la page, affichée dans l'en-tête de la page publique.")
+            ->setHelp("Image illustrant la page.")
             ->hideOnIndex();
 
-        yield TextEditorField::new('content', 'Contenu')
+        yield TextEditorField::new('content', 'Contenu complet')
             ->setColumns(12)
             ->setNumOfRows(18)
             ->setTrixEditorConfig([
@@ -108,33 +99,33 @@ class PageCrudController extends AbstractCrudController
                 'aria-label' => 'Contenu de la page',
                 'data-page-rich-editor' => '1',
             ])
-            ->setHelp('Utilise les boutons du haut pour créer des titres, des paragraphes, du gras et des listes.')
+            ->setHelp('Utilise les boutons du haut pour structurer la page.')
             ->hideOnIndex();
 
         yield FormField::addFieldset('Affichage')
-            ->setHelp('Choisis où la page apparaît, dans quel ordre et avec quel statut.');
+            ->setHelp('Définis où la page apparaît et dans quel ordre.');
 
-        yield ChoiceField::new('placement', 'Emplacement')
+        yield ChoiceField::new('placement', 'Où afficher cette page')
             ->setChoices([
-                'Aucun' => PagePlacement::None,
-                'Menu haut' => PagePlacement::Header,
+                'Nulle part dans le menu' => PagePlacement::None,
+                'Menu du haut' => PagePlacement::Header,
                 'Pied de page' => PagePlacement::Footer,
-                'Haut + pied de page' => PagePlacement::Both,
+                'Menu du haut + pied de page' => PagePlacement::Both,
             ])
             ->renderExpanded()
             ->setColumns(8)
-            ->setHelp('Définit où la page doit apparaître dans la navigation.');
+            ->setHelp('Choisis si cette page doit être accessible depuis la navigation.');
 
-        yield IntegerField::new('menuOrder', 'Ordre')
+        yield IntegerField::new('menuOrder', "Ordre d'affichage")
             ->setColumns(4)
             ->setFormTypeOption('attr', [
                 'min' => 0,
                 'inputmode' => 'numeric',
                 'aria-label' => "Ordre d'affichage",
             ])
-            ->setHelp('Plus le nombre est petit, plus la page remonte dans le menu.');
+            ->setHelp('Plus le chiffre est petit, plus la page remonte.');
 
-        yield ChoiceField::new('status', 'Statut')
+        yield ChoiceField::new('status', 'Visibilité')
             ->setChoices([
                 'Brouillon' => ContentStatus::Draft,
                 'Publiée' => ContentStatus::Published,
@@ -142,6 +133,20 @@ class PageCrudController extends AbstractCrudController
             ])
             ->renderExpanded()
             ->setColumns(12)
-            ->setHelp('Définit si la page est en brouillon, visible publiquement ou archivée.');
+            ->setHelp('Brouillon : non visible. Publiée : visible. Archivée : conservée sans être mise en avant.');
+
+        yield FormField::addFieldset('Référencement')
+            ->setHelp('Champs facultatifs pour Google et le partage social.')
+            ->hideOnIndex();
+
+        yield TextField::new('metaTitle', 'Titre SEO')
+            ->setColumns(6)
+            ->setHelp('Laisse vide pour reprendre automatiquement le titre de la page.')
+            ->hideOnIndex();
+
+        yield TextField::new('metaDescription', 'Description SEO')
+            ->setColumns(6)
+            ->setHelp('Laisse vide pour reprendre automatiquement un extrait du contenu.')
+            ->hideOnIndex();
     }
 }

@@ -26,6 +26,7 @@ class PartnerCrudController extends AbstractCrudController
             ->setEntityLabelInPlural('Partenaires')
             ->setDefaultSort(['displayOrder' => 'ASC'])
             ->setPaginatorPageSize(10)
+            ->setSearchFields(['name', 'websiteUrl'])
             ->showEntityActionsInlined();
     }
 
@@ -39,30 +40,32 @@ class PartnerCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        yield TextField::new('name', 'Nom')
+        yield TextField::new('name', 'Nom du partenaire')
             ->setFormTypeOption('attr', [
                 'aria-label' => 'Nom du partenaire',
+                'placeholder' => 'Exemple : Ville de La Bassée',
             ])
-            ->setHelp('Nom affiche sur la page partenaires.');
+            ->setHelp('Nom affiché sur la page partenaires.');
 
-        yield TextField::new('websiteUrl', 'Site web')
+        yield TextField::new('websiteUrl', 'Lien du site')
             ->setFormTypeOption('attr', [
                 'autocomplete' => 'url',
-                'aria-label' => 'Adresse du site web du partenaire',
+                'aria-label' => 'Adresse du site du partenaire',
+                'placeholder' => 'https://...',
             ])
-            ->setHelp('Lien externe du partenaire.');
+            ->setHelp('Lien complet vers le site du partenaire.');
 
         yield ImageField::new('logoUrl', 'Logo')
             ->setBasePath('uploads/partners')
             ->setUploadDir('public/uploads/partners')
             ->setUploadedFileNamePattern('[contenthash].[extension]')
-            ->setHelp("Logo du partenaire televerse depuis l'administration.");
+            ->setHelp("Logo du partenaire importé depuis l'administration.");
 
-        yield IntegerField::new('displayOrder', 'Ordre')
-            ->setHelp("Ordre d'affichage dans la liste.");
+        yield IntegerField::new('displayOrder', "Ordre d'affichage")
+            ->setHelp('Plus le chiffre est petit, plus le partenaire remonte.');
 
-        yield BooleanField::new('isVisible', 'Visible')
+        yield BooleanField::new('isVisible', 'Visible sur le site')
             ->renderAsSwitch(false)
-            ->setHelp("Active l'affichage public du partenaire.");
+            ->setHelp('Active ou masque le partenaire sur le site public.');
     }
 }

@@ -25,6 +25,7 @@ class TeamIdentityCrudController extends AbstractCrudController
             ->setEntityLabelInPlural('Équipes')
             ->setDefaultSort(['teamName' => 'ASC'])
             ->setPaginatorPageSize(20)
+            ->setSearchFields(['teamName', 'aliases'])
             ->showEntityActionsInlined();
     }
 
@@ -39,16 +40,17 @@ class TeamIdentityCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         yield TextField::new('teamName', "Nom de l'équipe")
-            ->setHelp("Nom principal affiché dans l'administration et utilisé comme référence de l'équipe.")
+            ->setHelp("Nom principal utilisé dans l'administration et sur le site.")
             ->setFormTypeOption('attr', [
                 'aria-label' => "Nom de l'équipe",
+                'placeholder' => 'Exemple : RC Lens Cécifoot',
             ]);
 
-        yield TextareaField::new('aliases', 'Alias de nom')
+        yield TextareaField::new('aliases', 'Autres noms reconnus')
             ->setNumOfRows(5)
-            ->setHelp("Un alias par ligne. Utilise ce champ pour gérer les variantes de nom sans créer plusieurs équipes visibles.")
+            ->setHelp("Un nom par ligne. Utile si la même équipe apparaît avec plusieurs variantes.")
             ->setFormTypeOption('attr', [
-                'aria-label' => "Alias de l'équipe",
+                'aria-label' => "Autres noms de l'équipe",
                 'placeholder' => "Exemple :\nRC Lens Cécifoot\nRCL Cécifoot",
             ])
             ->hideOnIndex();
@@ -57,6 +59,6 @@ class TeamIdentityCrudController extends AbstractCrudController
             ->setBasePath('uploads/team-identities')
             ->setUploadDir('public/uploads/team-identities')
             ->setUploadedFileNamePattern('[contenthash].[extension]')
-            ->setHelp("Logo administrable depuis le back-office. Il remplace le logo défini en dur.");
+            ->setHelp("Logo utilisé automatiquement dans les affichages de matchs et de résultats.");
     }
 }

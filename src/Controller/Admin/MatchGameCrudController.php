@@ -29,24 +29,24 @@ class MatchGameCrudController extends AbstractCrudController
             ->setEntityLabelInPlural('Matchs')
             ->setDefaultSort(['matchDate' => 'DESC'])
             ->setPaginatorPageSize(10)
+            ->setSearchFields(['opponent', 'location', 'competition'])
             ->showEntityActionsInlined();
     }
 
     public function configureActions(Actions $actions): Actions
     {
         return $actions
-            ->disable(Action::BATCH_DELETE, Action::DETAIL)
-            ->disable(Action::SAVE_AND_ADD_ANOTHER)
+            ->disable(Action::BATCH_DELETE, Action::DETAIL, Action::SAVE_AND_ADD_ANOTHER)
             ->update(Crud::PAGE_INDEX, Action::EDIT, static fn (Action $action) => $action->setLabel('Modifier'))
             ->update(Crud::PAGE_INDEX, Action::DELETE, static fn (Action $action) => $action->setLabel('Supprimer'))
             ->update(Crud::PAGE_NEW, Action::SAVE_AND_RETURN, static fn (Action $action) => $action->setLabel('Créer le match'))
-            ->update(Crud::PAGE_EDIT, Action::SAVE_AND_RETURN, static fn (Action $action) => $action->setLabel('Enregistrer les modifications'));
+            ->update(Crud::PAGE_EDIT, Action::SAVE_AND_RETURN, static fn (Action $action) => $action->setLabel('Enregistrer'));
     }
 
     public function configureFields(string $pageName): iterable
     {
         yield FormField::addFieldset('Informations du match')
-            ->setHelp("Renseigne d'abord la saison, le type de compétition et l'adversaire.");
+            ->setHelp("Renseigne d'abord l'adversaire, la date, le lieu et le statut du match.");
 
         yield AssociationField::new('season', 'Saison')
             ->renderAsNativeWidget()
@@ -62,9 +62,9 @@ class MatchGameCrudController extends AbstractCrudController
             ->setRequired(true)
             ->setColumns(6)
             ->setFormTypeOption('attr', [
-                'aria-label' => 'Type de compétition',
+                'aria-label' => 'Compétition',
             ])
-            ->setHelp('Choisis entre Championnat et Coupe de France.');
+            ->setHelp('Choisis le type de rencontre.');
 
         yield TextField::new('opponent', 'Adversaire')
             ->setColumns(6)
@@ -80,25 +80,25 @@ class MatchGameCrudController extends AbstractCrudController
             ->setFormTypeOption('attr', [
                 'aria-label' => 'Lieu du match',
                 'autocomplete' => 'off',
-                'placeholder' => 'Exemple : La Bassée',
+                'placeholder' => 'Exemple : Stade Roland Joly, La Bassée',
             ])
-            ->setHelp('Ville ou stade du match.');
+            ->setHelp('Ville, stade ou salle.');
 
         yield DateTimeField::new('matchDate', 'Date et heure')
             ->setColumns(6)
             ->setFormTypeOption('attr', [
                 'aria-label' => 'Date et heure du match',
             ])
-            ->setHelp('Date et heure prévues pour la rencontre.');
+            ->setHelp('Date prévue pour la rencontre.');
 
         yield ChoiceField::new('side', 'Lieu de jeu')
             ->setChoices([
-                'Domicile' => 'home',
-                'Extérieur' => 'away',
+                'À domicile' => 'home',
+                'À l’extérieur' => 'away',
             ])
             ->renderExpanded()
             ->setColumns(6)
-            ->setHelp("Indique si le match se joue à domicile ou à l'extérieur.");
+            ->setHelp('Indique si La Bassée reçoit ou se déplace.');
 
         yield ChoiceField::new('status', 'Statut')
             ->setChoices([
@@ -112,7 +112,7 @@ class MatchGameCrudController extends AbstractCrudController
             ->setHelp('État actuel du match.');
 
         yield FormField::addFieldset('Résultat')
-            ->setHelp("Ces champs peuvent rester vides tant que le match n'est pas terminé.");
+            ->setHelp("Laisse ces champs vides tant que le match n'est pas terminé.");
 
         yield IntegerField::new('ourScore', 'Score du club')
             ->setColumns(6)
@@ -122,7 +122,7 @@ class MatchGameCrudController extends AbstractCrudController
                 'inputmode' => 'numeric',
                 'placeholder' => '0',
             ])
-            ->setHelp('À renseigner uniquement si le match est terminé.');
+            ->setHelp('À renseigner uniquement quand le match est terminé.');
 
         yield IntegerField::new('opponentScore', "Score de l'adversaire")
             ->setColumns(6)
@@ -132,6 +132,6 @@ class MatchGameCrudController extends AbstractCrudController
                 'inputmode' => 'numeric',
                 'placeholder' => '0',
             ])
-            ->setHelp("À renseigner uniquement si le match est terminé.");
+            ->setHelp('À renseigner uniquement quand le match est terminé.');
     }
 }

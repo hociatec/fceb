@@ -23,10 +23,11 @@ class HomeSectionCrudController extends AbstractCrudController
     public function configureCrud(Crud $crud): Crud
     {
         return $crud
-            ->setEntityLabelInSingular('Section d’accueil')
+            ->setEntityLabelInSingular("Section d'accueil")
             ->setEntityLabelInPlural('Accueil')
             ->setDefaultSort(['displayOrder' => 'ASC'])
             ->setPaginatorPageSize(10)
+            ->setSearchFields(['title', 'subtitle', 'sectionKey'])
             ->showEntityActionsInlined();
     }
 
@@ -37,49 +38,49 @@ class HomeSectionCrudController extends AbstractCrudController
             ->update(Crud::PAGE_INDEX, Action::EDIT, static fn (Action $action) => $action->setLabel('Modifier'))
             ->update(Crud::PAGE_INDEX, Action::DELETE, static fn (Action $action) => $action->setLabel('Supprimer'))
             ->update(Crud::PAGE_NEW, Action::SAVE_AND_RETURN, static fn (Action $action) => $action->setLabel('Créer la section'))
-            ->update(Crud::PAGE_EDIT, Action::SAVE_AND_RETURN, static fn (Action $action) => $action->setLabel('Enregistrer les modifications'));
+            ->update(Crud::PAGE_EDIT, Action::SAVE_AND_RETURN, static fn (Action $action) => $action->setLabel('Enregistrer'));
     }
 
     public function configureFields(string $pageName): iterable
     {
         yield FormField::addFieldset("Configuration de l'accueil")
-            ->setHelp("Active, renomme et réordonne les blocs visibles sur la page d'accueil.");
+            ->setHelp("Active, renomme et réordonne les blocs affichés sur la page d'accueil.");
 
-        yield ChoiceField::new('sectionKey', 'Type de section')
+        yield ChoiceField::new('sectionKey', 'Bloc concerné')
             ->setChoices(HomeSection::availableSectionChoices())
             ->renderAsNativeWidget()
             ->setColumns(6)
-            ->setHelp("Choisit le bloc fonctionnel à afficher sur l'accueil.");
+            ->setHelp("Choisis quel bloc de l'accueil tu modifies.");
 
-        yield TextField::new('title', 'Titre')
+        yield TextField::new('title', 'Titre affiché')
             ->setColumns(6)
             ->setFormTypeOption('attr', [
                 'aria-label' => 'Titre de la section',
                 'placeholder' => "Titre affiché sur l'accueil",
             ])
-            ->setHelp("Titre affiché au-dessus du contenu de la section.");
+            ->setHelp('Titre visible au-dessus du bloc.');
 
-        yield TextField::new('subtitle', 'Sous-titre')
+        yield TextField::new('subtitle', 'Sous-titre affiché')
             ->setColumns(9)
             ->setRequired(false)
             ->setFormTypeOption('attr', [
                 'aria-label' => 'Sous-titre de la section',
-                'placeholder' => "Phrase courte sous le titre",
+                'placeholder' => 'Phrase courte sous le titre',
             ])
-            ->setHelp('Texte d’accompagnement affiché sous le titre.');
+            ->setHelp("Petit texte d'accompagnement sous le titre.");
 
-        yield IntegerField::new('displayOrder', 'Ordre')
+        yield IntegerField::new('displayOrder', "Ordre d'affichage")
             ->setColumns(3)
-            ->setHelp("Les sections sont affichées de la plus petite valeur à la plus grande.")
+            ->setHelp('Les blocs sont affichés du plus petit nombre au plus grand.')
             ->setFormTypeOption('attr', [
                 'aria-label' => "Ordre d'affichage",
                 'min' => 0,
                 'inputmode' => 'numeric',
             ]);
 
-        yield BooleanField::new('isEnabled', 'Section visible')
+        yield BooleanField::new('isEnabled', 'Bloc visible')
             ->renderAsSwitch(false)
             ->setColumns(12)
-            ->setHelp("Décoche pour masquer cette section de l'accueil sans la supprimer.");
+            ->setHelp("Décoche pour masquer ce bloc de l'accueil sans le supprimer.");
     }
 }

@@ -26,6 +26,7 @@ class RankingEntryCrudController extends AbstractCrudController
             ->setEntityLabelInPlural('Classement')
             ->setDefaultSort(['displayOrder' => 'ASC', 'points' => 'DESC'])
             ->setPaginatorPageSize(10)
+            ->setSearchFields(['teamName'])
             ->showEntityActionsInlined();
     }
 
@@ -36,30 +37,30 @@ class RankingEntryCrudController extends AbstractCrudController
             ->update(Crud::PAGE_INDEX, Action::EDIT, static fn (Action $action) => $action->setLabel('Modifier'))
             ->update(Crud::PAGE_INDEX, Action::DELETE, static fn (Action $action) => $action->setLabel('Supprimer'))
             ->update(Crud::PAGE_NEW, Action::SAVE_AND_RETURN, static fn (Action $action) => $action->setLabel('Créer la ligne'))
-            ->update(Crud::PAGE_EDIT, Action::SAVE_AND_RETURN, static fn (Action $action) => $action->setLabel('Enregistrer les modifications'));
+            ->update(Crud::PAGE_EDIT, Action::SAVE_AND_RETURN, static fn (Action $action) => $action->setLabel('Enregistrer'));
     }
 
     public function configureFields(string $pageName): iterable
     {
         yield FormField::addFieldset('Équipe et saison')
-            ->setHelp("Rattache l'équipe à une saison puis renseigne ses statistiques.");
+            ->setHelp("Choisis la saison puis l'équipe à afficher dans le classement.");
 
         yield AssociationField::new('season', 'Saison')
             ->renderAsNativeWidget()
             ->setColumns(6)
-            ->setHelp('Saison à laquelle rattacher cette ligne de classement.');
+            ->setHelp('Saison à laquelle rattacher cette ligne.');
 
-        yield TextField::new('teamName', 'Équipe')
+        yield TextField::new('teamName', 'Nom de l’équipe')
             ->setColumns(6)
             ->setFormTypeOption('attr', [
                 'aria-label' => "Nom de l'équipe",
                 'autocomplete' => 'off',
                 'placeholder' => 'Exemple : Cécifoot La Bassée',
             ])
-            ->setHelp("Nom de l'équipe affiché dans le classement.");
+            ->setHelp("Nom affiché dans le tableau de classement.");
 
         yield FormField::addFieldset('Statistiques')
-            ->setHelp('Renseigne les chiffres qui doivent apparaître dans le tableau public.');
+            ->setHelp('Renseigne les chiffres à afficher dans le classement public.');
 
         yield IntegerField::new('points', 'Points')
             ->setColumns(3)
@@ -92,9 +93,9 @@ class RankingEntryCrudController extends AbstractCrudController
                 'inputmode' => 'numeric',
             ]);
 
-        yield IntegerField::new('displayOrder', 'Ordre')
+        yield IntegerField::new('displayOrder', "Ordre d'affichage")
             ->setColumns(3)
-            ->setHelp("Ordre d'affichage manuel. Laisse 0 pour suivre le tri automatique.")
+            ->setHelp('Laisse 0 si tu veux surtout t’appuyer sur les points.')
             ->setFormTypeOption('attr', [
                 'aria-label' => "Ordre d'affichage",
                 'min' => 0,

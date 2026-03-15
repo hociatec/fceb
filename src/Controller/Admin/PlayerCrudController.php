@@ -30,6 +30,7 @@ class PlayerCrudController extends AbstractCrudController
             ->setEntityLabelInPlural('Effectif')
             ->setDefaultSort(['displayOrder' => 'ASC', 'name' => 'ASC'])
             ->setPaginatorPageSize(10)
+            ->setSearchFields(['name', 'nationality', 'preferredPosition', 'slug'])
             ->showEntityActionsInlined();
     }
 
@@ -54,32 +55,32 @@ class PlayerCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         yield FormField::addFieldset('Identité du joueur')
-            ->setHelp('Ajoute le nom, la photo et les informations de présentation du joueur.');
+            ->setHelp('Renseigne les informations principales du joueur visibles sur sa fiche.');
 
-        yield TextField::new('name', 'Nom')
+        yield TextField::new('name', 'Nom complet')
             ->setColumns(8)
             ->setFormTypeOption('attr', [
                 'data-slug-source' => 'player',
                 'autocomplete' => 'off',
                 'aria-label' => 'Nom du joueur',
-                'placeholder' => 'Exemple : Romain Dupont',
+                'placeholder' => 'Exemple : Youness Guarziz',
             ])
             ->setHelp("Nom affiché dans l'effectif et sur la fiche joueur.");
 
-        yield TextField::new('slug', 'Slug')
+        yield TextField::new('slug', 'Adresse web')
             ->setColumns(4)
             ->setFormTypeOption('attr', [
                 'data-slug-target' => 'player',
                 'autocomplete' => 'off',
-                'aria-label' => 'Slug du joueur',
+                'aria-label' => 'Adresse web du joueur',
             ])
-            ->setHelp('Rempli automatiquement depuis le nom, modifiable si besoin.')
+            ->setHelp('Générée automatiquement depuis le nom, modifiable si besoin.')
             ->hideOnIndex();
 
         yield DateField::new('birthDate', 'Date de naissance')
             ->setColumns(4)
             ->setFormat('dd/MM/yyyy')
-            ->setHelp('L’âge affiché sur le site est calculé automatiquement à partir de cette date.');
+            ->setHelp("L'âge affiché sur le site est calculé automatiquement à partir de cette date.");
 
         yield TextField::new('nationality', 'Nationalité')
             ->setColumns(4)
@@ -87,7 +88,7 @@ class PlayerCrudController extends AbstractCrudController
 
         yield TextField::new('preferredPosition', 'Poste préférentiel')
             ->setColumns(4)
-            ->setHelp('Poste ou rôle de jeu préféré du joueur.');
+            ->setHelp('Poste ou rôle de jeu principal.');
 
         yield TextField::new('preferredFoot', 'Pied préférentiel')
             ->setColumns(4)
@@ -99,7 +100,7 @@ class PlayerCrudController extends AbstractCrudController
                 'readonly' => true,
                 'aria-label' => 'Âge du joueur',
             ])
-            ->setHelp('Champ conservé pour compatibilité. L’âge est désormais calculé depuis la date de naissance.')
+            ->setHelp("Champ calculé automatiquement depuis la date de naissance.")
             ->hideOnForm();
 
         yield ImageField::new('photo', 'Photo')
@@ -107,43 +108,32 @@ class PlayerCrudController extends AbstractCrudController
             ->setBasePath('uploads/players')
             ->setUploadDir('public/uploads/players')
             ->setUploadedFileNamePattern('[contenthash].[extension]')
-            ->setHelp("Photo du joueur, utilisée dans la page effectif et la fiche détaillée.")
+            ->setHelp("Photo utilisée dans la page effectif et sur la fiche détaillée.")
             ->hideOnIndex();
 
-        yield TextField::new('metaTitle', 'Meta title')
-            ->setColumns(6)
-            ->setHelp('Titre SEO facultatif. Si vide, le nom du joueur est utilisé.')
-            ->hideOnIndex();
-
-        yield TextareaField::new('metaDescription', 'Meta description')
-            ->setColumns(6)
-            ->setNumOfRows(3)
-            ->setHelp('Description SEO facultative. Si vide, une version courte de la présentation est utilisée.')
-            ->hideOnIndex();
-
-        yield TextareaField::new('description', 'Description')
+        yield TextareaField::new('description', 'Présentation du joueur')
             ->setColumns(12)
             ->setNumOfRows(10)
             ->setFormTypeOption('attr', [
                 'rows' => 8,
-                'aria-label' => 'Description du joueur',
-                'placeholder' => 'Présente le joueur, son parcours, ses qualités et sa place dans le collectif.',
+                'aria-label' => 'Présentation du joueur',
+                'placeholder' => 'Présente le joueur, son profil, ses qualités et sa place dans le collectif.',
             ])
-            ->setHelp('Ce texte sert à présenter le joueur sur sa fiche détaillée.');
+            ->setHelp('Texte principal visible sur la fiche du joueur.');
 
         yield FormField::addFieldset('Affichage')
-            ->setHelp("Définis l'ordre d'apparition, la visibilité publique et le statut du joueur.");
+            ->setHelp("Définis l'ordre dans l'effectif et la visibilité publique.");
 
-        yield IntegerField::new('displayOrder', 'Ordre')
+        yield IntegerField::new('displayOrder', "Ordre d'affichage")
             ->setColumns(4)
             ->setFormTypeOption('attr', [
                 'min' => 0,
                 'inputmode' => 'numeric',
                 'aria-label' => "Ordre d'affichage du joueur",
             ])
-            ->setHelp("Plus le nombre est petit, plus le joueur remonte dans l'effectif.");
+            ->setHelp("Plus le chiffre est petit, plus le joueur remonte dans l'effectif.");
 
-        yield ChoiceField::new('status', 'Statut')
+        yield ChoiceField::new('status', 'Visibilité')
             ->setChoices([
                 'Brouillon' => ContentStatus::Draft,
                 'Publié' => ContentStatus::Published,
@@ -151,6 +141,21 @@ class PlayerCrudController extends AbstractCrudController
             ])
             ->renderExpanded()
             ->setColumns(8)
-            ->setHelp('Définit si le joueur est en brouillon, visible publiquement ou archivé.');
+            ->setHelp('Brouillon : non visible. Publié : visible. Archivé : conservé.');
+
+        yield FormField::addFieldset('Référencement')
+            ->setHelp('Champs facultatifs pour Google et le partage social.')
+            ->hideOnIndex();
+
+        yield TextField::new('metaTitle', 'Titre SEO')
+            ->setColumns(6)
+            ->setHelp('Laisse vide pour reprendre automatiquement le nom du joueur.')
+            ->hideOnIndex();
+
+        yield TextareaField::new('metaDescription', 'Description SEO')
+            ->setColumns(6)
+            ->setNumOfRows(3)
+            ->setHelp('Laisse vide pour reprendre automatiquement un extrait de la présentation.')
+            ->hideOnIndex();
     }
 }

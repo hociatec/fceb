@@ -32,6 +32,7 @@ class ArticleCrudController extends AbstractCrudController
             ->setEntityLabelInPlural('Articles')
             ->setDefaultSort(['publishedAt' => 'DESC'])
             ->setPaginatorPageSize(10)
+            ->setSearchFields(['title', 'excerpt', 'slug'])
             ->showEntityActionsInlined();
     }
 
@@ -56,7 +57,7 @@ class ArticleCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         yield FormField::addFieldset("Informations de l'article")
-            ->setHelp("Renseigne le titre, le slug et la description courte avant le contenu complet.");
+            ->setHelp("Commence par le titre, le résumé et l'image, puis saisis le contenu complet.");
 
         yield TextField::new('title', 'Titre')
             ->setColumns(8)
@@ -64,49 +65,38 @@ class ArticleCrudController extends AbstractCrudController
                 'data-slug-source' => 'article',
                 'autocomplete' => 'off',
                 'aria-label' => "Titre de l'article",
-                'placeholder' => 'Exemple : Une victoire importante à Lens',
+                'placeholder' => 'Exemple : Victoire à Lens pour La Bassée',
             ])
-            ->setHelp("Titre affiché sur le site et dans les listes d'actualités.");
+            ->setHelp("Titre affiché sur le site et dans la liste des actualités.");
 
-        yield TextField::new('slug', 'Slug')
+        yield TextField::new('slug', 'Adresse web')
             ->setColumns(4)
             ->setFormTypeOption('attr', [
                 'data-slug-target' => 'article',
                 'autocomplete' => 'off',
-                'aria-label' => "Slug de l'article",
+                'aria-label' => "Adresse web de l'article",
             ])
-            ->setHelp('Rempli automatiquement depuis le titre, modifiable si besoin.')
+            ->setHelp('Générée automatiquement depuis le titre, modifiable si besoin.')
             ->hideOnIndex();
 
-        yield TextareaField::new('excerpt', 'Description courte')
+        yield TextareaField::new('excerpt', 'Résumé court')
             ->setColumns(12)
             ->setFormTypeOption('attr', [
-                'aria-label' => "Description courte de l'article",
+                'aria-label' => "Résumé court de l'article",
                 'rows' => 4,
-                'placeholder' => "Résumé court affiché sur l'accueil ou dans les listes d'articles.",
+                'placeholder' => "Quelques lignes pour résumer l'article sur l'accueil et dans les listes.",
             ])
-            ->setHelp('Court texte affiché dans les cartes et aperçus.');
+            ->setHelp("Court texte d'accroche affiché avant d'ouvrir l'article.");
 
-        yield TextField::new('metaTitle', 'Meta title')
-            ->setColumns(6)
-            ->setHelp('Titre SEO facultatif. Si vide, le titre de l’article est utilisé.')
-            ->hideOnIndex();
-
-        yield TextareaField::new('metaDescription', 'Meta description')
-            ->setColumns(6)
-            ->setNumOfRows(3)
-            ->setHelp('Description SEO facultative. Si vide, la description courte est utilisée.')
-            ->hideOnIndex();
-
-        yield ImageField::new('coverImage', 'Image de couverture')
+        yield ImageField::new('coverImage', 'Image principale')
             ->setColumns(12)
             ->setBasePath('uploads/articles')
             ->setUploadDir('public/uploads/articles')
             ->setUploadedFileNamePattern('[contenthash].[extension]')
-            ->setHelp("Image principale de l'article, affichée sur la page article et utilisable ensuite dans les listes.")
+            ->setHelp("Image d'illustration de l'article.")
             ->hideOnIndex();
 
-        yield TextEditorField::new('content', 'Contenu')
+        yield TextEditorField::new('content', 'Contenu complet')
             ->setColumns(12)
             ->setNumOfRows(18)
             ->setTrixEditorConfig([
@@ -120,39 +110,39 @@ class ArticleCrudController extends AbstractCrudController
                 'aria-label' => "Contenu complet de l'article",
                 'data-page-rich-editor' => '1',
             ])
-            ->setHelp('Utilise les boutons du haut pour créer des titres, des paragraphes, des listes et de la mise en forme.')
+            ->setHelp('Utilise les boutons du haut pour créer des titres, listes et paragraphes.')
             ->hideOnIndex();
 
         yield FormField::addFieldset('Publication')
-            ->setHelp("Définit quand, où et dans quel état l'article doit apparaître.");
+            ->setHelp("Choisis où l'article apparaît, pour quelle saison, et s'il est visible sur le site.");
 
         yield DateTimeField::new('publishedAt', 'Date de publication')
             ->setColumns(6)
             ->setFormTypeOption('attr', [
                 'aria-label' => 'Date et heure de publication',
             ])
-            ->setHelp('Date de publication affichée sur le site.');
+            ->setHelp('Date affichée publiquement sur le site.');
 
-        yield ChoiceField::new('placement', "Section d'affichage")
+        yield ChoiceField::new('placement', "Emplacement principal")
             ->setChoices([
-                'Aucune' => ArticlePlacement::None,
+                'Aucun emplacement spécial' => ArticlePlacement::None,
                 'Accueil' => ArticlePlacement::Homepage,
                 'Saison en cours' => ArticlePlacement::CurrentSeason,
                 'Archive' => ArticlePlacement::Archive,
             ])
             ->renderExpanded()
             ->setColumns(6)
-            ->setHelp("Choisit où l'article doit apparaître sur le site.");
+            ->setHelp("Choisis si l'article doit être mis en avant à un endroit précis.");
 
         yield AssociationField::new('season', 'Saison')
             ->setColumns(6)
-            ->setHelp("Saison à laquelle rattacher l'article.");
+            ->setHelp("Saison liée à l'article, si besoin.");
 
         yield AssociationField::new('author', 'Auteur')
             ->setColumns(6)
-            ->setHelp("Compte auteur associé à l'article.");
+            ->setHelp("Personne à afficher comme auteur de l'article.");
 
-        yield ChoiceField::new('status', 'Statut')
+        yield ChoiceField::new('status', 'Visibilité')
             ->setChoices([
                 'Brouillon' => ContentStatus::Draft,
                 'Publié' => ContentStatus::Published,
@@ -160,6 +150,21 @@ class ArticleCrudController extends AbstractCrudController
             ])
             ->renderExpanded()
             ->setColumns(12)
-            ->setHelp("Définit si l'article est en brouillon, visible publiquement ou archivé.");
+            ->setHelp("Brouillon : non visible. Publié : visible. Archivé : conservé sans être mis en avant.");
+
+        yield FormField::addFieldset('Référencement')
+            ->setHelp('Champs facultatifs pour Google et le partage social.')
+            ->hideOnIndex();
+
+        yield TextField::new('metaTitle', 'Titre SEO')
+            ->setColumns(6)
+            ->setHelp("Laisse vide pour reprendre automatiquement le titre de l'article.")
+            ->hideOnIndex();
+
+        yield TextareaField::new('metaDescription', 'Description SEO')
+            ->setColumns(6)
+            ->setNumOfRows(3)
+            ->setHelp('Laisse vide pour reprendre automatiquement le résumé court.')
+            ->hideOnIndex();
     }
 }

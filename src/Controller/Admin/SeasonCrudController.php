@@ -25,6 +25,7 @@ class SeasonCrudController extends AbstractCrudController
             ->setEntityLabelInPlural('Saisons')
             ->setDefaultSort(['startDate' => 'DESC'])
             ->setPaginatorPageSize(10)
+            ->setSearchFields(['name', 'slug'])
             ->showEntityActionsInlined();
     }
 
@@ -38,40 +39,41 @@ class SeasonCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        yield TextField::new('name', 'Nom')
+        yield TextField::new('name', 'Nom de la saison')
             ->setFormTypeOption('attr', [
                 'data-slug-source' => 'season',
                 'autocomplete' => 'off',
                 'aria-label' => 'Nom de la saison',
+                'placeholder' => 'Exemple : Saison 2026-2027',
             ])
-            ->setHelp('Exemple : Saison 2026-2027.');
+            ->setHelp('Nom visible dans le site et dans les listes admin.');
 
-        yield TextField::new('slug', 'Slug')
+        yield TextField::new('slug', 'Adresse web')
             ->setFormTypeOption('attr', [
                 'data-slug-target' => 'season',
                 'autocomplete' => 'off',
-                'aria-label' => 'Slug de la saison',
+                'aria-label' => 'Adresse web de la saison',
             ])
-            ->setHelp('Rempli automatiquement depuis le nom, modifiable si besoin.')
+            ->setHelp('Générée automatiquement depuis le nom, modifiable si besoin.')
             ->hideOnIndex();
 
         yield DateField::new('startDate', 'Début de saison')
             ->setFormTypeOption('attr', [
                 'aria-label' => 'Date de début de la saison',
             ])
-            ->setHelp('Date de début officielle de la saison.');
+            ->setHelp('Date de début officielle.');
 
         yield DateField::new('endDate', 'Fin de saison')
             ->setFormTypeOption('attr', [
                 'aria-label' => 'Date de fin de la saison',
             ])
-            ->setHelp('Date de fin officielle de la saison.');
+            ->setHelp('Date de fin officielle.');
 
-        yield BooleanField::new('isCurrent', 'Saison active')
+        yield BooleanField::new('isCurrent', 'Saison en cours')
             ->renderAsSwitch(false)
             ->setFormTypeOption('attr', [
                 'aria-label' => 'Définir cette saison comme saison en cours',
             ])
-            ->setHelp('À activer uniquement pour la saison actuellement affichée sur le site.');
+            ->setHelp('Active ce bouton uniquement pour la saison actuellement mise en avant sur le site.');
     }
 }

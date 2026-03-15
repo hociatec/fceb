@@ -25,6 +25,7 @@ class SocialLinkCrudController extends AbstractCrudController
             ->setEntityLabelInPlural('Réseaux sociaux')
             ->setDefaultSort(['displayOrder' => 'ASC'])
             ->setPaginatorPageSize(10)
+            ->setSearchFields(['label', 'url'])
             ->showEntityActionsInlined();
     }
 
@@ -38,26 +39,33 @@ class SocialLinkCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        yield TextField::new('label', 'Libellé')
+        yield TextField::new('label', 'Nom affiché')
             ->setFormTypeOption('attr', [
                 'aria-label' => 'Nom du réseau social',
+                'placeholder' => 'Exemple : Facebook',
             ])
-            ->setHelp("Nom affiché dans l'en-tête du site.");
-        yield TextField::new('url', 'URL')
+            ->setHelp('Nom affiché sur le site.');
+
+        yield TextField::new('url', 'Lien')
             ->setFormTypeOption('attr', [
                 'autocomplete' => 'url',
                 'aria-label' => 'Adresse du réseau social',
+                'placeholder' => 'https://...',
             ])
-            ->setHelp('Lien complet vers le profil social.');
+            ->setHelp('Lien complet vers la page ou le profil social.');
+
         yield TextField::new('icon', 'Icône')
             ->setFormTypeOption('attr', [
                 'aria-label' => "Nom de l'icône du réseau social",
+                'placeholder' => 'Exemple : facebook',
             ])
-            ->setHelp("Nom technique de l'icône si utilisé par le thème.");
-        yield IntegerField::new('displayOrder', 'Ordre')
-            ->setHelp("Ordre d'affichage dans l'en-tête.");
-        yield BooleanField::new('isVisible', 'Visible')
+            ->setHelp("Nom technique de l'icône si le thème l'utilise.");
+
+        yield IntegerField::new('displayOrder', "Ordre d'affichage")
+            ->setHelp('Plus le chiffre est petit, plus le lien remonte.');
+
+        yield BooleanField::new('isVisible', 'Visible sur le site')
             ->renderAsSwitch(false)
-            ->setHelp("Active l'affichage public du lien social.");
+            ->setHelp('Active ou masque ce lien sur le site public.');
     }
 }
