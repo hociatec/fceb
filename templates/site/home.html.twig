@@ -40,42 +40,107 @@
             </article>
         {% endif %}
 
-        {% for section in homeSections %}
-            <article class="card wide home-section-card">
+        <section class="home-stage">
+            <article class="card home-stage-main">
                 <div class="section-heading">
                     <div>
-                        <h2>{{ section.title }}</h2>
+                        <h2>Actualité à la une</h2>
+                        <p>Le contenu principal à retenir en ce moment.</p>
                     </div>
                 </div>
 
-                {% if section.key == 'latest_article' %}
-                    {% if latestArticle %}
-                        <div class="story-inline">
-                            <img class="story-media tall" src="{{ latestArticle.coverImage ? asset('uploads/articles/' ~ latestArticle.coverImage) : asset('assets/club-placeholder.svg') }}" alt="{{ latestArticle.title }}">
-                            <div class="home-feature-article">
-                                <span class="tag">À la une</span>
-                                <h3>{{ latestArticle.title }}</h3>
-                                {% if latestArticle.excerpt %}
-                                    <p>
-                                        <a class="article-link" href="{{ path('site_article', {slug: latestArticle.slug}) }}">{{ latestArticle.excerpt }}</a>
-                                    </p>
+                {% if latestArticle %}
+                    <div class="story-inline">
+                        <img class="story-media tall" src="{{ latestArticle.coverImage ? asset('uploads/articles/' ~ latestArticle.coverImage) : asset('assets/club-placeholder.svg') }}" alt="{{ latestArticle.title }}">
+                        <div class="home-feature-article">
+                            <span class="tag">À la une</span>
+                            <h3><a class="article-link" href="{{ path('site_article', {slug: latestArticle.slug}) }}">{{ latestArticle.title }}</a></h3>
+                            {% if latestArticle.excerpt %}
+                                <p>{{ latestArticle.excerpt }}</p>
+                            {% endif %}
+                            <div class="home-meta-row">
+                                <span>{{ latestArticle.publishedAt|date('d/m/Y H:i') }}</span>
+                                {% if latestArticle.season %}
+                                    <span>{{ latestArticle.season.name }}</span>
                                 {% endif %}
-                                <div class="home-meta-row">
-                                    <span>{{ latestArticle.publishedAt|date('d/m/Y H:i') }}</span>
-                                    {% if latestArticle.season %}
-                                        <span>{{ latestArticle.season.name }}</span>
-                                    {% endif %}
-                                </div>
-                                <a class="button secondary" href="{{ path('site_article', {slug: latestArticle.slug}) }}">Lire l’article</a>
                             </div>
                         </div>
+                    </div>
+                {% else %}
+                    <p>Aucune actualité publiée.</p>
+                {% endif %}
+
+                {% if recentArticles is not empty %}
+                    <div class="home-subsection">
+                        <div class="section-heading">
+                            <div>
+                                <h3>Autres actualités</h3>
+                            </div>
+                        </div>
+                        <div class="home-article-list">
+                            {% for article in recentArticles %}
+                                <article class="home-article-item">
+                                    <div class="home-article-copy">
+                                        <strong><a class="article-link" href="{{ path('site_article', {slug: article.slug}) }}">{{ article.title }}</a></strong>
+                                        <p class="muted">{{ article.publishedAt|date('d/m/Y') }}{% if article.season %} · {{ article.season.name }}{% endif %}</p>
+                                        {% if article.excerpt %}
+                                            <p>{{ article.excerpt }}</p>
+                                        {% endif %}
+                                    </div>
+                                </article>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </article>
+
+            <aside class="home-stage-side">
+                <article class="card">
+                    <div class="section-heading">
+                        <div>
+                            <h2>Prochain match</h2>
+                            <p>Le prochain rendez-vous sportif du club.</p>
+                        </div>
+                    </div>
+
+                    {% if nextMatch %}
+                        <div class="home-feature-article">
+                            <span class="tag">À venir</span>
+                            <div class="team-poster">
+                                <div class="team-side">
+                                    <img class="team-logo" src="{{ asset(team_logo(nextMatch.homeTeamName)) }}" alt="{{ nextMatch.homeTeamName }}">
+                                    <strong>{{ nextMatch.homeTeamName }}</strong>
+                                </div>
+                                <span class="team-vs">vs</span>
+                                <div class="team-side">
+                                    <img class="team-logo" src="{{ asset(team_logo(nextMatch.awayTeamName)) }}" alt="{{ nextMatch.awayTeamName }}">
+                                    <strong>{{ nextMatch.awayTeamName }}</strong>
+                                </div>
+                            </div>
+                            <p class="muted">{{ nextMatch.matchDate|date('d/m/Y H:i') }}</p>
+                            {% if nextMatch.location %}
+                                <p>{{ nextMatch.location }}</p>
+                            {% endif %}
+                            {% if nextMatch.competition %}
+                                <p class="muted">{{ nextMatch.competition }}</p>
+                            {% endif %}
+                        </div>
                     {% else %}
-                        <p>Aucune actualité publiée.</p>
+                        <p>Aucun match programmé.</p>
                     {% endif %}
-                {% elseif section.key == 'upcoming_matches' %}
-                    {% if upcomingMatches is not empty %}
+                </article>
+
+                <article class="card">
+                    <div class="section-heading">
+                        <div>
+                            <h2>Matchs à venir</h2>
+                            <p>Les prochaines rencontres déjà programmées.</p>
+                        </div>
+                    </div>
+
+                    {% if otherUpcomingMatches is not empty %}
                         <div class="home-match-grid">
-                            {% for match in upcomingMatches %}
+                            {% for match in otherUpcomingMatches %}
                                 <article class="home-match-card">
                                     <div class="team-poster">
                                         <div class="team-side">
@@ -95,44 +160,55 @@
                                 </article>
                             {% endfor %}
                         </div>
+                    {% elseif nextMatch %}
+                        <p class="muted">Aucun autre match n’est encore programmé après le prochain rendez-vous.</p>
                     {% else %}
-                        <p>Aucun match programmé.</p>
+                        <p>Aucun match à venir.</p>
                     {% endif %}
-                {% elseif section.key == 'last_match' %}
-                    {% if lastMatch %}
-                        <div class="story-inline">
-                            {% if lastMatchArticle %}
-                                <img class="story-media tall" src="{{ lastMatchArticle.coverImage ? asset('uploads/articles/' ~ lastMatchArticle.coverImage) : asset('assets/club-placeholder.svg') }}" alt="{{ lastMatch.poster }}">
-                            {% endif %}
-                            <div class="home-feature-article">
-                                <span class="tag">Dernier résultat</span>
-                                <div class="team-poster">
-                                    <div class="team-side">
-                                        <img class="team-logo" src="{{ asset(team_logo(lastMatch.homeTeamName)) }}" alt="{{ lastMatch.homeTeamName }}">
-                                        <strong>{{ lastMatch.homeTeamName }}</strong>
-                                    </div>
-                                    <span class="team-vs">vs</span>
-                                    <div class="team-side">
-                                        <img class="team-logo" src="{{ asset(team_logo(lastMatch.awayTeamName)) }}" alt="{{ lastMatch.awayTeamName }}">
-                                        <strong>{{ lastMatch.awayTeamName }}</strong>
-                                    </div>
-                                </div>
-                                {% if lastMatchArticle %}
-                                    <p>
-                                        <a class="article-link" href="{{ path('site_article', {slug: lastMatchArticle.slug}) }}">
-                                            {{ lastMatchArticle.excerpt ?: 'Lire le compte-rendu du match.' }}
-                                        </a>
-                                    </p>
-                                {% endif %}
-                                <p class="muted">{{ lastMatch.matchDate|date('d/m/Y H:i') }}{% if lastMatch.location %} · {{ lastMatch.location }}{% endif %}</p>
-                                <p><span class="score">{{ lastMatch.ourScore }} - {{ lastMatch.opponentScore }}</span></p>
+                </article>
+            </aside>
+        </section>
+
+        <article class="card wide home-section-card">
+            <div class="section-heading">
+                <div>
+                    <h2>Dernier résultat</h2>
+                    <p>Le dernier résultat disponible du club.</p>
+                </div>
+            </div>
+
+            {% if lastMatch %}
+                <div class="story-inline">
+                    {% if lastMatchArticle %}
+                        <img class="story-media tall" src="{{ lastMatchArticle.coverImage ? asset('uploads/articles/' ~ lastMatchArticle.coverImage) : asset('assets/club-placeholder.svg') }}" alt="{{ lastMatch.poster }}">
+                    {% endif %}
+                    <div class="home-feature-article">
+                        <span class="tag">Dernier résultat</span>
+                        <div class="team-poster">
+                            <div class="team-side">
+                                <img class="team-logo" src="{{ asset(team_logo(lastMatch.homeTeamName)) }}" alt="{{ lastMatch.homeTeamName }}">
+                                <strong>{{ lastMatch.homeTeamName }}</strong>
+                            </div>
+                            <span class="team-vs">vs</span>
+                            <div class="team-side">
+                                <img class="team-logo" src="{{ asset(team_logo(lastMatch.awayTeamName)) }}" alt="{{ lastMatch.awayTeamName }}">
+                                <strong>{{ lastMatch.awayTeamName }}</strong>
                             </div>
                         </div>
-                    {% else %}
-                        <p>Aucun résultat disponible.</p>
-                    {% endif %}
-                {% endif %}
-            </article>
-        {% endfor %}
+                        {% if lastMatchArticle %}
+                            <p>
+                                <a class="article-link" href="{{ path('site_article', {slug: lastMatchArticle.slug}) }}">
+                                    {{ lastMatchArticle.excerpt ?: 'Voir le compte-rendu du match.' }}
+                                </a>
+                            </p>
+                        {% endif %}
+                        <p class="muted">{{ lastMatch.matchDate|date('d/m/Y H:i') }}{% if lastMatch.location %} · {{ lastMatch.location }}{% endif %}</p>
+                        <p><span class="score">{{ lastMatch.ourScore }} - {{ lastMatch.opponentScore }}</span></p>
+                    </div>
+                </div>
+            {% else %}
+                <p>Aucun résultat disponible.</p>
+            {% endif %}
+        </article>
     </section>
 {% endblock %}

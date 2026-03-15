@@ -49,6 +49,10 @@ class SiteController extends AbstractController
         $upcomingMatches = $matchRepository->findUpcomingMatches();
         $lastMatch = $matchRepository->findLastMatch();
         $candidateArticles = $articleRepository->findLatestPublished(50);
+        $recentArticles = array_values(array_filter(
+            $articleRepository->findLatestPublished(4),
+            static fn (Article $article): bool => !$latestArticle || $article->getId() !== $latestArticle->getId()
+        ));
         $discoverPage = $pageRepository->findPublishedBySlug('decouvrir-le-cecifoot');
 
         return $this->render('site/home.html.twig', [
@@ -58,6 +62,9 @@ class SiteController extends AbstractController
             'latestArticle' => $latestArticle,
             'homeSections' => $this->resolveHomeSections($homeSectionRepository),
             'upcomingMatches' => $upcomingMatches,
+            'nextMatch' => $upcomingMatches[0] ?? null,
+            'otherUpcomingMatches' => array_slice($upcomingMatches, 1, 3),
+            'recentArticles' => array_slice($recentArticles, 0, 3),
             'lastMatch' => $lastMatch,
             'lastMatchArticle' => $this->findMatchingArticleForMatch($lastMatch, $candidateArticles),
             'partners' => $partnerRepository->findVisibleOrdered(),
