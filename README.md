@@ -1,6 +1,6 @@
 # Cecifoot La Bassee API
 
-API Symfony pour le site du club, avec administration EasyAdmin.
+API Symfony pour le site du club, avec administration EasyAdmin et base MySQL.
 
 ## Fonctionnel
 
@@ -13,9 +13,36 @@ API Symfony pour le site du club, avec administration EasyAdmin.
 
 ```bash
 composer install
+php bin/console doctrine:database:create --if-not-exists
 php bin/console doctrine:migrations:migrate --no-interaction
 php bin/console doctrine:fixtures:load --no-interaction
 php -S 127.0.0.1:8000 -t public
+```
+
+## Base de donnees
+
+- Configuration par defaut: MySQL
+- URL locale par defaut: `mysql://app:!ChangeMe!@127.0.0.1:3306/fceb?serverVersion=8.0.32&charset=utf8mb4`
+- Pensez a definir `DATABASE_URL` sur le serveur de production avec vos vrais identifiants
+
+## Mise en production MySQL
+
+1. Creer une base MySQL distante, par exemple `fceb_prod`
+2. Creer un utilisateur MySQL dedie avec tous les droits sur cette base
+3. Copier les variables de [`.env.prod.local.example`](C:/wamp64/www/fceb/.env.prod.local.example) dans `.env.prod.local` sur le serveur
+4. Importer le dump SQL genere localement dans la base distante
+5. Installer le projet en production :
+
+```bash
+composer install --no-dev --optimize-autoloader
+php bin/console cache:clear --env=prod
+php bin/console cache:warmup --env=prod
+```
+
+Exemple d'import SQL sur le serveur distant :
+
+```bash
+mysql -u fceb_user -p fceb_prod < fceb-mysql.sql
 ```
 
 ## Acces demo
