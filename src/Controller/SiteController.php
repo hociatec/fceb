@@ -512,6 +512,11 @@ class SiteController extends AbstractController
     ): Response {
         /** @var User $user */
         $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            return $this->redirectToRoute('app_login');
+        }
+
         $data = new AccountProfileData();
         $data->fullName = $user->getFullName();
         $data->email = $user->getEmail();
