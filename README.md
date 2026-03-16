@@ -15,9 +15,12 @@ API Symfony pour le site du club, avec administration EasyAdmin et base MySQL.
 composer install
 php bin/console doctrine:database:create --if-not-exists
 php bin/console doctrine:migrations:migrate --no-interaction
-php bin/console doctrine:fixtures:load --no-interaction
 php -S 127.0.0.1:8000 -t public
 ```
+
+Tests sur MariaDB (environnement `test`): crée la base `fceb_test` puis lance `php bin/phpunit`.
+
+Les migrations inserent aussi le contenu initial editable en base: compte admin de demo, saisons, actualites, matchs, pages, reseaux sociaux et partenaires.
 
 ## Base de donnees
 
