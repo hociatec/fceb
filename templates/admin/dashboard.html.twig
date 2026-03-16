@@ -26,6 +26,15 @@
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 1rem;
         }
+        .admin-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+        .admin-group-stack {
+            display: grid;
+            gap: 1rem;
+        }
         .admin-card {
             background: #fff;
             border: 1px solid rgba(15, 35, 24, .08);
@@ -45,25 +54,57 @@
         .admin-stat strong {
             font-size: 2rem;
         }
-        .admin-links {
+        .admin-summary-card {
+            display: grid;
+            gap: .35rem;
+            padding: 1.25rem;
+            border-radius: 18px;
+            background: linear-gradient(180deg, #f7fbf9, #edf5f1);
+            border: 1px solid rgba(18, 58, 44, .08);
+        }
+        .admin-summary-card strong {
+            color: #123a2c;
+            font-size: clamp(1.9rem, 3vw, 2.4rem);
+            line-height: 1;
+        }
+        .admin-summary-note {
+            color: #61766b;
+            font-size: .9rem;
+        }
+        .admin-form {
             display: flex;
             flex-wrap: wrap;
             gap: .75rem;
+            align-items: center;
         }
-        .admin-links a {
+        .admin-button {
             display: inline-flex;
             align-items: center;
-            padding: .75rem 1rem;
+            justify-content: center;
+            padding: .8rem 1.1rem;
+            border: 0;
             border-radius: 999px;
+            background: #123a2c;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .admin-button:hover,
+        .admin-button:focus-visible {
+            background: #1f6048;
+            outline: none;
+        }
+        .admin-button:disabled {
+            cursor: not-allowed;
+            background: #9db1a7;
+        }
+        .admin-button.secondary {
             background: #eff6f2;
             color: #123a2c;
-            font-weight: 700;
-            text-decoration: none;
         }
-        .admin-links a:hover,
-        .admin-links a:focus-visible {
+        .admin-button.secondary:hover,
+        .admin-button.secondary:focus-visible {
             background: #dcebe4;
-            outline: none;
         }
         .admin-list {
             display: grid;
@@ -76,6 +117,19 @@
         .admin-list-item:first-child {
             border-top: 0;
             padding-top: 0;
+        }
+        .admin-list.compact {
+            gap: .45rem;
+        }
+        .admin-list.compact .admin-list-item {
+            display: grid;
+            gap: .15rem;
+            padding-top: .55rem;
+        }
+        .admin-list.compact h3 {
+            margin: 0;
+            font-size: 1rem;
+            line-height: 1.35;
         }
         .admin-meta {
             color: #61766b;
@@ -110,6 +164,58 @@
             color: #123a2c;
             text-decoration: none;
         }
+        .admin-subsection {
+            display: grid;
+            gap: .85rem;
+            margin-top: 1.15rem;
+            padding-top: 1.15rem;
+            border-top: 1px solid rgba(15, 35, 24, .08);
+        }
+        .admin-subsection:first-child {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: 0;
+        }
+        .admin-subsection-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: .45rem;
+        }
+        .admin-subsection-head h3 {
+            margin: 0;
+            color: #123a2c;
+            font-size: 1rem;
+        }
+        .admin-disclosure {
+            border: 0;
+            margin: 0;
+            padding: 0;
+        }
+        .admin-disclosure summary {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            cursor: pointer;
+            list-style: none;
+            font-weight: 800;
+            color: #123a2c;
+        }
+        .admin-disclosure summary span:first-child {
+            flex: 0 1 auto;
+        }
+        .admin-disclosure-summary-meta {
+            margin-left: .6rem;
+            color: #61766b;
+            font-size: .9rem;
+            font-weight: 600;
+        }
+        .admin-disclosure summary::-webkit-details-marker {
+            display: none;
+        }
+        .admin-disclosure-body {
+            margin-top: 1rem;
+        }
     </style>
 
     <div class="admin-shell">
@@ -126,65 +232,198 @@
             </div>
         </section>
 
-        <section class="admin-grid">
-            {% for stat in stats %}
-                <article class="admin-card">
-                    <div class="admin-stat">
-                        <div>
-                            <div class="admin-meta">{{ stat.label }}</div>
-                            <strong>{{ stat.value }}</strong>
-                        </div>
-                        <i class="{{ stat.icon }}"></i>
-                    </div>
-                    <div style="margin-top: 1rem;">
-                        <a href="{{ stat.url }}">Ouvrir</a>
-                    </div>
-                </article>
-            {% endfor %}
-        </section>
-
         <section class="admin-card">
-            <h2>Actions rapides</h2>
-            <div class="admin-links" style="margin-top: 1rem;">
-                {% for link in quickLinks %}
-                    <a href="{{ link.url }}">{{ link.label }}</a>
-                {% endfor %}
+            <h2>Statistiques globales</h2>
+            <div class="admin-meta" style="margin-top: .35rem;">
+                Vue rapide des indicateurs réellement suivis dans l’administration.
             </div>
-        </section>
-
-        <section class="admin-card">
-            <h2>État du contenu</h2>
-            <div class="admin-meta" style="margin-top: .4rem;">
-                {{ draftArticles }} article{% if draftArticles > 1 %}s{% endif %} en brouillon · {{ draftPages }} page{% if draftPages > 1 %}s{% endif %} en brouillon
-            </div>
-            <div class="admin-checks" style="margin-top: 1rem;">
-                {% for check in contentChecks %}
-                    <article class="admin-check {{ check.level }}">
-                        <strong>{{ check.label }}</strong>
-                        <div>{{ check.message }}</div>
-                        <a href="{{ check.url }}">Ouvrir</a>
+            <div class="admin-summary-grid" style="margin-top: 1rem;">
+                {% for stat in summaryStats %}
+                    <article class="admin-summary-card">
+                        <div class="admin-meta">{{ stat.label }}</div>
+                        <strong>{{ stat.value }}</strong>
+                        <div class="admin-summary-note">{{ stat.meta }}</div>
                     </article>
-                {% else %}
-                    <div class="admin-check info">
-                        <strong>Tout est en place</strong>
-                        <div>Les éléments essentiels de contenu sont présents dans l'administration.</div>
-                    </div>
                 {% endfor %}
+            </div>
+            <div class="admin-summary-note" style="margin-top: 1rem;">
+                Bénévolat : le formulaire actuel envoie un e-mail mais ne crée pas encore d’enregistrement en base, donc aucun compteur fiable n’est affiché ici.
             </div>
         </section>
 
+        <div class="admin-group-stack">
+            {% for group in statGroups %}
+                <section class="admin-card">
+                    <details class="admin-disclosure">
+                        <summary>
+                            <span>{{ group.label }} ({{ group.items|length }})</span>
+                            <span class="admin-disclosure-summary-meta">{{ group.description }}</span>
+                        </summary>
+                        <div class="admin-disclosure-body">
+                            <div class="admin-grid">
+                                {% for stat in group.items %}
+                                    <article class="admin-card">
+                                        <div class="admin-stat">
+                                            <div>
+                                                <div class="admin-meta">{{ stat.label }}</div>
+                                                <strong>{{ stat.value }}</strong>
+                                            </div>
+                                            <i class="{{ stat.icon }}"></i>
+                                        </div>
+                                        <div style="margin-top: 1rem;">
+                                            <a href="{{ stat.url }}">Ouvrir</a>
+                                        </div>
+                                    </article>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </details>
+                </section>
+            {% endfor %}
+        </div>
+
         <section class="admin-card">
-            <h2>Derniers articles publiés</h2>
-            <div class="admin-list" style="margin-top: 1rem;">
-                {% for article in latestArticles %}
-                    <div class="admin-list-item">
-                        <h3>{{ article.title }}</h3>
-                        <div class="admin-meta">{{ article.publishedAt|date('d/m/Y H:i') }}{% if article.season %} · {{ article.season.name }}{% endif %}</div>
-                    </div>
-                {% else %}
-                    <p>Aucun article disponible.</p>
-                {% endfor %}
-            </div>
+            <details class="admin-disclosure">
+                <summary>
+                    <span>Pilotage éditorial</span>
+                    <span class="admin-disclosure-summary-meta">
+                        {{ contentChecks|length }} point{% if contentChecks|length > 1 %}s{% endif %} à suivre · {{ scheduledArticles|length }} publication{% if scheduledArticles|length > 1 %}s{% endif %} planifiée{% if scheduledArticles|length > 1 %}s{% endif %}
+                    </span>
+                </summary>
+                <div class="admin-disclosure-body">
+                    <section class="admin-subsection">
+                        <div class="admin-subsection-head">
+                            <h3>État du contenu</h3>
+                            <div class="admin-meta">
+                                {{ draftArticles }} article{% if draftArticles > 1 %}s{% endif %} en brouillon · {{ draftPages }} page{% if draftPages > 1 %}s{% endif %} en brouillon
+                            </div>
+                        </div>
+                        <div class="admin-checks">
+                            {% for check in contentChecks %}
+                                <article class="admin-check {{ check.level }}">
+                                    <strong>{{ check.label }}</strong>
+                                    <div>{{ check.message }}</div>
+                                    <a href="{{ check.url }}">Ouvrir</a>
+                                </article>
+                            {% else %}
+                                <div class="admin-check info">
+                                    <strong>Tout est en place</strong>
+                                    <div>Les éléments essentiels de contenu sont présents dans l'administration.</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </section>
+
+                    <section class="admin-subsection">
+                        <div class="admin-subsection-head">
+                            <h3>Publications planifiées</h3>
+                            <div class="admin-meta">({{ scheduledArticles|length }})</div>
+                        </div>
+                        <div class="admin-list">
+                            {% for article in scheduledArticles %}
+                                <div class="admin-list-item">
+                                    <h3>{{ article.title }}</h3>
+                                    <div class="admin-meta">
+                                        Mise en ligne prévue le {{ article.publishedAt|date('d/m/Y H:i') }}
+                                        {% if article.season %} · {{ article.season.name }}{% endif %}
+                                    </div>
+                                </div>
+                            {% else %}
+                                <p>Aucune publication planifiée.</p>
+                            {% endfor %}
+                        </div>
+                    </section>
+
+                    <section class="admin-subsection">
+                        <div class="admin-subsection-head">
+                            <h3>Derniers articles publiés</h3>
+                            <div class="admin-meta">({{ latestArticles|length }})</div>
+                        </div>
+                        <div class="admin-list compact">
+                            {% for article in latestArticles %}
+                                <div class="admin-list-item">
+                                    <h3>{{ article.title }}</h3>
+                                    <div class="admin-meta">{{ article.publishedAt|date('d/m/Y H:i') }}{% if article.season %} · {{ article.season.name }}{% endif %}</div>
+                                </div>
+                            {% else %}
+                                <p>Aucun article disponible.</p>
+                            {% endfor %}
+                        </div>
+                    </section>
+                </div>
+            </details>
+        </section>
+
+        <section class="admin-card">
+            <details class="admin-disclosure">
+                <summary>
+                    <span>Synchronisation sportive</span>
+                    {% if latestSyncRun %}
+                        <span class="admin-disclosure-summary-meta">
+                            Dernier lancement : {{ latestSyncRun.createdAt|date('d/m/Y H:i') }}
+                        </span>
+                    {% else %}
+                        <span class="admin-disclosure-summary-meta">Aucun lancement enregistré</span>
+                    {% endif %}
+                </summary>
+                <div class="admin-disclosure-body">
+                    <section class="admin-subsection">
+                        <div class="admin-subsection-head">
+                            <h3>Synchronisation Tournify</h3>
+                            <div class="admin-meta">({{ recentSyncRuns|length }})</div>
+                        </div>
+                        <div class="admin-meta">
+                            Source : {{ tournifySync.teamName }} · {{ tournifySync.liveLink }} · division {{ tournifySync.divisionId }}
+                        </div>
+                        <div class="admin-meta" style="margin-top: .35rem;">
+                            Cette action recale les matchs de la saison en cours sur Tournify.
+                        </div>
+                        {% if latestSyncRun %}
+                            <div class="admin-meta" style="margin-top: .35rem;">
+                                Dernier lancement : {{ latestSyncRun.createdAt|date('d/m/Y H:i') }} · {{ latestSyncRun.status.value }}{% if latestSyncRun.isDryRun %} · prévisualisation{% endif %}
+                            </div>
+                        {% endif %}
+                        <form method="post" action="{{ path('admin_tournify_sync_matches') }}" class="admin-form" style="margin-top: 1rem;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('admin_tournify_sync_matches') }}">
+                            <button type="submit" class="admin-button secondary" name="dry_run" value="1" {% if not currentSeason %}disabled{% endif %}>Prévisualiser</button>
+                            <button type="submit" class="admin-button" {% if not currentSeason %}disabled{% endif %}>Synchroniser les matchs</button>
+                            <a href="{{ tournifySync.matchesUrl }}" class="admin-meta" style="text-decoration: none;">Ouvrir les matchs</a>
+                            <a href="{{ tournifySync.historyUrl }}" class="admin-meta" style="text-decoration: none;">Voir le journal</a>
+                        </form>
+                        {% if not currentSeason %}
+                            <div class="admin-meta" style="margin-top: .6rem;">
+                                Définis d'abord une saison en cours pour activer la synchronisation.
+                            </div>
+                        {% endif %}
+                    </section>
+
+                    <section class="admin-subsection">
+                        <div class="admin-subsection-head">
+                            <h3>Historique récent</h3>
+                            <div class="admin-meta">({{ recentSyncRuns|length }})</div>
+                        </div>
+                        <div class="admin-list">
+                            {% for run in recentSyncRuns %}
+                                <div class="admin-list-item">
+                                    <strong>{{ run.createdAt|date('d/m/Y H:i') }}</strong>
+                                    <div class="admin-meta">
+                                        {{ run.status.value }}{% if run.isDryRun %} · prévisualisation{% endif %}
+                                        · {{ run.sourceMatches }} source
+                                        · {{ run.createdCount }} créés
+                                        · {{ run.updatedCount }} mis à jour
+                                        · {{ run.removedCount }} supprimés
+                                    </div>
+                                    {% if run.message %}
+                                        <div class="admin-meta">{{ run.message }}</div>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <p>Aucun historique disponible.</p>
+                            {% endfor %}
+                        </div>
+                    </section>
+                </div>
+            </details>
         </section>
     </div>
 {% endblock %}

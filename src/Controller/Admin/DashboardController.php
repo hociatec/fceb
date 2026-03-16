@@ -2,7 +2,12 @@
 
 namespace App\Controller\Admin;
 
+use App\Entity\Article;
 use App\Enum\ContentStatus;
+use App\Enum\ArticleHomepageSlot;
+use App\Enum\TournifySyncStatus;
+use App\Entity\HomeSection;
+use App\Entity\MatchGame;
 use App\Repository\ArticleRepository;
 use App\Repository\ClubSettingsRepository;
 use App\Repository\HomeSectionRepository;
@@ -14,7 +19,11 @@ use App\Repository\RankingEntryRepository;
 use App\Repository\SeasonRepository;
 use App\Repository\SocialLinkRepository;
 use App\Repository\TeamIdentityRepository;
+use App\Repository\TournifySyncRunRepository;
 use App\Repository\UserRepository;
+use App\Service\MatchArticleResolver;
+use App\Service\Tournify\TournifyMatchSyncer;
+use App\Service\Tournify\TournifySyncRunLogger;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
@@ -22,7 +31,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
 
 #[AdminDashboard(routePath: '/admin', routeName: 'admin')]
 class DashboardController extends AbstractDashboardController
@@ -40,7 +51,11 @@ class DashboardController extends AbstractDashboardController
         private readonly RankingEntryRepository $rankingEntryRepository,
         private readonly PlayerRepository $playerRepository,
         private readonly UserRepository $userRepository,
+        private readonly TournifySyncRunRepository $tournifySyncRunRepository,
         private readonly AdminUrlGenerator $adminUrlGenerator,
+        private readonly MatchArticleResolver $matchArticleResolver,
+        private readonly TournifyMatchSyncer $tournifyMatchSyncer,
+        private readonly TournifySyncRunLogger $tournifySyncRunLogger,
     ) {
     }
 
@@ -57,39 +72,118 @@ class DashboardController extends AbstractDashboardController
         $homeSectionCount = $this->homeSectionRepository->count([]);
         $clubSettingsCount = $this->clubSettingsRepository->count([]);
         $teamIdentityCount = $this->teamIdentityRepository->count([]);
-
-        $stats = [
-            ['label' => 'Saisons', 'value' => $this->seasonRepository->count([]), 'icon' => 'fa fa-calendar', 'url' => $this->crudUrl(SeasonCrudController::class)],
-            ['label' => 'Articles publiés', 'value' => $publishedArticles, 'icon' => 'fa fa-newspaper', 'url' => $this->crudUrl(ArticleCrudController::class)],
-            ['label' => 'Blocs accueil', 'value' => $homeSectionCount, 'icon' => 'fa fa-panorama', 'url' => $this->crudUrl(HomeSectionCrudController::class)],
-            ['label' => 'Paramètres club', 'value' => $clubSettingsCount, 'icon' => 'fa fa-sliders', 'url' => $this->crudUrl(ClubSettingsCrudController::class)],
-            ['label' => 'Matchs', 'value' => $this->matchGameRepository->count([]), 'icon' => 'fa fa-futbol', 'url' => $this->crudUrl(MatchGameCrudController::class)],
-            ['label' => 'Classement', 'value' => $this->rankingEntryRepository->count([]), 'icon' => 'fa fa-list-ol', 'url' => $this->crudUrl(RankingEntryCrudController::class)],
-            ['label' => 'Effectif', 'value' => $playerCount, 'icon' => 'fa fa-user-group', 'url' => $this->crudUrl(PlayerCrudController::class)],
-            ['label' => 'Pages publiées', 'value' => $publishedPages, 'icon' => 'fa fa-file-lines', 'url' => $this->crudUrl(PageCrudController::class)],
-            ['label' => 'Équipes', 'value' => $teamIdentityCount, 'icon' => 'fa fa-shield-halved', 'url' => $this->crudUrl(TeamIdentityCrudController::class)],
-            ['label' => 'Partenaires', 'value' => $partnerCount, 'icon' => 'fa fa-handshake', 'url' => $this->crudUrl(PartnerCrudController::class)],
+        $currentSeasonCount = $this->seasonRepository->count(['isCurrent' => true]);
+        $missingHomeSectionChoices = $this->homeSectionRepository->missingSectionChoices();
+        $expectedHomeSectionCount = count(HomeSection::AVAILABLE_KEYS);
+        $featuredHomeSection = $this->homeSectionRepository->findConfiguredByKey(HomeSection::KEY_FEATURED_ARTICLE);
+        $manualFeaturedArticle = $featuredHomeSection?->getFeaturedArticle();
+        $manualSecondaryArticles = $featuredHomeSection?->getManualSecondaryArticles() ?? [];
+        $manualVisibleSecondaryCount = count(array_filter(
+            $manualSecondaryArticles,
+            static fn (Article $article): bool => $article->isVisibleOnSite()
+        ));
+        $invalidManagedHomeArticlesCount = $this->countInvalidManagedHomeArticles($featuredHomeSection);
+        $featuredSlotCount = $this->articleRepository->countCurrentlyVisibleByHomepageSlot(ArticleHomepageSlot::Featured);
+        $secondarySlotCount = $this->articleRepository->countCurrentlyVisibleByHomepageSlot(ArticleHomepageSlot::Secondary);
+        $scheduledPublicationsCount = $this->articleRepository->countScheduledPublications();
+        $publishedArticleCandidates = $this->articleRepository->findLatestPublished(50);
+        $completedMatchesCount = $this->matchGameRepository->count(['status' => \App\Enum\MatchStatus::Completed]);
+        $scheduledMatchesCount = $this->matchGameRepository->count(['status' => \App\Enum\MatchStatus::Scheduled]);
+        $userCount = $this->userRepository->count([]);
+        $completedMatches = $this->matchGameRepository->findBy(['status' => \App\Enum\MatchStatus::Completed], ['matchDate' => 'DESC']);
+        $completedArticleSummary = $this->matchArticleResolver->summarize($completedMatches, $publishedArticleCandidates);
+        $latestSyncRun = $this->tournifySyncRunRepository->findLatestRun();
+        $recentSyncRuns = $this->tournifySyncRunRepository->findLatestRuns(5);
+        $summaryStats = [
+            [
+                'label' => 'Joueurs inscrits',
+                'value' => (string) $playerCount,
+                'meta' => 'Fiches effectif enregistrées',
+            ],
+            [
+                'label' => 'Partenaires inscrits',
+                'value' => (string) $partnerCount,
+                'meta' => 'Partenaires affichables sur le site',
+            ],
+            [
+                'label' => 'Matchs joués',
+                'value' => (string) $completedMatchesCount,
+                'meta' => 'Rencontres terminées',
+            ],
+            [
+                'label' => 'Matchs à venir',
+                'value' => (string) $scheduledMatchesCount,
+                'meta' => 'Rencontres programmées',
+            ],
+            [
+                'label' => 'Articles publiés',
+                'value' => (string) $publishedArticles,
+                'meta' => 'Contenus visibles maintenant',
+            ],
+            [
+                'label' => 'Comptes admin',
+                'value' => (string) $userCount,
+                'meta' => 'Accès à l’administration',
+            ],
         ];
 
-        $quickLinks = [
-            ['label' => 'Nouvel article', 'url' => $this->crudActionUrl(ArticleCrudController::class, Action::NEW)],
-            ['label' => 'Nouveau match', 'url' => $this->crudActionUrl(MatchGameCrudController::class, Action::NEW)],
-            ['label' => 'Nouveau joueur', 'url' => $this->crudActionUrl(PlayerCrudController::class, Action::NEW)],
-            ['label' => 'Nouvelle page', 'url' => $this->crudActionUrl(PageCrudController::class, Action::NEW)],
-            ['label' => "Gérer l'accueil", 'url' => $this->crudUrl(HomeSectionCrudController::class)],
-            ['label' => 'Paramètres du club', 'url' => $this->crudUrl(ClubSettingsCrudController::class)],
-            ['label' => 'Gérer le classement', 'url' => $this->crudUrl(RankingEntryCrudController::class)],
-            ['label' => 'Voir le site public', 'url' => '/'],
+        $statGroups = [
+            [
+                'label' => 'Contenus',
+                'description' => 'Saison, articles, accueil et pages publiques.',
+                'items' => [
+                    ['label' => 'Saisons', 'value' => $this->seasonRepository->count([]), 'icon' => 'fa fa-calendar', 'url' => $this->crudUrl(SeasonCrudController::class)],
+                    ['label' => 'Articles publiés', 'value' => $publishedArticles, 'icon' => 'fa fa-newspaper', 'url' => $this->crudUrl(ArticleCrudController::class)],
+                    ['label' => 'Blocs accueil', 'value' => $homeSectionCount, 'icon' => 'fa fa-panorama', 'url' => $this->crudUrl(HomeSectionCrudController::class)],
+                    ['label' => 'Paramètres club', 'value' => $clubSettingsCount, 'icon' => 'fa fa-sliders', 'url' => $this->crudUrl(ClubSettingsCrudController::class)],
+                    ['label' => 'Pages publiées', 'value' => $publishedPages, 'icon' => 'fa fa-file-lines', 'url' => $this->crudUrl(PageCrudController::class)],
+                ],
+            ],
+            [
+                'label' => 'Sport',
+                'description' => 'Calendrier, classement, effectif et identités équipes.',
+                'items' => [
+                    ['label' => 'Matchs', 'value' => $this->matchGameRepository->count([]), 'icon' => 'fa fa-futbol', 'url' => $this->crudUrl(MatchGameCrudController::class)],
+                    ['label' => 'Classement', 'value' => $this->rankingEntryRepository->count([]), 'icon' => 'fa fa-list-ol', 'url' => $this->crudUrl(RankingEntryCrudController::class)],
+                    ['label' => 'Effectif', 'value' => $playerCount, 'icon' => 'fa fa-user-group', 'url' => $this->crudUrl(PlayerCrudController::class)],
+                    ['label' => 'Équipes', 'value' => $teamIdentityCount, 'icon' => 'fa fa-shield-halved', 'url' => $this->crudUrl(TeamIdentityCrudController::class)],
+                ],
+            ],
+            [
+                'label' => 'Communication',
+                'description' => 'Partenaires et présence externe du club.',
+                'items' => [
+                    ['label' => 'Réseaux sociaux', 'value' => $socialCount, 'icon' => 'fa fa-share-nodes', 'url' => $this->crudUrl(SocialLinkCrudController::class)],
+                    ['label' => 'Partenaires', 'value' => $partnerCount, 'icon' => 'fa fa-handshake', 'url' => $this->crudUrl(PartnerCrudController::class)],
+                ],
+            ],
         ];
 
         $contentChecks = [];
 
         if (!$currentSeason) {
             $contentChecks[] = ['level' => 'warning', 'label' => 'Saison en cours', 'message' => "Aucune saison n'est définie comme saison en cours.", 'url' => $this->crudUrl(SeasonCrudController::class)];
+        } elseif ($currentSeasonCount > 1) {
+            $contentChecks[] = ['level' => 'warning', 'label' => 'Saison en cours', 'message' => "Plusieurs saisons sont marquées comme saison en cours. L'administration doit être régularisée.", 'url' => $this->crudUrl(SeasonCrudController::class)];
         }
 
         if (0 === $publishedArticles) {
             $contentChecks[] = ['level' => 'warning', 'label' => 'Actualités', 'message' => "Aucun article publié n'est visible sur le site.", 'url' => $this->crudUrl(ArticleCrudController::class)];
+        }
+
+        $manualFeaturedVisible = $manualFeaturedArticle instanceof Article && $manualFeaturedArticle->isVisibleOnSite();
+        if (!$manualFeaturedVisible && 0 === $featuredSlotCount) {
+            $contentChecks[] = ['level' => 'warning', 'label' => 'Accueil · À la une', 'message' => "Aucun article visible ne peut alimenter l'actualité à la une de l'accueil.", 'url' => $this->crudUrl(ArticleCrudController::class)];
+        }
+
+        if (0 === $manualVisibleSecondaryCount && 0 === $secondarySlotCount) {
+            $contentChecks[] = ['level' => 'info', 'label' => 'Accueil · Autres actualités', 'message' => "Aucun article visible n'est prêt pour la liste « Autres actualités ».", 'url' => $this->crudUrl(ArticleCrudController::class)];
+        } elseif ($secondarySlotCount > 3) {
+            $contentChecks[] = ['level' => 'info', 'label' => 'Accueil · Autres actualités', 'message' => sprintf('%d articles sont marqués « Autres actualités » : seuls les 3 plus récents seront repris automatiquement.', $secondarySlotCount), 'url' => $this->crudUrl(ArticleCrudController::class)];
+        }
+
+        if ($invalidManagedHomeArticlesCount > 0) {
+            $contentChecks[] = ['level' => 'warning', 'label' => 'Accueil · Sélection manuelle', 'message' => sprintf('%d article(s) choisis manuellement pour l’accueil ne sont pas encore visibles publiquement.', $invalidManagedHomeArticlesCount), 'url' => $this->crudUrl(HomeSectionCrudController::class)];
         }
 
         if (0 === $playerCount) {
@@ -105,32 +199,133 @@ class DashboardController extends AbstractDashboardController
         }
 
         if (0 === $homeSectionCount) {
-            $contentChecks[] = ['level' => 'info', 'label' => 'Accueil', 'message' => "Aucun bloc d'accueil administrable n'est configuré.", 'url' => $this->crudUrl(HomeSectionCrudController::class)];
+            $contentChecks[] = ['level' => 'warning', 'label' => 'Accueil', 'message' => "Aucun bloc d'accueil administrable n'est configuré.", 'url' => $this->crudActionUrl(HomeSectionCrudController::class, Action::NEW)];
+        } elseif ([] !== $missingHomeSectionChoices) {
+            $contentChecks[] = ['level' => 'info', 'label' => 'Accueil', 'message' => sprintf('Il manque %d bloc(s) d’accueil sur %d attendus.', count($missingHomeSectionChoices), $expectedHomeSectionCount), 'url' => $this->crudActionUrl(HomeSectionCrudController::class, Action::NEW)];
         }
 
         if (0 === $clubSettingsCount) {
-            $contentChecks[] = ['level' => 'warning', 'label' => 'Paramètres du club', 'message' => "Les paramètres globaux du club ne sont pas encore initialisés.", 'url' => $this->crudUrl(ClubSettingsCrudController::class)];
+            $contentChecks[] = ['level' => 'warning', 'label' => 'Paramètres du club', 'message' => "Les paramètres globaux du club ne sont pas encore initialisés.", 'url' => $this->crudActionUrl(ClubSettingsCrudController::class, Action::NEW)];
         }
 
         if (0 === $teamIdentityCount) {
             $contentChecks[] = ['level' => 'info', 'label' => 'Identités équipe', 'message' => "Les logos d'équipe ne sont pas encore renseignés.", 'url' => $this->crudUrl(TeamIdentityCrudController::class)];
         }
 
+        if ($completedArticleSummary['unresolved'] > 0) {
+            $contentChecks[] = ['level' => 'warning', 'label' => 'Compte-rendus matchs', 'message' => sprintf('%d match(s) terminés n’ont encore aucun compte-rendu détecté.', $completedArticleSummary['unresolved']), 'url' => $this->crudUrl(MatchGameCrudController::class)];
+        } elseif ($completedArticleSummary['automatic'] > 0) {
+            $contentChecks[] = ['level' => 'info', 'label' => 'Compte-rendus matchs', 'message' => sprintf('%d match(s) terminés sont reliés automatiquement à leur article, sans liaison explicite enregistrée.', $completedArticleSummary['automatic']), 'url' => $this->crudUrl(MatchGameCrudController::class)];
+        }
+
+        if ($scheduledPublicationsCount > 0) {
+            $contentChecks[] = ['level' => 'info', 'label' => 'Publications planifiées', 'message' => sprintf('%d article(s) publiés avec une date future attendent encore leur mise en ligne automatique.', $scheduledPublicationsCount), 'url' => $this->crudUrl(ArticleCrudController::class)];
+        }
+
+        if (null === $latestSyncRun) {
+            $contentChecks[] = ['level' => 'info', 'label' => 'Tournify', 'message' => "Aucune synchronisation Tournify n'a encore été lancée depuis l'administration.", 'url' => $this->crudUrl(TournifySyncRunCrudController::class)];
+        } elseif (TournifySyncStatus::Failure === $latestSyncRun->getStatus()) {
+            $contentChecks[] = ['level' => 'warning', 'label' => 'Tournify', 'message' => 'Le dernier lancement Tournify a échoué. Vérifie le journal avant de republier les matchs.', 'url' => $this->crudUrl(TournifySyncRunCrudController::class)];
+        }
+
         if ($this->isGranted('ROLE_ADMIN')) {
-            $stats[] = ['label' => 'Utilisateurs', 'value' => $this->userRepository->count([]), 'icon' => 'fa fa-users', 'url' => $this->crudUrl(UserCrudController::class)];
-            $quickLinks[] = ['label' => 'Gérer les utilisateurs', 'url' => $this->crudUrl(UserCrudController::class)];
+            $statGroups[] = [
+                'label' => 'Comptes',
+                'description' => 'Utilisateurs ayant accès à l’administration.',
+                'items' => [
+                    ['label' => 'Utilisateurs', 'value' => $userCount, 'icon' => 'fa fa-users', 'url' => $this->crudUrl(UserCrudController::class)],
+                ],
+            ];
         }
 
         return $this->render('admin/dashboard.html.twig', [
-            'stats' => $stats,
-            'quickLinks' => $quickLinks,
-            'latestArticles' => $this->articleRepository->findLatestPublished(5),
+            'summaryStats' => $summaryStats,
+            'statGroups' => $statGroups,
+            'latestArticles' => $this->articleRepository->findLatestPublished(4),
             'currentSeason' => $currentSeason,
             'socialCount' => $socialCount,
             'draftArticles' => $draftArticles,
             'draftPages' => $draftPages,
+            'scheduledArticles' => $this->articleRepository->findScheduledPublications(5),
             'contentChecks' => $contentChecks,
+            'tournifySync' => [
+                'liveLink' => TournifyMatchSyncer::DEFAULT_LIVE_LINK,
+                'divisionId' => TournifyMatchSyncer::DEFAULT_DIVISION_ID,
+                'teamName' => TournifyMatchSyncer::DEFAULT_TEAM_NAME,
+                'matchesUrl' => $this->crudUrl(MatchGameCrudController::class),
+                'historyUrl' => $this->crudUrl(TournifySyncRunCrudController::class),
+            ],
+            'latestSyncRun' => $latestSyncRun,
+            'recentSyncRuns' => $recentSyncRuns,
         ]);
+    }
+
+    #[Route('/admin/tournify/sync-matches', name: 'admin_tournify_sync_matches', methods: ['POST'])]
+    public function syncTournifyMatches(Request $request): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_EDITOR');
+
+        if (!$this->isCsrfTokenValid('admin_tournify_sync_matches', (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+
+        $season = $this->seasonRepository->findCurrentSeason();
+        if (null === $season) {
+            $this->addFlash('danger', "Synchronisation Tournify impossible : aucune saison n'est définie comme saison en cours.");
+
+            return $this->redirectToRoute('admin');
+        }
+
+        $dryRun = $request->request->getBoolean('dry_run');
+        $liveLink = TournifyMatchSyncer::DEFAULT_LIVE_LINK;
+        $divisionId = TournifyMatchSyncer::DEFAULT_DIVISION_ID;
+        $teamName = TournifyMatchSyncer::DEFAULT_TEAM_NAME;
+
+        try {
+            $result = $this->tournifyMatchSyncer->syncSeason(
+                $season,
+                $liveLink,
+                $divisionId,
+                $teamName,
+                dryRun: $dryRun,
+            );
+
+            $this->tournifySyncRunLogger->logResult(
+                $season,
+                $liveLink,
+                $divisionId,
+                $teamName,
+                MatchGame::COMPETITION_CHAMPIONNAT,
+                $dryRun,
+                $result,
+            );
+
+            $this->addFlash(
+                'success',
+                sprintf(
+                    $dryRun
+                        ? 'Prévisualisation Tournify : %d matchs source, %d créés, %d mis à jour, %d supprimés.'
+                        : 'Synchronisation Tournify terminée : %d matchs source, %d créés, %d mis à jour, %d supprimés.',
+                    $result['source_matches'],
+                    $result['created'],
+                    $result['updated'],
+                    $result['removed'],
+                )
+            );
+        } catch (\Throwable $exception) {
+            $this->tournifySyncRunLogger->logFailure(
+                $season,
+                $liveLink,
+                $divisionId,
+                $teamName,
+                MatchGame::COMPETITION_CHAMPIONNAT,
+                $dryRun,
+                $exception,
+            );
+            $this->addFlash('danger', sprintf('La synchronisation Tournify a échoué : %s', $exception->getMessage()));
+        }
+
+        return $this->redirectToRoute('admin');
     }
 
     public function configureDashboard(): Dashboard
@@ -154,11 +349,13 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section('Contenus');
         yield MenuItem::linkTo(SeasonCrudController::class, 'Saisons', 'fa fa-calendar');
         yield MenuItem::linkTo(ArticleCrudController::class, 'Articles', 'fa fa-newspaper');
-        yield MenuItem::linkTo(HomeSectionCrudController::class, 'Accueil', 'fa fa-panorama');
+        yield MenuItem::linkTo(HomeSectionCrudController::class, "Blocs d'accueil", 'fa fa-panorama');
         yield MenuItem::linkTo(ClubSettingsCrudController::class, 'Paramètres du club', 'fa fa-sliders');
         yield MenuItem::linkTo(MatchGameCrudController::class, 'Matchs', 'fa fa-futbol');
+        yield MenuItem::linkTo(TournifySyncRunCrudController::class, 'Journal Tournify', 'fa fa-rotate');
         yield MenuItem::linkTo(RankingEntryCrudController::class, 'Classement', 'fa fa-list-ol');
         yield MenuItem::linkTo(PlayerCrudController::class, 'Effectif', 'fa fa-user-group');
+        yield MenuItem::linkTo(PlayerPhotoCrudController::class, 'Photos joueurs', 'fa fa-images');
         yield MenuItem::linkTo(PageCrudController::class, 'Pages', 'fa fa-file-lines');
         yield MenuItem::linkTo(TeamIdentityCrudController::class, 'Équipes', 'fa fa-shield-halved');
         yield MenuItem::section('Communication');
@@ -180,12 +377,24 @@ class DashboardController extends AbstractDashboardController
             ->generateUrl();
     }
 
-    private function crudActionUrl(string $controllerFqcn, string $action): string
+    private function countInvalidManagedHomeArticles(?HomeSection $featuredHomeSection): int
     {
-        return $this->adminUrlGenerator
-            ->unsetAll()
-            ->setController($controllerFqcn)
-            ->setAction($action)
-            ->generateUrl();
+        if (!$featuredHomeSection instanceof HomeSection) {
+            return 0;
+        }
+
+        $count = 0;
+        $featuredArticle = $featuredHomeSection->getFeaturedArticle();
+        if ($featuredArticle instanceof Article && !$featuredArticle->isVisibleOnSite()) {
+            ++$count;
+        }
+
+        foreach ($featuredHomeSection->getManualSecondaryArticles() as $article) {
+            if (!$article->isVisibleOnSite()) {
+                ++$count;
+            }
+        }
+
+        return $count;
     }
 }

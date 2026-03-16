@@ -45,7 +45,7 @@ class PageCrudController extends AbstractCrudController
             ->setCssClass('btn btn-secondary');
 
         return $actions
-            ->disable(Action::BATCH_DELETE, Action::DETAIL)
+            ->disable(Action::BATCH_DELETE, Action::DETAIL, Action::SAVE_AND_ADD_ANOTHER, Action::SAVE_AND_CONTINUE)
             ->add(Crud::PAGE_INDEX, $preview)
             ->add(Crud::PAGE_EDIT, $preview)
             ->update(Crud::PAGE_INDEX, Action::EDIT, static fn (Action $action) => $action->setLabel('Modifier'))
@@ -55,6 +55,7 @@ class PageCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         yield FormField::addFieldset('Contenu de la page')
+            ->renderCollapsed()
             ->setHelp('Crée ou modifie une page d’information visible sur le site.');
 
         yield TextField::new('title', 'Titre')
@@ -103,6 +104,7 @@ class PageCrudController extends AbstractCrudController
             ->hideOnIndex();
 
         yield FormField::addFieldset('Affichage')
+            ->renderCollapsed()
             ->setHelp('Définis où la page apparaît et dans quel ordre.');
 
         yield ChoiceField::new('placement', 'Où afficher cette page')
@@ -136,6 +138,7 @@ class PageCrudController extends AbstractCrudController
             ->setHelp('Brouillon : non visible. Publiée : visible. Archivée : conservée sans être mise en avant.');
 
         yield FormField::addFieldset('Référencement')
+            ->renderCollapsed()
             ->setHelp('Champs facultatifs pour Google et le partage social.')
             ->hideOnIndex();
 

@@ -1,0 +1,20 @@
+services:
+  database:
+    image: mysql:8.4
+    container_name: fceb-db
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_DATABASE: fceb
+      MYSQL_USER: fceb
+      MYSQL_PASSWORD: 94b6a0524e0490da9a9360d47e3fb0d1
+      MYSQL_ROOT_PASSWORD: c7e5155998e33fdc73737e7836608832
+    ports:
+      - 127.0.0.1:3307:3306
+    restart: unless-stopped
+    volumes:
+      - fceb_mysql_data:/var/lib/mysql
+
+volumes:
+  fceb_mysql_data:

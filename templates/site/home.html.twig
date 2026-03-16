@@ -4,111 +4,111 @@
 
 {% block body %}
     <section class="home-stack">
-        {% if discoverPage %}
-            <article class="card wide home-section-card">
-                <div class="section-heading">
-                    <div>
-                        <h2>{{ site.homepage.intro_title }}</h2>
-                        <p class="muted">{{ site.homepage.intro_subtitle }}</p>
-                    </div>
-                </div>
-                <div class="story-inline">
-                    <img class="story-media tall" src="{{ discoverPage.heroImage ? asset('uploads/pages/' ~ discoverPage.heroImage) : asset('assets/club-placeholder.svg') }}" alt="Visuel de présentation du club et de la pratique du cécifoot à La Bassée">
-                    <div class="home-feature-article">
-                        <span class="tag">Valeurs du club</span>
-                        <p>{{ site.homepage.intro_lead }}</p>
-                        <p class="muted">{{ site.homepage.intro_media_note }}</p>
-                        <div class="value-grid">
-                            <article class="value-card">
-                                <strong>Engagement</strong>
-                                <p>Chaque séance et chaque match reposent sur l’implication de tous.</p>
-                            </article>
-                            <article class="value-card">
-                                <strong>Solidarité</strong>
-                                <p>Le collectif prime, dans les repères du jeu comme dans la vie du groupe.</p>
-                            </article>
-                            <article class="value-card">
-                                <strong>Progression</strong>
-                                <p>Le club accompagne les joueurs avec exigence et envie de faire grandir chacun.</p>
-                            </article>
-                            <article class="value-card">
-                                <strong>Ouverture</strong>
-                                <p>Le cécifoot se découvre, se partage et se transmet sur le terrain comme en dehors.</p>
-                            </article>
-                        </div>
-                        <div class="form-actions">
-                            <a class="button secondary" href="{{ path('site_page', {slug: discoverPage.slug}) }}">{{ discoverPage.title }}</a>
-                            <a class="button primary" href="{{ path('site_join') }}">Rejoindre le club</a>
-                            <a class="button secondary" href="{{ path('site_trial_request') }}">Séance d’essai</a>
-                        </div>
-                    </div>
-                </div>
-            </article>
-        {% endif %}
-
-        <section class="home-stage">
-            <article class="card home-stage-main">
-                <div class="section-heading">
-                    <div>
-                        <h2>{{ site.homepage.featured_title }}</h2>
-                        <p>{{ site.homepage.featured_subtitle }}</p>
-                    </div>
-                </div>
-
-                {% if latestArticle %}
-                    <div class="story-inline">
-                        <img class="story-media tall" src="{{ latestArticle.coverImage ? asset('uploads/articles/' ~ latestArticle.coverImage) : asset('assets/club-placeholder.svg') }}" alt="Illustration de l’actualité {{ latestArticle.title }}">
-                        <div class="home-feature-article">
-                            <span class="tag">À la une</span>
-                            <h3><a class="article-link" href="{{ path('site_article', {slug: latestArticle.slug}) }}">{{ latestArticle.title }}</a></h3>
-                            {% if latestArticle.excerpt %}
-                                <p>{{ latestArticle.excerpt }}</p>
+        {% for section in homeSections %}
+            {% if section.key == 'intro' %}
+                {% set introImage = section.image ? asset('uploads/home-sections/' ~ section.image) : (discoverPage and discoverPage.heroImage ? asset('uploads/pages/' ~ discoverPage.heroImage) : asset('assets/club-placeholder.svg')) %}
+                <article class="card wide home-section-card">
+                    <div class="section-heading">
+                        <div>
+                            <h2>{{ section.title }}</h2>
+                            {% if section.subtitle %}
+                                <p class="muted">{{ section.subtitle }}</p>
                             {% endif %}
-                            <div class="home-meta-row">
-                                <span>{{ latestArticle.publishedAt|date('d/m/Y H:i') }}</span>
-                                {% if latestArticle.season %}
-                                    <span>{{ latestArticle.season.name }}</span>
+                        </div>
+                    </div>
+                    <div class="story-inline">
+                        <img class="story-media tall" src="{{ introImage }}" alt="Visuel de présentation du club">
+                        <div class="home-feature-article">
+                            {% if section.content %}
+                                <p>{{ section.content }}</p>
+                            {% endif %}
+                            {% if section.secondaryContent %}
+                                <p class="muted">{{ section.secondaryContent }}</p>
+                            {% endif %}
+                            <div class="form-actions">
+                                {% if discoverPage %}
+                                    <a class="button secondary" href="{{ path('site_page', {slug: discoverPage.slug}) }}">{{ discoverPage.title }}</a>
+                                {% endif %}
+                                <a class="button primary" href="{{ path('site_join') }}">Rejoindre le club</a>
+                                <a class="button secondary" href="{{ path('site_trial_request') }}">Séance d’essai</a>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            {% elseif section.key == 'featured_article' %}
+                {% set featuredImage = section.image ? asset('uploads/home-sections/' ~ section.image) : (latestArticle and latestArticle.coverImage ? asset('uploads/articles/' ~ latestArticle.coverImage) : asset('assets/club-placeholder.svg')) %}
+                <article class="card wide home-section-card">
+                    <div class="section-heading">
+                        <div>
+                            <h2>{{ section.title }}</h2>
+                            {% if section.subtitle %}
+                                <p>{{ section.subtitle }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if latestArticle %}
+                        <div class="story-inline">
+                            <img class="story-media tall" src="{{ featuredImage }}" alt="Illustration de l’actualité {{ latestArticle.title }}">
+                            <div class="home-feature-article">
+                                <span class="tag">À la une</span>
+                                <h3><a class="article-link" href="{{ path('site_article', {slug: latestArticle.slug}) }}">{{ latestArticle.title }}</a></h3>
+                                {% if latestArticle.excerpt %}
+                                    <p>{{ latestArticle.excerpt }}</p>
+                                {% endif %}
+                                <div class="home-meta-row">
+                                    <span>{{ latestArticle.publishedAt|date('d/m/Y H:i') }}</span>
+                                    {% if latestArticle.season %}
+                                        <span>{{ latestArticle.season.name }}</span>
+                                    {% endif %}
+                                </div>
+                                {% if section.content %}
+                                    <p class="muted">{{ section.content }}</p>
                                 {% endif %}
                             </div>
-                            <p class="muted">Les actualités doivent montrer ce qui se passe réellement au club : matchs, événements, coulisses et vie associative.</p>
                         </div>
-                    </div>
-                {% else %}
-                    <p>Aucune actualité publiée.</p>
-                {% endif %}
+                    {% else %}
+                        <p>Aucune actualité publiée.</p>
+                    {% endif %}
 
-                {% if recentArticles is not empty %}
-                    <div class="home-subsection">
-                        <div class="section-heading">
-                            <div>
-                                <h3>Autres actualités</h3>
+                    {% if recentArticles is not empty %}
+                        <div class="home-subsection">
+                            <div class="section-heading">
+                                <div>
+                                    <h3>{{ section.secondaryContent ?: 'Autres actualités' }}</h3>
+                                </div>
+                            </div>
+                            <div class="home-article-list">
+                                {% for article in recentArticles %}
+                                    <article class="home-article-item">
+                                        <div class="home-article-copy">
+                                            <strong><a class="article-link" href="{{ path('site_article', {slug: article.slug}) }}">{{ article.title }}</a></strong>
+                                            <p class="muted">{{ article.publishedAt|date('d/m/Y') }}{% if article.season %} · {{ article.season.name }}{% endif %}</p>
+                                            {% if article.excerpt %}
+                                                <p>{{ article.excerpt }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </article>
+                                {% endfor %}
                             </div>
                         </div>
-                        <div class="home-article-list">
-                            {% for article in recentArticles %}
-                                <article class="home-article-item">
-                                    <div class="home-article-copy">
-                                        <strong><a class="article-link" href="{{ path('site_article', {slug: article.slug}) }}">{{ article.title }}</a></strong>
-                                        <p class="muted">{{ article.publishedAt|date('d/m/Y') }}{% if article.season %} · {{ article.season.name }}{% endif %}</p>
-                                        {% if article.excerpt %}
-                                            <p>{{ article.excerpt }}</p>
-                                        {% endif %}
-                                    </div>
-                                </article>
-                            {% endfor %}
-                        </div>
-                    </div>
-                {% endif %}
-            </article>
-
-            <aside class="home-stage-side">
+                    {% endif %}
+                </article>
+            {% elseif section.key == 'next_match' %}
+                {% set nextMatchImage = section.image ? asset('uploads/home-sections/' ~ section.image) : null %}
                 <article class="card">
                     <div class="section-heading">
                         <div>
-                            <h2>{{ site.homepage.upcoming_title }}</h2>
-                            <p>{{ site.homepage.upcoming_subtitle }}</p>
+                            <h2>{{ section.title }}</h2>
+                            {% if section.subtitle %}
+                                <p>{{ section.subtitle }}</p>
+                            {% endif %}
                         </div>
                     </div>
+
+                    {% if nextMatchImage %}
+                        <img class="story-media" src="{{ nextMatchImage }}" alt="Visuel du bloc {{ section.title }}">
+                    {% endif %}
 
                     {% if nextMatch %}
                         <div class="home-feature-article">
@@ -131,19 +131,33 @@
                             {% if nextMatch.competition %}
                                 <p class="muted">{{ nextMatch.competition }}</p>
                             {% endif %}
+                            {% if section.content %}
+                                <p class="muted">{{ section.content }}</p>
+                            {% endif %}
                         </div>
                     {% else %}
                         <p>Aucun match programmé.</p>
                     {% endif %}
                 </article>
-
+            {% elseif section.key == 'upcoming_matches' %}
+                {% set upcomingMatchesImage = section.image ? asset('uploads/home-sections/' ~ section.image) : null %}
                 <article class="card">
                     <div class="section-heading">
                         <div>
-                            <h2>Matchs à venir</h2>
-                            <p>Les prochaines rencontres déjà programmées après le prochain rendez-vous.</p>
+                            <h2>{{ section.title }}</h2>
+                            {% if section.subtitle %}
+                                <p>{{ section.subtitle }}</p>
+                            {% endif %}
                         </div>
                     </div>
+
+                    {% if upcomingMatchesImage %}
+                        <img class="story-media" src="{{ upcomingMatchesImage }}" alt="Visuel du bloc {{ section.title }}">
+                    {% endif %}
+
+                    {% if section.content %}
+                        <p class="muted">{{ section.content }}</p>
+                    {% endif %}
 
                     {% if otherUpcomingMatches is not empty %}
                         <div class="home-match-grid">
@@ -173,49 +187,57 @@
                         <p>Aucun match à venir.</p>
                     {% endif %}
                 </article>
-            </aside>
-        </section>
+            {% elseif section.key == 'last_result' %}
+                {% set lastResultImage = section.image ? asset('uploads/home-sections/' ~ section.image) : (lastMatchArticle and lastMatchArticle.coverImage ? asset('uploads/articles/' ~ lastMatchArticle.coverImage) : asset('assets/club-placeholder.svg')) %}
+                <article class="card wide home-section-card">
+                    <div class="section-heading">
+                        <div>
+                            <h2>{{ section.title }}</h2>
+                            {% if section.subtitle %}
+                                <p>{{ section.subtitle }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
 
-        <article class="card wide home-section-card">
-            <div class="section-heading">
-                <div>
-                    <h2>{{ site.homepage.last_result_title }}</h2>
-                    <p>{{ site.homepage.last_result_subtitle }}</p>
-                </div>
-            </div>
-
-            {% if lastMatch %}
-                <div class="story-inline">
-                    {% if lastMatchArticle %}
-                        <img class="story-media tall" src="{{ lastMatchArticle.coverImage ? asset('uploads/articles/' ~ lastMatchArticle.coverImage) : asset('assets/club-placeholder.svg') }}" alt="Illustration liée au dernier résultat du club">
-                    {% endif %}
-                    <div class="home-feature-article">
-                        <span class="tag">Dernier résultat</span>
-                        <div class="team-poster">
-                            <div class="team-side">
-                                <img class="team-logo" src="{{ asset(team_logo(lastMatch.homeTeamName)) }}" alt="Logo de {{ lastMatch.homeTeamName }}">
-                                <strong>{{ lastMatch.homeTeamName }}</strong>
-                            </div>
-                            <span class="team-vs">vs</span>
-                            <div class="team-side">
-                                <img class="team-logo" src="{{ asset(team_logo(lastMatch.awayTeamName)) }}" alt="Logo de {{ lastMatch.awayTeamName }}">
-                                <strong>{{ lastMatch.awayTeamName }}</strong>
+                    {% if lastMatch %}
+                        <div class="story-inline">
+                            <img class="story-media tall" src="{{ lastResultImage }}" alt="Illustration liée au dernier résultat du club">
+                            <div class="home-feature-article">
+                                <span class="tag">Dernier résultat</span>
+                                <div class="team-poster">
+                                    <div class="team-side">
+                                        <img class="team-logo" src="{{ asset(team_logo(lastMatch.homeTeamName)) }}" alt="Logo de {{ lastMatch.homeTeamName }}">
+                                        <strong>{{ lastMatch.homeTeamName }}</strong>
+                                    </div>
+                                    <span class="team-vs">vs</span>
+                                    <div class="team-side">
+                                        <img class="team-logo" src="{{ asset(team_logo(lastMatch.awayTeamName)) }}" alt="Logo de {{ lastMatch.awayTeamName }}">
+                                        <strong>{{ lastMatch.awayTeamName }}</strong>
+                                    </div>
+                                </div>
+                                {% if lastMatchArticle %}
+                                    <p>
+                                        <a class="article-link" href="{{ path('site_article', {slug: lastMatchArticle.slug}) }}">
+                                            {{ lastMatchArticle.excerpt ?: 'Voir le compte-rendu du match.' }}
+                                        </a>
+                                    </p>
+                                {% endif %}
+                                <p class="muted">{{ lastMatch.matchDate|date('d/m/Y H:i') }}{% if lastMatch.location %} · {{ lastMatch.location }}{% endif %}</p>
+                                {% if lastMatch.ourScore is not null and lastMatch.opponentScore is not null %}
+                                    <p><span class="score">{{ lastMatch.ourScore }} - {{ lastMatch.opponentScore }}</span></p>
+                                {% else %}
+                                    <p class="muted">Score à renseigner.</p>
+                                {% endif %}
+                                {% if section.content %}
+                                    <p class="muted">{{ section.content }}</p>
+                                {% endif %}
                             </div>
                         </div>
-                        {% if lastMatchArticle %}
-                            <p>
-                                <a class="article-link" href="{{ path('site_article', {slug: lastMatchArticle.slug}) }}">
-                                    {{ lastMatchArticle.excerpt ?: 'Voir le compte-rendu du match.' }}
-                                </a>
-                            </p>
-                        {% endif %}
-                        <p class="muted">{{ lastMatch.matchDate|date('d/m/Y H:i') }}{% if lastMatch.location %} · {{ lastMatch.location }}{% endif %}</p>
-                        <p><span class="score">{{ lastMatch.ourScore }} - {{ lastMatch.opponentScore }}</span></p>
-                    </div>
-                </div>
-            {% else %}
-                <p>Aucun résultat disponible.</p>
+                    {% else %}
+                        <p>Aucun résultat disponible.</p>
+                    {% endif %}
+                </article>
             {% endif %}
-        </article>
+        {% endfor %}
     </section>
 {% endblock %}

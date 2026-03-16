@@ -36,35 +36,8 @@ class ClubSettings
     #[Assert\Url]
     private ?string $mapUrl = null;
 
-    #[ORM\Column(length: 120, nullable: true)]
-    private ?string $homeIntroTitle = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $homeIntroSubtitle = null;
-
-    #[ORM\Column(type: 'text', nullable: true)]
-    private ?string $homeIntroLead = null;
-
-    #[ORM\Column(type: 'text', nullable: true)]
-    private ?string $homeIntroMediaNote = null;
-
-    #[ORM\Column(length: 120, nullable: true)]
-    private ?string $homeFeaturedTitle = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $homeFeaturedSubtitle = null;
-
-    #[ORM\Column(length: 120, nullable: true)]
-    private ?string $homeUpcomingTitle = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $homeUpcomingSubtitle = null;
-
-    #[ORM\Column(length: 120, nullable: true)]
-    private ?string $homeLastResultTitle = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $homeLastResultSubtitle = null;
+    #[ORM\Column(name: 'singleton_key', type: 'smallint', unique: true, options: ['default' => 1])]
+    private int $singletonKey = 1;
 
     public function __toString(): string
     {
@@ -136,123 +109,8 @@ class ClubSettings
         return $this;
     }
 
-    public function getHomeIntroTitle(): ?string
+    public function getSingletonKey(): int
     {
-        return $this->homeIntroTitle;
-    }
-
-    public function setHomeIntroTitle(?string $homeIntroTitle): static
-    {
-        $this->homeIntroTitle = $homeIntroTitle;
-
-        return $this;
-    }
-
-    public function getHomeIntroSubtitle(): ?string
-    {
-        return $this->homeIntroSubtitle;
-    }
-
-    public function setHomeIntroSubtitle(?string $homeIntroSubtitle): static
-    {
-        $this->homeIntroSubtitle = $homeIntroSubtitle;
-
-        return $this;
-    }
-
-    public function getHomeIntroLead(): ?string
-    {
-        return $this->homeIntroLead;
-    }
-
-    public function setHomeIntroLead(?string $homeIntroLead): static
-    {
-        $this->homeIntroLead = $homeIntroLead;
-
-        return $this;
-    }
-
-    public function getHomeIntroMediaNote(): ?string
-    {
-        return $this->homeIntroMediaNote;
-    }
-
-    public function setHomeIntroMediaNote(?string $homeIntroMediaNote): static
-    {
-        $this->homeIntroMediaNote = $homeIntroMediaNote;
-
-        return $this;
-    }
-
-    public function getHomeFeaturedTitle(): ?string
-    {
-        return $this->homeFeaturedTitle;
-    }
-
-    public function setHomeFeaturedTitle(?string $homeFeaturedTitle): static
-    {
-        $this->homeFeaturedTitle = $homeFeaturedTitle;
-
-        return $this;
-    }
-
-    public function getHomeFeaturedSubtitle(): ?string
-    {
-        return $this->homeFeaturedSubtitle;
-    }
-
-    public function setHomeFeaturedSubtitle(?string $homeFeaturedSubtitle): static
-    {
-        $this->homeFeaturedSubtitle = $homeFeaturedSubtitle;
-
-        return $this;
-    }
-
-    public function getHomeUpcomingTitle(): ?string
-    {
-        return $this->homeUpcomingTitle;
-    }
-
-    public function setHomeUpcomingTitle(?string $homeUpcomingTitle): static
-    {
-        $this->homeUpcomingTitle = $homeUpcomingTitle;
-
-        return $this;
-    }
-
-    public function getHomeUpcomingSubtitle(): ?string
-    {
-        return $this->homeUpcomingSubtitle;
-    }
-
-    public function setHomeUpcomingSubtitle(?string $homeUpcomingSubtitle): static
-    {
-        $this->homeUpcomingSubtitle = $homeUpcomingSubtitle;
-
-        return $this;
-    }
-
-    public function getHomeLastResultTitle(): ?string
-    {
-        return $this->homeLastResultTitle;
-    }
-
-    public function setHomeLastResultTitle(?string $homeLastResultTitle): static
-    {
-        $this->homeLastResultTitle = $homeLastResultTitle;
-
-        return $this;
-    }
-
-    public function getHomeLastResultSubtitle(): ?string
-    {
-        return $this->homeLastResultSubtitle;
-    }
-
-    public function setHomeLastResultSubtitle(?string $homeLastResultSubtitle): static
-    {
-        $this->homeLastResultSubtitle = $homeLastResultSubtitle;
-
-        return $this;
+        return $this->singletonKey;
     }
 }

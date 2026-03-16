@@ -94,4 +94,28 @@ class MatchGameRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function countCompletedWithoutLinkedArticle(): int
+    {
+        return (int) $this->createQueryBuilder('m')
+            ->select('COUNT(m.id)')
+            ->andWhere('m.status = :status')
+            ->andWhere('m.linkedArticle IS NULL')
+            ->setParameter('status', MatchStatus::Completed)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /** @return MatchGame[] */
+    public function findLatestCompletedWithoutLinkedArticle(int $limit = 5): array
+    {
+        return $this->createQueryBuilder('m')
+            ->andWhere('m.status = :status')
+            ->andWhere('m.linkedArticle IS NULL')
+            ->setParameter('status', MatchStatus::Completed)
+            ->orderBy('m.matchDate', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

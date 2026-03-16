@@ -16,13 +16,15 @@ final class Version20260313182000 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $this->addSql('ALTER TABLE user ADD reset_password_token VARCHAR(120) DEFAULT NULL');
-        $this->addSql('ALTER TABLE user ADD reset_password_expires_at DATETIME DEFAULT NULL');
-        $this->addSql('CREATE UNIQUE INDEX UNIQ_8D93D649E32A5A5A ON user (reset_password_token)');
+        $platform = $this->connection->getDatabasePlatform();
+        $this->abortIf(!$platform instanceof \Doctrine\DBAL\Platforms\AbstractMySQLPlatform, sprintf('Migration can only be executed safely on MySQL/MariaDB, current platform: %s.', $platform::class));
+
+        $this->addSql('ALTER TABLE `user` ADD reset_password_token VARCHAR(120) DEFAULT NULL, ADD reset_password_expires_at DATETIME DEFAULT NULL');
+        $this->addSql('CREATE UNIQUE INDEX UNIQ_8D93D649E32A5A5A ON `user` (reset_password_token)');
     }
 
     public function down(Schema $schema): void
     {
-        $this->throwIrreversibleMigrationException('Cette migration ajoute des colonnes SQLite sans rollback direct.');
+        $this->throwIrreversibleMigrationException('Cette migration ajoute des colonnes sans rollback direct.');
     }
 }

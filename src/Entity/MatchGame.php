@@ -6,11 +6,14 @@ use App\Enum\MatchStatus;
 use App\Repository\MatchGameRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: MatchGameRepository::class)]
 class MatchGame
 {
     public const CLUB_NAME = 'Cécifoot 59 La Bassée';
+    public const COMPETITION_CHAMPIONNAT = 'Championnat';
+    public const COMPETITION_COUPE_DE_FRANCE = 'Coupe de France';
 
     public function __toString(): string
     {
@@ -27,6 +30,8 @@ class MatchGame
     private ?string $opponent = null;
 
     #[ORM\Column(length: 120, nullable: true)]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 120)]
     private ?string $competition = null;
 
     #[ORM\Column(length: 160, nullable: true)]
@@ -39,9 +44,11 @@ class MatchGame
     private string $side = 'home';
 
     #[ORM\Column(nullable: true)]
+    #[Assert\PositiveOrZero]
     private ?int $ourScore = null;
 
     #[ORM\Column(nullable: true)]
+    #[Assert\PositiveOrZero]
     private ?int $opponentScore = null;
 
     #[ORM\Column(enumType: MatchStatus::class)]
@@ -50,6 +57,10 @@ class MatchGame
     #[ORM\ManyToOne(targetEntity: Season::class, inversedBy: 'matches')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Season $season = null;
+
+    #[ORM\OneToOne(inversedBy: 'linkedMatch')]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?Article $linkedArticle = null;
 
     public function getId(): ?int
     {
@@ -75,9 +86,39 @@ class MatchGame
 
     public function setCompetition(?string $competition): static
     {
-        $this->competition = $competition;
+        $this->competition = self::normalizeCompetitionLabel($competition);
 
         return $this;
+    }
+
+    public static function normalizeCompetitionLabel(?string $competition): ?string
+    {
+        if (null === $competition) {
+            return null;
+        }
+
+        $competition = trim(preg_replace('/\s+/', ' ', $competition) ?? '');
+
+        if ('' === $competition) {
+            return null;
+        }
+
+        return match (mb_strtolower($competition)) {
+            'championnat',
+            'championnat b1 challenger',
+            'championnat de france b1 challenger' => self::COMPETITION_CHAMPIONNAT,
+            'coupe de france' => self::COMPETITION_COUPE_DE_FRANCE,
+            default => $competition,
+        };
+    }
+
+    /** @return array<string, string> */
+    public static function competitionChoices(): array
+    {
+        return [
+            self::COMPETITION_CHAMPIONNAT => self::COMPETITION_CHAMPIONNAT,
+            self::COMPETITION_COUPE_DE_FRANCE => self::COMPETITION_COUPE_DE_FRANCE,
+        ];
     }
 
     public function getLocation(): ?string
@@ -162,6 +203,51 @@ class MatchGame
         $this->season = $season;
 
         return $this;
+    }
+
+    public function getLinkedArticle(): ?Article
+    {
+        return $this->linkedArticle;
+    }
+
+    public function setLinkedArticle(?Article $linkedArticle): static
+    {
+        if ($this->linkedArticle === $linkedArticle) {
+            return $this;
+        }
+
+        $previousLinkedArticle = $this->linkedArticle;
+        $this->linkedArticle = $linkedArticle;
+
+        if ($previousLinkedArticle instanceof Article && $previousLinkedArticle->getLinkedMatch() === $this) {
+            $previousLinkedArticle->setLinkedMatch(null);
+        }
+
+        if ($linkedArticle instanceof Article && $linkedArticle->getLinkedMatch() !== $this) {
+            $linkedArticle->setLinkedMatch($this);
+        }
+
+        return $this;
+    }
+
+    #[Assert\Callback]
+    public function validateCompletedMatchScores(ExecutionContextInterface $context): void
+    {
+        if (MatchStatus::Completed !== $this->status) {
+            return;
+        }
+
+        if (null === $this->ourScore) {
+            $context->buildViolation('Le score du club est obligatoire quand le match est terminé.')
+                ->atPath('ourScore')
+                ->addViolation();
+        }
+
+        if (null === $this->opponentScore) {
+            $context->buildViolation("Le score de l'adversaire est obligatoire quand le match est terminé.")
+                ->atPath('opponentScore')
+                ->addViolation();
+        }
     }
 
     public function getHomeTeamName(): string

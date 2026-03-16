@@ -41,7 +41,7 @@ class UserCrudController extends AbstractCrudController
     public function configureActions(Actions $actions): Actions
     {
         return $actions
-            ->disable(Action::BATCH_DELETE, Action::DETAIL)
+            ->disable(Action::BATCH_DELETE, Action::DETAIL, Action::SAVE_AND_ADD_ANOTHER, Action::SAVE_AND_CONTINUE)
             ->update(Crud::PAGE_INDEX, Action::EDIT, static fn (Action $action) => $action->setLabel('Modifier'))
             ->update(Crud::PAGE_INDEX, Action::DELETE, static fn (Action $action) => $action->setLabel('Supprimer'));
     }
@@ -51,6 +51,7 @@ class UserCrudController extends AbstractCrudController
         yield IdField::new('id', 'ID')->hideOnForm();
 
         yield FormField::addFieldset('Informations du compte')
+            ->renderCollapsed()
             ->setHelp("Renseigne le nom affiché et l'adresse e-mail de connexion.");
 
         yield TextField::new('fullName', 'Nom complet')
@@ -72,6 +73,7 @@ class UserCrudController extends AbstractCrudController
             ->setHelp('Adresse utilisée pour la connexion.');
 
         yield FormField::addFieldset('Droits et sécurité')
+            ->renderCollapsed()
             ->setHelp("Choisis les droits d'accès du compte et définis son mot de passe.");
 
         yield ChoiceField::new('roles', 'Droits du compte')

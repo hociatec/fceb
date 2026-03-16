@@ -23,10 +23,14 @@ class PlayerRepository extends ServiceEntityRepository
     public function findPublishedOrdered(): array
     {
         return $this->createQueryBuilder('p')
+            ->leftJoin('p.galleryPhotos', 'gp')
+            ->addSelect('gp')
             ->andWhere('p.status = :status')
             ->setParameter('status', ContentStatus::Published)
             ->orderBy('p.displayOrder', 'ASC')
             ->addOrderBy('p.name', 'ASC')
+            ->addOrderBy('gp.displayOrder', 'ASC')
+            ->addOrderBy('gp.id', 'ASC')
             ->getQuery()
             ->getResult();
     }
@@ -34,6 +38,8 @@ class PlayerRepository extends ServiceEntityRepository
     public function findPublishedBySlug(string $slug): ?Player
     {
         return $this->createQueryBuilder('p')
+            ->leftJoin('p.galleryPhotos', 'gp')
+            ->addSelect('gp')
             ->andWhere('p.slug = :slug')
             ->andWhere('p.status = :status')
             ->setParameter('slug', $slug)
@@ -44,6 +50,12 @@ class PlayerRepository extends ServiceEntityRepository
 
     public function findAnyBySlug(string $slug): ?Player
     {
-        return $this->findOneBy(['slug' => $slug]);
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.galleryPhotos', 'gp')
+            ->addSelect('gp')
+            ->andWhere('p.slug = :slug')
+            ->setParameter('slug', $slug)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }

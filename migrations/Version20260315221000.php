@@ -16,10 +16,22 @@ final class Version20260315221000 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $this->addSql('ALTER TABLE player ADD birth_date DATE DEFAULT NULL');
-        $this->addSql('ALTER TABLE player ADD nationality VARCHAR(120) DEFAULT NULL');
-        $this->addSql('ALTER TABLE player ADD preferred_position VARCHAR(120) DEFAULT NULL');
-        $this->addSql('ALTER TABLE player ADD preferred_foot VARCHAR(40) DEFAULT NULL');
+        $platform = $this->connection->getDatabasePlatform();
+        $this->abortIf(!$platform instanceof \Doctrine\DBAL\Platforms\AbstractMySQLPlatform, sprintf('Migration can only be executed safely on MySQL/MariaDB, current platform: %s.', $platform::class));
+
+        $playerTable = $schema->getTable('player');
+        if (!$playerTable->hasColumn('birth_date')) {
+            $this->addSql('ALTER TABLE player ADD birth_date DATE DEFAULT NULL');
+        }
+        if (!$playerTable->hasColumn('nationality')) {
+            $this->addSql('ALTER TABLE player ADD nationality VARCHAR(120) DEFAULT NULL');
+        }
+        if (!$playerTable->hasColumn('preferred_position')) {
+            $this->addSql('ALTER TABLE player ADD preferred_position VARCHAR(120) DEFAULT NULL');
+        }
+        if (!$playerTable->hasColumn('preferred_foot')) {
+            $this->addSql('ALTER TABLE player ADD preferred_foot VARCHAR(40) DEFAULT NULL');
+        }
 
         $players = [
             [
@@ -90,18 +102,18 @@ final class Version20260315221000 extends AbstractMigration
 
             $this->addSql(sprintf(
                 "INSERT INTO player (name, slug, photo, meta_title, meta_description, description, age, birth_date, nationality, preferred_position, preferred_foot, display_order, is_published, status)
-                 VALUES ('%s', '%s', NULL, NULL, '%s', '%s', NULL, '%s', '%s', '%s', '%s', %d, 1, 'published')
-                 ON CONFLICT(slug) DO UPDATE SET
-                    name = excluded.name,
-                    meta_description = excluded.meta_description,
-                    description = excluded.description,
-                    birth_date = excluded.birth_date,
-                    nationality = excluded.nationality,
-                    preferred_position = excluded.preferred_position,
-                    preferred_foot = excluded.preferred_foot,
-                    display_order = excluded.display_order,
-                    is_published = excluded.is_published,
-                    status = excluded.status",
+                 VALUES ('%s', '%s', NULL, NULL, '%s', '%s', NULL, '%s', '%s', '%s', '%s', %d, 1, 'published') AS new
+                 ON DUPLICATE KEY UPDATE
+                    name = new.name,
+                    meta_description = new.meta_description,
+                    description = new.description,
+                    birth_date = new.birth_date,
+                    nationality = new.nationality,
+                    preferred_position = new.preferred_position,
+                    preferred_foot = new.preferred_foot,
+                    display_order = new.display_order,
+                    is_published = new.is_published,
+                    status = new.status",
                 $name,
                 $slug,
                 $metaDescription,
@@ -118,9 +130,6 @@ final class Version20260315221000 extends AbstractMigration
     public function down(Schema $schema): void
     {
         $this->addSql("DELETE FROM player WHERE slug IN ('youness-guarziz', 'redouane-bourar', 'hacene-sahraoui', 'hocine-sahraoui', 'bakary-tracore')");
-        $this->addSql('ALTER TABLE player DROP COLUMN preferred_foot');
-        $this->addSql('ALTER TABLE player DROP COLUMN preferred_position');
-        $this->addSql('ALTER TABLE player DROP COLUMN nationality');
-        $this->addSql('ALTER TABLE player DROP COLUMN birth_date');
+        $this->addSql('ALTER TABLE player DROP COLUMN preferred_foot, DROP COLUMN preferred_position, DROP COLUMN nationality, DROP COLUMN birth_date');
     }
 }

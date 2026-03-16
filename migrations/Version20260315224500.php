@@ -16,7 +16,10 @@ final class Version20260315224500 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $this->addSql('CREATE TABLE club_settings (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, club_name VARCHAR(160) NOT NULL, public_email VARCHAR(255) NOT NULL, phone VARCHAR(60) NOT NULL, address VARCHAR(255) NOT NULL, map_url VARCHAR(255) NOT NULL, home_intro_title VARCHAR(120) DEFAULT NULL, home_intro_subtitle VARCHAR(255) DEFAULT NULL, home_intro_lead CLOB DEFAULT NULL, home_intro_media_note CLOB DEFAULT NULL, home_featured_title VARCHAR(120) DEFAULT NULL, home_featured_subtitle VARCHAR(255) DEFAULT NULL, home_upcoming_title VARCHAR(120) DEFAULT NULL, home_upcoming_subtitle VARCHAR(255) DEFAULT NULL, home_last_result_title VARCHAR(120) DEFAULT NULL, home_last_result_subtitle VARCHAR(255) DEFAULT NULL)');
+        $platform = $this->connection->getDatabasePlatform();
+        $this->abortIf(!$platform instanceof \Doctrine\DBAL\Platforms\AbstractMySQLPlatform, sprintf('Migration can only be executed safely on MySQL/MariaDB, current platform: %s.', $platform::class));
+
+        $this->addSql('CREATE TABLE club_settings (id INT AUTO_INCREMENT NOT NULL, club_name VARCHAR(160) NOT NULL, public_email VARCHAR(255) NOT NULL, phone VARCHAR(60) NOT NULL, address VARCHAR(255) NOT NULL, map_url VARCHAR(255) NOT NULL, home_intro_title VARCHAR(120) DEFAULT NULL, home_intro_subtitle VARCHAR(255) DEFAULT NULL, home_intro_lead LONGTEXT DEFAULT NULL, home_intro_media_note LONGTEXT DEFAULT NULL, home_featured_title VARCHAR(120) DEFAULT NULL, home_featured_subtitle VARCHAR(255) DEFAULT NULL, home_upcoming_title VARCHAR(120) DEFAULT NULL, home_upcoming_subtitle VARCHAR(255) DEFAULT NULL, home_last_result_title VARCHAR(120) DEFAULT NULL, home_last_result_subtitle VARCHAR(255) DEFAULT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB');
         $this->addSql("INSERT INTO club_settings (club_name, public_email, phone, address, map_url, home_intro_title, home_intro_subtitle, home_intro_lead, home_intro_media_note, home_featured_title, home_featured_subtitle, home_upcoming_title, home_upcoming_subtitle, home_last_result_title, home_last_result_subtitle)
             VALUES (
                 'Cécifoot La Bassée',
@@ -39,6 +42,9 @@ final class Version20260315224500 extends AbstractMigration
 
     public function down(Schema $schema): void
     {
+        $platform = $this->connection->getDatabasePlatform();
+        $this->abortIf(!$platform instanceof \Doctrine\DBAL\Platforms\AbstractMySQLPlatform, sprintf('Migration can only be executed safely on MySQL/MariaDB, current platform: %s.', $platform::class));
+
         $this->addSql('DROP TABLE club_settings');
     }
 }

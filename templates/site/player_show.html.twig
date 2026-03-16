@@ -1,14 +1,17 @@
 {% extends 'base.html.twig' %}
 
+{% set displayPhoto = player.displayPhoto %}
+{% set galleryPhotos = player.galleryPhotosForDisplay %}
+
 {% block title %}{{ player.name }} | Effectif | Cécifoot La Bassée{% endblock %}
 {% block meta_description %}{{ player.metaDescription ?: (player.description|trim|slice(0, 180) ~ (player.description|length > 180 ? '...' : '')) }}{% endblock %}
 {% block og_title %}{{ player.metaTitle ?: player.name }} | Effectif | Cécifoot La Bassée{% endblock %}
-{% block og_image %}{{ absolute_url(asset(player.photo ? 'uploads/players/' ~ player.photo : 'assets/club-placeholder.svg')) }}{% endblock %}
+{% block og_image %}{{ absolute_url(asset(displayPhoto ? 'uploads/players/' ~ displayPhoto : 'assets/club-placeholder.svg')) }}{% endblock %}
 
 {% block hero %}
     <section class="hero">
         <div class="hero-card">
-            <img class="hero-media" src="{{ player.photo ? asset('uploads/players/' ~ player.photo) : asset('assets/club-placeholder.svg') }}" alt="Portrait de {{ player.name }}">
+            <img class="hero-media" src="{{ displayPhoto ? asset('uploads/players/' ~ displayPhoto) : asset('assets/club-placeholder.svg') }}" alt="Portrait de {{ player.name }}">
             <div class="page-hero">
                 <div class="eyebrow"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="2"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Effectif</span></span></div>
                 <h1>{{ player.name }}</h1>
@@ -41,7 +44,7 @@
     <section class="stack">
         <article class="card wide player-profile">
             <div class="player-profile-media">
-                <img class="player-photo large" src="{{ player.photo ? asset('uploads/players/' ~ player.photo) : asset('assets/club-placeholder.svg') }}" alt="{{ player.name }}">
+                <img class="player-photo large" src="{{ displayPhoto ? asset('uploads/players/' ~ displayPhoto) : asset('assets/club-placeholder.svg') }}" alt="{{ player.name }}">
             </div>
             <div class="player-profile-body">
                 <div class="section-heading">
@@ -76,5 +79,26 @@
                 </div>
             </div>
         </article>
+
+        {% if galleryPhotos|length > 0 %}
+            <article class="card wide">
+                <div class="section-heading">
+                    <div>
+                        <h2>Photos de {{ player.name }}</h2>
+                        <p class="muted">Des visuels complémentaires pour mieux présenter le joueur dans l'effectif.</p>
+                    </div>
+                </div>
+                <div class="player-gallery-grid" style="margin-top: 1rem;">
+                    {% for galleryPhoto in galleryPhotos %}
+                        <figure class="player-gallery-item">
+                            <img class="player-photo" src="{{ asset('uploads/players/' ~ galleryPhoto.photo) }}" alt="{{ galleryPhoto.caption ?: 'Photo de ' ~ player.name ~ ' ' ~ loop.index }}">
+                            {% if galleryPhoto.caption %}
+                                <figcaption class="player-gallery-caption">{{ galleryPhoto.caption }}</figcaption>
+                            {% endif %}
+                        </figure>
+                    {% endfor %}
+                </div>
+            </article>
+        {% endif %}
     </section>
 {% endblock %}

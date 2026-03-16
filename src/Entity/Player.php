@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Enum\ContentStatus;
 use App\Repository\PlayerRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -69,6 +71,18 @@ class Player
     #[ORM\Column(enumType: ContentStatus::class)]
     private ContentStatus $status = ContentStatus::Published;
 
+    /**
+     * @var Collection<int, PlayerPhoto>
+     */
+    #[ORM\OneToMany(mappedBy: 'player', targetEntity: PlayerPhoto::class, orphanRemoval: true)]
+    #[ORM\OrderBy(['displayOrder' => 'ASC', 'id' => 'ASC'])]
+    private Collection $galleryPhotos;
+
+    public function __construct()
+    {
+        $this->galleryPhotos = new ArrayCollection();
+    }
+
     public function __toString(): string
     {
         return $this->name ?? 'Joueur';
@@ -113,6 +127,17 @@ class Player
         $this->photo = $photo;
 
         return $this;
+    }
+
+    public function getDisplayPhoto(): ?string
+    {
+        if (null !== $this->photo && '' !== trim($this->photo)) {
+            return $this->photo;
+        }
+
+        $firstGalleryPhoto = $this->galleryPhotos->first();
+
+        return $firstGalleryPhoto instanceof PlayerPhoto ? $firstGalleryPhoto->getPhoto() : null;
     }
 
     public function getMetaTitle(): ?string
@@ -249,6 +274,47 @@ class Player
     {
         $this->status = $status;
         $this->isPublished = ContentStatus::Published === $status;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, PlayerPhoto>
+     */
+    public function getGalleryPhotos(): Collection
+    {
+        return $this->galleryPhotos;
+    }
+
+    /**
+     * @return list<PlayerPhoto>
+     */
+    public function getGalleryPhotosForDisplay(): array
+    {
+        $photos = array_values($this->galleryPhotos->toArray());
+
+        if (null === $this->photo && [] !== $photos) {
+            array_shift($photos);
+        }
+
+        return $photos;
+    }
+
+    public function addGalleryPhoto(PlayerPhoto $galleryPhoto): static
+    {
+        if (!$this->galleryPhotos->contains($galleryPhoto)) {
+            $this->galleryPhotos->add($galleryPhoto);
+            $galleryPhoto->setPlayer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeGalleryPhoto(PlayerPhoto $galleryPhoto): static
+    {
+        if ($this->galleryPhotos->removeElement($galleryPhoto) && $galleryPhoto->getPlayer() === $this) {
+            $galleryPhoto->setPlayer(null);
+        }
 
         return $this;
     }

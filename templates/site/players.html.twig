@@ -35,8 +35,9 @@
             </div>
             <div class="player-grid" style="margin-top: 1rem;">
                 {% for player in players %}
+                    {% set displayPhoto = player.displayPhoto %}
                     <article class="player-card">
-                        <img class="player-photo" src="{{ player.photo ? asset('uploads/players/' ~ player.photo) : asset('assets/club-placeholder.svg') }}" alt="{{ player.name }}">
+                        <img class="player-photo" src="{{ displayPhoto ? asset('uploads/players/' ~ displayPhoto) : asset('assets/club-placeholder.svg') }}" alt="{{ player.name }}">
                         <div class="player-card-body">
                             <div class="player-card-meta">
                                 <h3>{{ player.name }}</h3>

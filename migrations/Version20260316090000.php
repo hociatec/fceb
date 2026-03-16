@@ -16,10 +16,10 @@ final class Version20260316090000 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $this->addSql("INSERT INTO user (email, roles, password, full_name, reset_password_token, reset_password_expires_at)
+        $this->addSql("INSERT INTO `user` (email, roles, password, full_name, reset_password_token, reset_password_expires_at)
             SELECT 'admin@cecifoot-labassee.local', '[\"ROLE_ADMIN\"]', '\$2y\$13\$3HRnq3yz5Efa2r5yJdLnsutiDDETmc7YAoPt3oprfXRjHg1fo8v9m', 'Administrateur Cecifoot', NULL, NULL
             WHERE NOT EXISTS (
-                SELECT 1 FROM user WHERE email = 'admin@cecifoot-labassee.local'
+                SELECT 1 FROM `user` WHERE email = 'admin@cecifoot-labassee.local'
             )");
 
         $this->addSql("INSERT INTO season (name, slug, start_date, end_date, is_current)
@@ -44,7 +44,7 @@ final class Version20260316090000 extends AbstractMigration
                 1,
                 'homepage',
                 (SELECT id FROM season WHERE slug = 'saison-2025-2026'),
-                (SELECT id FROM user WHERE email = 'admin@cecifoot-labassee.local'),
+                (SELECT id FROM `user` WHERE email = 'admin@cecifoot-labassee.local'),
                 NULL,
                 'published',
                 NULL,
@@ -63,7 +63,7 @@ final class Version20260316090000 extends AbstractMigration
                 1,
                 'current_season',
                 (SELECT id FROM season WHERE slug = 'saison-2025-2026'),
-                (SELECT id FROM user WHERE email = 'admin@cecifoot-labassee.local'),
+                (SELECT id FROM `user` WHERE email = 'admin@cecifoot-labassee.local'),
                 NULL,
                 'published',
                 NULL,
@@ -82,7 +82,7 @@ final class Version20260316090000 extends AbstractMigration
                 1,
                 'archive',
                 (SELECT id FROM season WHERE slug = 'saison-2024-2025'),
-                (SELECT id FROM user WHERE email = 'admin@cecifoot-labassee.local'),
+                (SELECT id FROM `user` WHERE email = 'admin@cecifoot-labassee.local'),
                 NULL,
                 'published',
                 NULL,
@@ -226,6 +226,6 @@ final class Version20260316090000 extends AbstractMigration
         $this->addSql("DELETE FROM social_link WHERE url IN ('https://facebook.com/cecifootlabassee', 'https://instagram.com/cecifootlabassee')");
         $this->addSql("DELETE FROM partner WHERE name IN ('Ville de La Bassee', 'Federation Francaise Handisport')");
         $this->addSql("DELETE FROM season WHERE slug IN ('saison-2025-2026', 'saison-2024-2025')");
-        $this->addSql("DELETE FROM user WHERE email = 'admin@cecifoot-labassee.local'");
+        $this->addSql("DELETE FROM `user` WHERE email = 'admin@cecifoot-labassee.local'");
     }
 }

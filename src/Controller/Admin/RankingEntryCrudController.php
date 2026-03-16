@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\RankingEntry;
+use App\Repository\SeasonRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -14,9 +15,25 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
 class RankingEntryCrudController extends AbstractCrudController
 {
+    public function __construct(private readonly SeasonRepository $seasonRepository)
+    {
+    }
+
     public static function getEntityFqcn(): string
     {
         return RankingEntry::class;
+    }
+
+    public function createEntity(string $entityFqcn): RankingEntry
+    {
+        $entry = new RankingEntry();
+
+        $currentSeason = $this->seasonRepository->findCurrentSeason();
+        if (null !== $currentSeason) {
+            $entry->setSeason($currentSeason);
+        }
+
+        return $entry;
     }
 
     public function configureCrud(Crud $crud): Crud
@@ -33,7 +50,7 @@ class RankingEntryCrudController extends AbstractCrudController
     public function configureActions(Actions $actions): Actions
     {
         return $actions
-            ->disable(Action::BATCH_DELETE, Action::DETAIL, Action::SAVE_AND_ADD_ANOTHER)
+            ->disable(Action::BATCH_DELETE, Action::DETAIL, Action::SAVE_AND_ADD_ANOTHER, Action::SAVE_AND_CONTINUE)
             ->update(Crud::PAGE_INDEX, Action::EDIT, static fn (Action $action) => $action->setLabel('Modifier'))
             ->update(Crud::PAGE_INDEX, Action::DELETE, static fn (Action $action) => $action->setLabel('Supprimer'))
             ->update(Crud::PAGE_NEW, Action::SAVE_AND_RETURN, static fn (Action $action) => $action->setLabel('Créer la ligne'))
@@ -43,11 +60,16 @@ class RankingEntryCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         yield FormField::addFieldset('Équipe et saison')
+            ->renderCollapsed()
             ->setHelp("Choisis la saison puis l'équipe à afficher dans le classement.");
 
         yield AssociationField::new('season', 'Saison')
             ->renderAsNativeWidget()
             ->setColumns(6)
+            ->setFormTypeOption('placeholder', 'Choisir une saison')
+            ->setFormTypeOption('attr', [
+                'aria-label' => 'Saison du classement',
+            ])
             ->setHelp('Saison à laquelle rattacher cette ligne.');
 
         yield TextField::new('teamName', 'Nom de l’équipe')
@@ -60,6 +82,7 @@ class RankingEntryCrudController extends AbstractCrudController
             ->setHelp("Nom affiché dans le tableau de classement.");
 
         yield FormField::addFieldset('Statistiques')
+            ->renderCollapsed()
             ->setHelp('Renseigne les chiffres à afficher dans le classement public.');
 
         yield IntegerField::new('points', 'Points')

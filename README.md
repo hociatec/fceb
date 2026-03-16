@@ -12,6 +12,7 @@ API Symfony pour le site du club, avec administration EasyAdmin et base MySQL.
 ## Lancer le projet
 
 ```bash
+docker compose up -d database mailer
 composer install
 php bin/console doctrine:database:create --if-not-exists
 php bin/console doctrine:migrations:migrate --no-interaction
@@ -26,13 +27,15 @@ Les migrations inserent aussi le contenu initial editable en base: compte admin 
 
 - Configuration par defaut: MySQL
 - URL locale par defaut: `mysql://app:!ChangeMe!@127.0.0.1:3306/fceb?serverVersion=8.0.32&charset=utf8mb4`
+- Le `docker compose` du projet publie MySQL sur `127.0.0.1:3306`, en coherence avec cette URL par defaut
+- Un fichier `.env.local` ou une vraie variable d'environnement peut surcharger cette URL si vous utilisez une autre instance MySQL
 - Pensez a definir `DATABASE_URL` sur le serveur de production avec vos vrais identifiants
 
 ## Mise en production MySQL
 
 1. Creer une base MySQL distante, par exemple `fceb_prod`
 2. Creer un utilisateur MySQL dedie avec tous les droits sur cette base
-3. Copier les variables de [`.env.prod.local.example`](C:/wamp64/www/fceb/.env.prod.local.example) dans `.env.prod.local` sur le serveur
+3. Copier les variables de `.env.prod.local.example` dans `.env.prod.local` sur le serveur
 4. Importer le dump SQL genere localement dans la base distante
 5. Installer le projet en production :
 
@@ -47,6 +50,8 @@ Exemple d'import SQL sur le serveur distant :
 ```bash
 mysql -u fceb_user -p fceb_prod < fceb-mysql.sql
 ```
+
+Si votre MySQL de production est publie sur un autre port local, adaptez simplement `DATABASE_URL` dans `.env.prod.local`.
 
 ## Acces demo
 

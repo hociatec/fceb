@@ -53,8 +53,9 @@ class TeamBranding
     private function normalize(?string $teamName): string
     {
         $teamName = trim(mb_strtolower((string) $teamName));
-        $teamName = str_replace(['’', '\''], ' ', $teamName);
+        $teamName = str_replace(['’', '\'', '.'], ' ', $teamName);
+        $teamName = preg_replace('/[^[:alnum:]\s-]+/u', ' ', $teamName) ?? '';
 
-        return preg_replace('/\s+/', ' ', $teamName) ?? '';
+        return trim(preg_replace('/\s+/', ' ', $teamName) ?? '');
     }
 }

@@ -16,7 +16,10 @@ final class Version20260313190000 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $this->addSql('ALTER TABLE team_identity ADD aliases CLOB DEFAULT NULL');
+        $platform = $this->connection->getDatabasePlatform();
+        $this->abortIf(!$platform instanceof \Doctrine\DBAL\Platforms\AbstractMySQLPlatform, sprintf('Migration can only be executed safely on MySQL/MariaDB, current platform: %s.', $platform::class));
+
+        $this->addSql('ALTER TABLE team_identity ADD aliases LONGTEXT DEFAULT NULL');
 
         $this->addSql("UPDATE team_identity SET aliases = 'FC Cécifoot 59 La Bassée' WHERE team_name = 'Cécifoot 59 La Bassée'");
         $this->addSql("UPDATE team_identity SET aliases = 'RC Lens Cécifoot' WHERE team_name = 'RC Lens'");

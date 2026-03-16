@@ -3,12 +3,20 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Article;
-use App\Enum\ArticlePlacement;
+use App\Entity\MatchGame;
+use App\Entity\User;
+use App\Enum\ArticleHomepageSlot;
 use App\Enum\ContentStatus;
+use App\Repository\SeasonRepository;
+use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\ChoiceFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\DateTimeFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
@@ -20,9 +28,31 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
 class ArticleCrudController extends AbstractCrudController
 {
+    public function __construct(private readonly SeasonRepository $seasonRepository)
+    {
+    }
+
     public static function getEntityFqcn(): string
     {
         return Article::class;
+    }
+
+    public function createEntity(string $entityFqcn): Article
+    {
+        $article = new Article();
+        $article->setPublishedAt(new \DateTimeImmutable());
+
+        $currentSeason = $this->seasonRepository->findCurrentSeason();
+        if (null !== $currentSeason) {
+            $article->setSeason($currentSeason);
+        }
+
+        $user = $this->getUser();
+        if ($user instanceof User) {
+            $article->setAuthor($user);
+        }
+
+        return $article;
     }
 
     public function configureCrud(Crud $crud): Crud
@@ -36,6 +66,25 @@ class ArticleCrudController extends AbstractCrudController
             ->showEntityActionsInlined();
     }
 
+    public function configureFilters(Filters $filters): Filters
+    {
+        return $filters
+            ->add(EntityFilter::new('season', 'Saison'))
+            ->add(EntityFilter::new('author', 'Auteur'))
+            ->add(EntityFilter::new('linkedMatch', 'Match lié'))
+            ->add(ChoiceFilter::new('status', 'Visibilité')->setChoices([
+                'Brouillon' => ContentStatus::Draft,
+                'Publié' => ContentStatus::Published,
+                'Archivé' => ContentStatus::Archived,
+            ]))
+            ->add(ChoiceFilter::new('homepageSlot', "Affichage sur l'accueil")->setChoices([
+                "Ne pas afficher sur l'accueil" => ArticleHomepageSlot::None,
+                'Actualité à la une' => ArticleHomepageSlot::Featured,
+                'Autres actualités' => ArticleHomepageSlot::Secondary,
+            ]))
+            ->add(DateTimeFilter::new('publishedAt', 'Date de publication'));
+    }
+
     public function configureActions(Actions $actions): Actions
     {
         $preview = Action::new('preview', 'Prévisualiser')
@@ -47,7 +96,7 @@ class ArticleCrudController extends AbstractCrudController
             ->setCssClass('btn btn-secondary');
 
         return $actions
-            ->disable(Action::BATCH_DELETE, Action::DETAIL)
+            ->disable(Action::BATCH_DELETE, Action::DETAIL, Action::SAVE_AND_ADD_ANOTHER, Action::SAVE_AND_CONTINUE)
             ->add(Crud::PAGE_INDEX, $preview)
             ->add(Crud::PAGE_EDIT, $preview)
             ->update(Crud::PAGE_INDEX, Action::EDIT, static fn (Action $action) => $action->setLabel('Modifier'))
@@ -57,6 +106,7 @@ class ArticleCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         yield FormField::addFieldset("Informations de l'article")
+            ->renderCollapsed()
             ->setHelp("Commence par le titre, le résumé et l'image, puis saisis le contenu complet.");
 
         yield TextField::new('title', 'Titre')
@@ -114,6 +164,7 @@ class ArticleCrudController extends AbstractCrudController
             ->hideOnIndex();
 
         yield FormField::addFieldset('Publication')
+            ->renderCollapsed()
             ->setHelp("Choisis où l'article apparaît, pour quelle saison, et s'il est visible sur le site.");
 
         yield DateTimeField::new('publishedAt', 'Date de publication')
@@ -123,24 +174,64 @@ class ArticleCrudController extends AbstractCrudController
             ])
             ->setHelp('Date affichée publiquement sur le site.');
 
-        yield ChoiceField::new('placement', "Emplacement principal")
+        yield ChoiceField::new('homepageSlot', "Affichage sur l'accueil")
             ->setChoices([
-                'Aucun emplacement spécial' => ArticlePlacement::None,
-                'Accueil' => ArticlePlacement::Homepage,
-                'Saison en cours' => ArticlePlacement::CurrentSeason,
-                'Archive' => ArticlePlacement::Archive,
+                "Ne pas afficher sur l'accueil" => ArticleHomepageSlot::None,
+                'Actualité à la une' => ArticleHomepageSlot::Featured,
+                'Autres actualités' => ArticleHomepageSlot::Secondary,
             ])
             ->renderExpanded()
             ->setColumns(6)
-            ->setHelp("Choisis si l'article doit être mis en avant à un endroit précis.");
+            ->setHelp("Si plusieurs articles partagent le même emplacement, les plus récents passent en priorité.");
 
         yield AssociationField::new('season', 'Saison')
+            ->renderAsNativeWidget()
             ->setColumns(6)
+            ->setFormTypeOption('placeholder', 'Choisir une saison')
+            ->setFormTypeOption('attr', [
+                'aria-label' => 'Saison de l’article',
+            ])
             ->setHelp("Saison liée à l'article, si besoin.");
 
         yield AssociationField::new('author', 'Auteur')
+            ->renderAsNativeWidget()
             ->setColumns(6)
+            ->setFormTypeOption('placeholder', 'Choisir un auteur')
+            ->setFormTypeOption('attr', [
+                'aria-label' => "Auteur de l'article",
+            ])
             ->setHelp("Personne à afficher comme auteur de l'article.");
+
+        yield AssociationField::new('linkedMatch', 'Match lié')
+            ->renderAsNativeWidget()
+            ->setColumns(12)
+            ->setFormTypeOption('placeholder', 'Aucun match lié')
+            ->setFormTypeOption('query_builder', static function (QueryBuilder $queryBuilder): QueryBuilder {
+                return $queryBuilder
+                    ->orderBy('entity.matchDate', 'DESC')
+                    ->addOrderBy('entity.id', 'DESC');
+            })
+            ->setFormTypeOption('choice_label', static function (?MatchGame $match): string {
+                if (!$match instanceof MatchGame) {
+                    return '';
+                }
+
+                $label = sprintf(
+                    '%s · %s',
+                    $match->getPoster(),
+                    $match->getMatchDate()?->format('d/m/Y H:i') ?? 'date inconnue'
+                );
+
+                if ($match->getCompetition()) {
+                    $label .= sprintf(' · %s', $match->getCompetition());
+                }
+
+                return $label;
+            })
+            ->setFormTypeOption('attr', [
+                'aria-label' => 'Match lié à cet article',
+            ])
+            ->setHelp('Choisis ici le match auquel cet article sert de compte-rendu. Cette liaison met aussi à jour la fiche match.');
 
         yield ChoiceField::new('status', 'Visibilité')
             ->setChoices([
@@ -153,6 +244,7 @@ class ArticleCrudController extends AbstractCrudController
             ->setHelp("Brouillon : non visible. Publié : visible. Archivé : conservé sans être mis en avant.");
 
         yield FormField::addFieldset('Référencement')
+            ->renderCollapsed()
             ->setHelp('Champs facultatifs pour Google et le partage social.')
             ->hideOnIndex();
 

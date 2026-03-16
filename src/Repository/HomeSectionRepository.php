@@ -37,4 +37,33 @@ class HomeSectionRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /** @return string[] */
+    public function configuredSectionKeys(): array
+    {
+        return array_values(array_filter(array_map(
+            static fn (HomeSection $section): ?string => $section->getSectionKey(),
+            $this->findAll()
+        )));
+    }
+
+    /** @return array<string, string> */
+    public function missingSectionChoices(): array
+    {
+        $configuredKeys = $this->configuredSectionKeys();
+        $choices = [];
+
+        foreach (HomeSection::AVAILABLE_KEYS as $key => $label) {
+            if (!in_array($key, $configuredKeys, true)) {
+                $choices[$label] = $key;
+            }
+        }
+
+        return $choices;
+    }
+
+    public function findConfiguredByKey(string $sectionKey): ?HomeSection
+    {
+        return $this->findOneBy(['sectionKey' => $sectionKey]);
+    }
 }

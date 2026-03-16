@@ -68,7 +68,7 @@ class SeasonController extends AbstractController
                 'slug' => $article->getSlug(),
                 'excerpt' => $article->getExcerpt(),
                 'published_at' => $article->getPublishedAt()?->format(\DateTimeInterface::ATOM),
-                'placement' => $article->getPlacement()->value,
+                'homepage_slot' => $article->getHomepageSlot()->value,
             ], $articleRepository->findPublishedBySeason($season)),
             'matches' => array_map(fn (MatchGame $match) => [
                 'opponent' => $match->getOpponent(),

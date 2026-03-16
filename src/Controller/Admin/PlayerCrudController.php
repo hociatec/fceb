@@ -45,7 +45,7 @@ class PlayerCrudController extends AbstractCrudController
             ->setCssClass('btn btn-secondary');
 
         return $actions
-            ->disable(Action::BATCH_DELETE, Action::DETAIL)
+            ->disable(Action::BATCH_DELETE, Action::DETAIL, Action::SAVE_AND_ADD_ANOTHER, Action::SAVE_AND_CONTINUE)
             ->add(Crud::PAGE_INDEX, $preview)
             ->add(Crud::PAGE_EDIT, $preview)
             ->update(Crud::PAGE_INDEX, Action::EDIT, static fn (Action $action) => $action->setLabel('Modifier'))
@@ -55,6 +55,7 @@ class PlayerCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         yield FormField::addFieldset('Identité du joueur')
+            ->renderCollapsed()
             ->setHelp('Renseigne les informations principales du joueur visibles sur sa fiche.');
 
         yield TextField::new('name', 'Nom complet')
@@ -100,15 +101,15 @@ class PlayerCrudController extends AbstractCrudController
                 'readonly' => true,
                 'aria-label' => 'Âge du joueur',
             ])
-            ->setHelp("Champ calculé automatiquement depuis la date de naissance.")
+            ->setHelp('Champ calculé automatiquement depuis la date de naissance.')
             ->hideOnForm();
 
-        yield ImageField::new('photo', 'Photo')
+        yield ImageField::new('photo', 'Photo principale')
             ->setColumns(12)
             ->setBasePath('uploads/players')
             ->setUploadDir('public/uploads/players')
             ->setUploadedFileNamePattern('[contenthash].[extension]')
-            ->setHelp("Photo utilisée dans la page effectif et sur la fiche détaillée.")
+            ->setHelp("Photo affichée sur la carte effectif. Les photos complémentaires se gèrent dans la section Photos joueurs.")
             ->hideOnIndex();
 
         yield TextareaField::new('description', 'Présentation du joueur')
@@ -122,6 +123,7 @@ class PlayerCrudController extends AbstractCrudController
             ->setHelp('Texte principal visible sur la fiche du joueur.');
 
         yield FormField::addFieldset('Affichage')
+            ->renderCollapsed()
             ->setHelp("Définis l'ordre dans l'effectif et la visibilité publique.");
 
         yield IntegerField::new('displayOrder', "Ordre d'affichage")
@@ -144,6 +146,7 @@ class PlayerCrudController extends AbstractCrudController
             ->setHelp('Brouillon : non visible. Publié : visible. Archivé : conservé.');
 
         yield FormField::addFieldset('Référencement')
+            ->renderCollapsed()
             ->setHelp('Champs facultatifs pour Google et le partage social.')
             ->hideOnIndex();
 

@@ -25,6 +25,7 @@ use App\Repository\PartnerRepository;
 use App\Repository\PlayerRepository;
 use App\Repository\RankingEntryRepository;
 use App\Repository\SeasonRepository;
+use App\Service\MatchArticleResolver;
 use App\Service\SiteContextBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -40,7 +41,10 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class SiteController extends AbstractController
 {
-    public function __construct(private readonly SiteContextBuilder $siteContextBuilder)
+    public function __construct(
+        private readonly SiteContextBuilder $siteContextBuilder,
+        private readonly MatchArticleResolver $matchArticleResolver,
+    )
     {
     }
 
@@ -52,26 +56,23 @@ class SiteController extends AbstractController
         PageRepository $pageRepository,
         PartnerRepository $partnerRepository
     ): Response {
-        $latestArticle = $articleRepository->findLatestHomepageArticle();
+        $homeSections = $this->resolveHomeSections($homeSectionRepository);
+        $featuredHomeSection = $homeSectionRepository->findConfiguredByKey(HomeSection::KEY_FEATURED_ARTICLE);
+        $latestArticle = $this->resolveHomepageFeaturedArticle($featuredHomeSection, $articleRepository);
         $upcomingMatches = $matchRepository->findUpcomingMatches();
         $lastMatch = $matchRepository->findLastMatch();
         $candidateArticles = $articleRepository->findLatestPublished(50);
-        $recentArticles = array_values(array_filter(
-            $articleRepository->findLatestPublished(4),
-            static fn (Article $article): bool => !$latestArticle || $article->getId() !== $latestArticle->getId()
-        ));
+        $recentArticles = $this->resolveHomepageSecondaryArticles($featuredHomeSection, $articleRepository, $latestArticle);
         $discoverPage = $pageRepository->findPublishedBySlug('decouvrir-le-cecifoot');
 
         return $this->render('site/home.html.twig', [
             ...$this->siteContextBuilder->build(),
             'discoverPage' => $discoverPage,
-            'discoverPageExcerpt' => $this->buildPageExcerpt($discoverPage?->getContent()),
             'latestArticle' => $latestArticle,
-            'homeSections' => $this->resolveHomeSections($homeSectionRepository),
-            'upcomingMatches' => $upcomingMatches,
+            'homeSections' => $homeSections,
             'nextMatch' => $upcomingMatches[0] ?? null,
             'otherUpcomingMatches' => array_slice($upcomingMatches, 1, 3),
-            'recentArticles' => array_slice($recentArticles, 0, 3),
+            'recentArticles' => $recentArticles,
             'lastMatch' => $lastMatch,
             'lastMatchArticle' => $this->findMatchingArticleForMatch($lastMatch, $candidateArticles),
             'partners' => $partnerRepository->findVisibleOrdered(),
@@ -563,7 +564,7 @@ class SiteController extends AbstractController
         $map = [];
 
         foreach ($matches as $match) {
-            $article = $this->findMatchingArticleForMatch($match, $articles);
+            $article = $this->matchArticleResolver->resolve($match, $articles);
             if ($article) {
                 $map[$match->getId()] = $article;
             }
@@ -577,70 +578,128 @@ class SiteController extends AbstractController
      */
     private function findMatchingArticleForMatch(?MatchGame $match, array $articles): ?Article
     {
-        if (!$match instanceof MatchGame) {
-            return null;
+        return $this->matchArticleResolver->resolve($match, $articles);
+    }
+
+    private function resolveHomepageFeaturedArticle(?HomeSection $featuredSection, ArticleRepository $articleRepository): ?Article
+    {
+        $featuredArticle = $featuredSection?->getFeaturedArticle();
+        if ($featuredArticle instanceof Article && $featuredArticle->isVisibleOnSite()) {
+            return $featuredArticle;
         }
 
-        $opponent = mb_strtolower($match->getOpponent() ?? '');
-        $matchDay = $match->getMatchDate()?->format('Y-m-d');
-
-        foreach ($articles as $article) {
-            if (!$article->getPublishedAt() || $article->getPublishedAt()->format('Y-m-d') !== $matchDay) {
-                continue;
-            }
-
-            $title = mb_strtolower($article->getTitle() ?? '');
-            if ('' !== $opponent && str_contains($title, $opponent)) {
-                return $article;
-            }
-        }
-
-        return null;
+        return $articleRepository->findLatestHomepageArticle();
     }
 
     /**
-     * @return array<int, array{key: string, title: string, subtitle: ?string}>
+     * @return list<Article>
+     */
+    private function resolveHomepageSecondaryArticles(?HomeSection $featuredSection, ArticleRepository $articleRepository, ?Article $featuredArticle): array
+    {
+        $articles = [];
+        $excludeIds = [];
+
+        if ($featuredArticle instanceof Article && null !== $featuredArticle->getId()) {
+            $excludeIds[] = $featuredArticle->getId();
+        }
+
+        foreach ($featuredSection?->getManualSecondaryArticles() ?? [] as $article) {
+            if (!$article->isVisibleOnSite()) {
+                continue;
+            }
+
+            if ($featuredArticle instanceof Article && $article->getId() === $featuredArticle->getId()) {
+                continue;
+            }
+
+            $key = (string) ($article->getId() ?? spl_object_id($article));
+            $articles[$key] = $article;
+
+            if (null !== $article->getId()) {
+                $excludeIds[] = $article->getId();
+            }
+
+            if (count($articles) >= 3) {
+                return array_values($articles);
+            }
+        }
+
+        $autoArticles = $articleRepository->findHomepageSecondaryArticles(3 - count($articles), $excludeIds);
+        foreach ($autoArticles as $article) {
+            $key = (string) ($article->getId() ?? spl_object_id($article));
+            $articles[$key] = $article;
+        }
+
+        return array_values($articles);
+    }
+
+    /**
+     * @return array<int, array{
+     *     key: string,
+     *     title: string,
+     *     subtitle: ?string,
+     *     content: ?string,
+     *     secondaryContent: ?string,
+     *     image: ?string,
+     *     displayOrder: int
+     * }>
      */
     private function resolveHomeSections(HomeSectionRepository $homeSectionRepository): array
     {
-        $sections = $homeSectionRepository->findEnabledOrdered();
-        if ([] === $sections) {
-            return array_map(
-                static fn (array $definition): array => [
-                    'key' => $definition['sectionKey'],
-                    'title' => $definition['title'],
-                    'subtitle' => $definition['subtitle'],
-                ],
-                HomeSection::defaultDefinitions()
-            );
+        $resolved = [];
+        foreach (HomeSection::defaultDefinitions() as $definition) {
+            $resolved[$definition['sectionKey']] = [
+                'key' => $definition['sectionKey'],
+                'title' => $definition['title'],
+                'subtitle' => $definition['subtitle'],
+                'content' => $definition['content'],
+                'secondaryContent' => $definition['secondaryContent'],
+                'image' => $definition['image'] ?? null,
+                'displayOrder' => $definition['displayOrder'],
+                'isEnabled' => $definition['isEnabled'],
+            ];
         }
 
-        return array_map(
-            static fn (HomeSection $section): array => [
+        foreach ($homeSectionRepository->findAllOrdered() as $section) {
+            $key = $section->getSectionKey();
+            if (null === $key) {
+                continue;
+            }
+
+            $resolved[$key] = [
                 'key' => $section->getSectionKey(),
                 'title' => $section->getTitle() ?? '',
                 'subtitle' => $section->getSubtitle(),
-            ],
-            $sections
+                'content' => $section->getContent(),
+                'secondaryContent' => $section->getSecondaryContent(),
+                'image' => $section->getImage(),
+                'displayOrder' => $section->getDisplayOrder(),
+                'isEnabled' => $section->isEnabled(),
+            ];
+        }
+
+        $resolved = array_filter(
+            $resolved,
+            static fn (array $section): bool => (bool) $section['isEnabled']
         );
-    }
 
-    private function buildPageExcerpt(?string $content): ?string
-    {
-        if (null === $content) {
-            return null;
-        }
+        uasort(
+            $resolved,
+            static fn (array $left, array $right): int => [$left['displayOrder'], $left['key']] <=> [$right['displayOrder'], $right['key']]
+        );
 
-        $normalized = preg_replace('/\[(quote|separator|cta)([^\]]*)\]/i', ' ', $content);
-        $normalized = preg_replace('/\[\/quote\]/i', ' ', $normalized ?? '');
-        $plainText = trim(html_entity_decode(strip_tags((string) $normalized)));
-        $plainText = preg_replace('/\s+/', ' ', $plainText ?? '');
-
-        if ('' === $plainText) {
-            return null;
-        }
-
-        return mb_strimwidth($plainText, 0, 220, '...');
+        return array_values(array_map(
+            static fn (array $section): array => [
+                'key' => $section['key'],
+                'title' => $section['title'],
+                'subtitle' => $section['subtitle'],
+                'content' => $section['content'],
+                'secondaryContent' => $section['secondaryContent'],
+                'image' => $section['image'],
+                'displayOrder' => $section['displayOrder'],
+            ],
+            $resolved
+        ));
     }
 
     private function canPreview(Request $request): bool

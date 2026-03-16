@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-use App\Enum\ArticlePlacement;
+use App\Enum\ArticleHomepageSlot;
 use App\Enum\ContentStatus;
 use App\Repository\ArticleRepository;
 use Doctrine\ORM\Mapping as ORM;
@@ -56,8 +56,8 @@ class Article
     #[ORM\Column(enumType: ContentStatus::class)]
     private ContentStatus $status = ContentStatus::Published;
 
-    #[ORM\Column(enumType: ArticlePlacement::class)]
-    private ArticlePlacement $placement = ArticlePlacement::None;
+    #[ORM\Column(enumType: ArticleHomepageSlot::class, options: ['default' => ArticleHomepageSlot::None->value])]
+    private ArticleHomepageSlot $homepageSlot = ArticleHomepageSlot::None;
 
     #[ORM\ManyToOne(targetEntity: Season::class, inversedBy: 'articles')]
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
@@ -66,6 +66,9 @@ class Article
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?User $author = null;
+
+    #[ORM\OneToOne(mappedBy: 'linkedArticle', targetEntity: MatchGame::class)]
+    private ?MatchGame $linkedMatch = null;
 
     public function getId(): ?int
     {
@@ -173,6 +176,24 @@ class Article
         return ContentStatus::Published === $this->status;
     }
 
+    public function isVisibleOnSite(?\DateTimeImmutable $now = null): bool
+    {
+        $now ??= new \DateTimeImmutable();
+
+        return $this->isPublished()
+            && null !== $this->publishedAt
+            && $this->publishedAt <= $now;
+    }
+
+    public function isScheduled(?\DateTimeImmutable $now = null): bool
+    {
+        $now ??= new \DateTimeImmutable();
+
+        return $this->isPublished()
+            && null !== $this->publishedAt
+            && $this->publishedAt > $now;
+    }
+
     public function setIsPublished(bool $isPublished): static
     {
         $this->isPublished = $isPublished;
@@ -194,14 +215,14 @@ class Article
         return $this;
     }
 
-    public function getPlacement(): ArticlePlacement
+    public function getHomepageSlot(): ArticleHomepageSlot
     {
-        return $this->placement;
+        return $this->homepageSlot;
     }
 
-    public function setPlacement(ArticlePlacement $placement): static
+    public function setHomepageSlot(ArticleHomepageSlot $homepageSlot): static
     {
-        $this->placement = $placement;
+        $this->homepageSlot = $homepageSlot;
 
         return $this;
     }
@@ -226,6 +247,31 @@ class Article
     public function setAuthor(?User $author): static
     {
         $this->author = $author;
+
+        return $this;
+    }
+
+    public function getLinkedMatch(): ?MatchGame
+    {
+        return $this->linkedMatch;
+    }
+
+    public function setLinkedMatch(?MatchGame $linkedMatch): static
+    {
+        if ($this->linkedMatch === $linkedMatch) {
+            return $this;
+        }
+
+        $previousLinkedMatch = $this->linkedMatch;
+        $this->linkedMatch = $linkedMatch;
+
+        if ($previousLinkedMatch instanceof MatchGame && $previousLinkedMatch->getLinkedArticle() === $this) {
+            $previousLinkedMatch->setLinkedArticle(null);
+        }
+
+        if ($linkedMatch instanceof MatchGame && $linkedMatch->getLinkedArticle() !== $this) {
+            $linkedMatch->setLinkedArticle($this);
+        }
 
         return $this;
     }

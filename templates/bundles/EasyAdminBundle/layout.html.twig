@@ -1,0 +1,22 @@
+{% extends '@!EasyAdmin/layout.html.twig' %}
+
+{% block head_stylesheets %}
+    {{ parent() }}
+    {% include 'admin/_site_header_styles.html.twig' %}
+{% endblock %}
+
+{% block wrapper_wrapper %}
+    {% set site = site_context() %}
+    {% include 'partials/_site_header.html.twig' with {site: site, admin_mode: false} %}
+    {{ parent() }}
+{% endblock %}
+
+{% block wrapper %}
+    {{ block('main_content_wrapper') }}
+{% endblock %}
+
+{% block header %}{% endblock %}
+
+{% block header_custom_menu_wrapper %}{% endblock %}
+
+{% block settings_dropdown_wrapper %}{% endblock %}

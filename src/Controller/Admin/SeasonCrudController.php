@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Season;
+use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -32,7 +33,7 @@ class SeasonCrudController extends AbstractCrudController
     public function configureActions(Actions $actions): Actions
     {
         return $actions
-            ->disable(Action::BATCH_DELETE, Action::DETAIL)
+            ->disable(Action::BATCH_DELETE, Action::DETAIL, Action::SAVE_AND_ADD_ANOTHER, Action::SAVE_AND_CONTINUE)
             ->update(Crud::PAGE_INDEX, Action::EDIT, static fn (Action $action) => $action->setLabel('Modifier'))
             ->update(Crud::PAGE_INDEX, Action::DELETE, static fn (Action $action) => $action->setLabel('Supprimer'));
     }
@@ -74,6 +75,46 @@ class SeasonCrudController extends AbstractCrudController
             ->setFormTypeOption('attr', [
                 'aria-label' => 'Définir cette saison comme saison en cours',
             ])
-            ->setHelp('Active ce bouton uniquement pour la saison actuellement mise en avant sur le site.');
+            ->setHelp('Si cette saison est cochée, toutes les autres saisons en cours seront décochées automatiquement.');
+    }
+
+    public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        if ($entityInstance instanceof Season) {
+            $this->unsetOtherCurrentSeasons($entityManager, $entityInstance);
+        }
+
+        parent::persistEntity($entityManager, $entityInstance);
+    }
+
+    public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        if ($entityInstance instanceof Season) {
+            $this->unsetOtherCurrentSeasons($entityManager, $entityInstance);
+        }
+
+        parent::updateEntity($entityManager, $entityInstance);
+    }
+
+    private function unsetOtherCurrentSeasons(EntityManagerInterface $entityManager, Season $season): void
+    {
+        if (!$season->isCurrent()) {
+            return;
+        }
+
+        $queryBuilder = $entityManager->createQueryBuilder()
+            ->update(Season::class, 's')
+            ->set('s.isCurrent', ':notCurrent')
+            ->where('s.isCurrent = :current')
+            ->setParameter('notCurrent', false)
+            ->setParameter('current', true);
+
+        if (null !== $season->getId()) {
+            $queryBuilder
+                ->andWhere('s.id != :seasonId')
+                ->setParameter('seasonId', $season->getId());
+        }
+
+        $queryBuilder->getQuery()->execute();
     }
 }

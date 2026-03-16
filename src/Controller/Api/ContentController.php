@@ -23,6 +23,7 @@ class ContentController extends AbstractController
                 'excerpt' => $article->getExcerpt(),
                 'published_at' => $article->getPublishedAt()?->format(\DateTimeInterface::ATOM),
                 'season' => $article->getSeason()?->getName(),
+                'homepage_slot' => $article->getHomepageSlot()->value,
             ], $articleRepository->findLatestPublished()),
         ]);
     }
