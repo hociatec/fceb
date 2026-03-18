@@ -7,8 +7,8 @@ use App\Entity\MatchGame;
 use App\Entity\User;
 use App\Enum\ArticleHomepageSlot;
 use App\Enum\ContentStatus;
+use App\Repository\MatchGameRepository;
 use App\Repository\SeasonRepository;
-use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -71,7 +71,6 @@ class ArticleCrudController extends AbstractCrudController
         return $filters
             ->add(EntityFilter::new('season', 'Saison'))
             ->add(EntityFilter::new('author', 'Auteur'))
-            ->add(EntityFilter::new('linkedMatch', 'Match lié'))
             ->add(ChoiceFilter::new('status', 'Visibilité')->setChoices([
                 'Brouillon' => ContentStatus::Draft,
                 'Publié' => ContentStatus::Published,
@@ -206,8 +205,8 @@ class ArticleCrudController extends AbstractCrudController
             ->renderAsNativeWidget()
             ->setColumns(12)
             ->setFormTypeOption('placeholder', 'Aucun match lié')
-            ->setFormTypeOption('query_builder', static function (QueryBuilder $queryBuilder): QueryBuilder {
-                return $queryBuilder
+            ->setFormTypeOption('query_builder', static function (MatchGameRepository $repository) {
+                return $repository->createQueryBuilder('entity')
                     ->orderBy('entity.matchDate', 'DESC')
                     ->addOrderBy('entity.id', 'DESC');
             })

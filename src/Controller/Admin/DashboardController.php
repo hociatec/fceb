@@ -22,6 +22,7 @@ use App\Repository\TeamIdentityRepository;
 use App\Repository\TournifySyncRunRepository;
 use App\Repository\UserRepository;
 use App\Service\MatchArticleResolver;
+use App\Service\SiteBackupManager;
 use App\Service\SiteResetter;
 use App\Service\Tournify\TournifyMatchSyncer;
 use App\Service\Tournify\TournifySyncRunLogger;
@@ -34,6 +35,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[AdminDashboard(routePath: '/admin', routeName: 'admin')]
@@ -55,6 +59,7 @@ class DashboardController extends AbstractDashboardController
         private readonly TournifySyncRunRepository $tournifySyncRunRepository,
         private readonly AdminUrlGenerator $adminUrlGenerator,
         private readonly MatchArticleResolver $matchArticleResolver,
+        private readonly SiteBackupManager $siteBackupManager,
         private readonly SiteResetter $siteResetter,
         private readonly TournifyMatchSyncer $tournifyMatchSyncer,
         private readonly TournifySyncRunLogger $tournifySyncRunLogger,
@@ -367,6 +372,67 @@ class DashboardController extends AbstractDashboardController
         return $this->redirectToRoute('admin');
     }
 
+    #[Route('/admin/site/backup', name: 'admin_site_backup', methods: ['POST'])]
+    public function downloadSiteBackup(Request $request): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        if (!$this->isCsrfTokenValid('admin_site_backup', (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+
+        $backupPath = $this->siteBackupManager->createBackupFile();
+        $response = new BinaryFileResponse($backupPath);
+        $response->setContentDisposition(
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            basename($backupPath)
+        );
+        $response->deleteFileAfterSend(true);
+
+        return $response;
+    }
+
+    #[Route('/admin/site/restore-backup', name: 'admin_restore_site_backup', methods: ['POST'])]
+    public function restoreSiteBackup(Request $request): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        if (!$this->isCsrfTokenValid('admin_restore_site_backup', (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+
+        $confirmation = trim((string) $request->request->get('confirmation'));
+        if ('RESTAURER' !== strtoupper($confirmation)) {
+            $this->addFlash('danger', 'Restauration annulée : saisis RESTAURER pour confirmer.');
+
+            return $this->redirectToRoute('admin');
+        }
+
+        $uploadedFile = $request->files->get('backup_file');
+        if (!$uploadedFile instanceof UploadedFile || !$uploadedFile->isValid()) {
+            $this->addFlash('danger', 'Aucun fichier de sauvegarde valide n\'a été envoyé.');
+
+            return $this->redirectToRoute('admin');
+        }
+
+        try {
+            $result = $this->siteBackupManager->restoreFromUploadedBackup($uploadedFile);
+            $this->addFlash(
+                'success',
+                sprintf(
+                    'Restauration terminée : %d table(s), %d ligne(s) et %d fichier(s) restaurés.',
+                    $result['tables'],
+                    $result['rows'],
+                    $result['files'],
+                )
+            );
+        } catch (\Throwable $exception) {
+            $this->addFlash('danger', sprintf('La restauration a échoué : %s', $exception->getMessage()));
+        }
+
+        return $this->redirectToRoute('admin');
+    }
+
     public function configureDashboard(): Dashboard
     {
         return Dashboard::new()
@@ -413,6 +479,15 @@ class DashboardController extends AbstractDashboardController
         return $this->adminUrlGenerator
             ->unsetAll()
             ->setController($controllerFqcn)
+            ->generateUrl();
+    }
+
+    private function crudActionUrl(string $controllerFqcn, string $action): string
+    {
+        return $this->adminUrlGenerator
+            ->unsetAll()
+            ->setController($controllerFqcn)
+            ->setAction($action)
             ->generateUrl();
     }
 

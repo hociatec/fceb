@@ -244,6 +244,19 @@
             background: #fff;
             color: #123a2c;
         }
+        .admin-upload-input {
+            display: grid;
+            gap: .35rem;
+            min-width: min(100%, 320px);
+        }
+        .admin-upload-input input[type="file"] {
+            width: 100%;
+            padding: .7rem .85rem;
+            border-radius: 14px;
+            border: 1px solid rgba(15, 35, 24, .14);
+            background: #fff;
+            color: #123a2c;
+        }
     </style>
 
     <div class="admin-shell">
@@ -462,6 +475,46 @@
                         <span class="admin-disclosure-summary-meta">Réservée aux administrateurs</span>
                     </summary>
                     <div class="admin-disclosure-body">
+                        <section class="admin-subsection">
+                            <div class="admin-reset-panel" style="border-color: rgba(18, 58, 44, .12); background: linear-gradient(180deg, #f6fbf8, #edf5f1);">
+                                <div class="admin-subsection-head">
+                                    <h3>Sauvegarder le site</h3>
+                                    <div class="admin-meta">Export JSON téléchargeable</div>
+                                </div>
+                                <div class="admin-meta">
+                                    La sauvegarde inclut les tables métier du site et les fichiers uploadés gérés par l’administration.
+                                </div>
+                                <form method="post" action="{{ path('admin_site_backup') }}" class="admin-form">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('admin_site_backup') }}">
+                                    <button type="submit" class="admin-button">Télécharger une sauvegarde</button>
+                                </form>
+                            </div>
+                        </section>
+
+                        <section class="admin-subsection">
+                            <div class="admin-reset-panel">
+                                <div class="admin-subsection-head">
+                                    <h3>Restaurer depuis une sauvegarde</h3>
+                                    <div class="admin-meta">Remplacement complet du contenu actuel</div>
+                                </div>
+                                <div class="admin-meta">
+                                    Cette action remplace les données actuelles par celles du fichier importé, y compris les comptes utilisateurs et les fichiers uploadés.
+                                </div>
+                                <form method="post" action="{{ path('admin_restore_site_backup') }}" class="admin-form" enctype="multipart/form-data">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('admin_restore_site_backup') }}">
+                                    <label class="admin-upload-input">
+                                        <span>Fichier de sauvegarde</span>
+                                        <input type="file" name="backup_file" accept=".json,application/json" required>
+                                    </label>
+                                    <label class="admin-reset-confirm">
+                                        <span>Tape <strong>RESTAURER</strong> pour confirmer</span>
+                                        <input type="text" name="confirmation" required autocomplete="off" spellcheck="false">
+                                    </label>
+                                    <button type="submit" class="admin-button danger">Restaurer la sauvegarde</button>
+                                </form>
+                            </div>
+                        </section>
+
                         <section class="admin-subsection">
                             <div class="admin-reset-panel">
                                 <div class="admin-subsection-head">

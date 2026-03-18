@@ -19,7 +19,7 @@ php bin/console doctrine:migrations:migrate --no-interaction
 php -S 127.0.0.1:8000 -t public
 ```
 
-Tests sur MariaDB (environnement `test`): crée la base `fceb_test` puis lance `php bin/phpunit`.
+Tests (environnement `test`) : lance `php bin/phpunit`. La suite utilise SQLite dans `var/test.db`, sans base MySQL dédiée.
 
 Les migrations inserent aussi le contenu initial editable en base: compte admin de demo, saisons, actualites, matchs, pages, reseaux sociaux et partenaires.
 

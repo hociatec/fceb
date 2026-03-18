@@ -55,7 +55,6 @@ class AdminCrudFlowsTest extends DatabaseWebTestCase
             'excerpt' => 'Résumé admin',
             'content' => '<div>Contenu article admin</div>',
             'publishedAt' => '2026-03-16T10:00',
-            'placement' => '1',
             'status' => '1',
         ]);
 

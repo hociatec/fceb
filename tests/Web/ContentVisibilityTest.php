@@ -6,7 +6,7 @@ use App\Entity\Article;
 use App\Entity\ClubSettings;
 use App\Entity\Page;
 use App\Entity\Player;
-use App\Enum\ArticlePlacement;
+use App\Enum\ArticleHomepageSlot;
 use App\Enum\ContentStatus;
 use App\Enum\PagePlacement;
 
@@ -20,7 +20,7 @@ class ContentVisibilityTest extends DatabaseWebTestCase
             ->setExcerpt('Extrait du brouillon')
             ->setContent('<p>Contenu brouillon</p>')
             ->setPublishedAt(new \DateTimeImmutable('2026-03-15 10:00:00'))
-            ->setPlacement(ArticlePlacement::None)
+            ->setHomepageSlot(ArticleHomepageSlot::None)
             ->setStatus(ContentStatus::Draft);
 
         $this->persist($article);
@@ -87,7 +87,7 @@ class ContentVisibilityTest extends DatabaseWebTestCase
             ->setExcerpt('Plus ancien')
             ->setContent('<p>Ancien contenu</p>')
             ->setPublishedAt(new \DateTimeImmutable('2026-03-13 10:00:00'))
-            ->setPlacement(ArticlePlacement::None)
+            ->setHomepageSlot(ArticleHomepageSlot::None)
             ->setStatus(ContentStatus::Published);
 
         $middle = (new Article())
@@ -96,7 +96,7 @@ class ContentVisibilityTest extends DatabaseWebTestCase
             ->setExcerpt('Milieu')
             ->setContent('<p>Milieu contenu</p>')
             ->setPublishedAt(new \DateTimeImmutable('2026-03-14 10:00:00'))
-            ->setPlacement(ArticlePlacement::None)
+            ->setHomepageSlot(ArticleHomepageSlot::None)
             ->setStatus(ContentStatus::Published);
 
         $newer = (new Article())
@@ -105,7 +105,7 @@ class ContentVisibilityTest extends DatabaseWebTestCase
             ->setExcerpt('Plus recent')
             ->setContent('<p>Recent contenu</p>')
             ->setPublishedAt(new \DateTimeImmutable('2026-03-15 10:00:00'))
-            ->setPlacement(ArticlePlacement::None)
+            ->setHomepageSlot(ArticleHomepageSlot::None)
             ->setStatus(ContentStatus::Published);
 
         $this->persist($older);
@@ -126,9 +126,7 @@ class ContentVisibilityTest extends DatabaseWebTestCase
             ->setPublicEmail('club@example.com')
             ->setPhone('01 02 03 04 05')
             ->setAddress('1 rue du Test')
-            ->setMapUrl('https://example.com/map')
-            ->setHomeIntroTitle('Titre accueil test')
-            ->setHomeIntroSubtitle('Sous-titre accueil test');
+            ->setMapUrl('https://example.com/map');
 
         $this->persist($settings);
         $this->clearAppCache();

@@ -5,8 +5,8 @@ namespace App\Controller\Admin;
 use App\Entity\Article;
 use App\Entity\MatchGame;
 use App\Enum\MatchStatus;
+use App\Repository\ArticleRepository;
 use App\Repository\SeasonRepository;
-use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -61,7 +61,6 @@ class MatchGameCrudController extends AbstractCrudController
     {
         return $filters
             ->add(EntityFilter::new('season', 'Saison'))
-            ->add(EntityFilter::new('linkedArticle', 'Article lié'))
             ->add(ChoiceFilter::new('status', 'Statut')->setChoices([
                 'Programmé' => MatchStatus::Scheduled,
                 'Terminé' => MatchStatus::Completed,
@@ -186,8 +185,8 @@ class MatchGameCrudController extends AbstractCrudController
         yield AssociationField::new('linkedArticle', 'Article lié')
             ->renderAsNativeWidget()
             ->setColumns(12)
-            ->setFormTypeOption('query_builder', static function (QueryBuilder $queryBuilder): QueryBuilder {
-                return $queryBuilder
+            ->setFormTypeOption('query_builder', static function (ArticleRepository $repository) {
+                return $repository->createQueryBuilder('entity')
                     ->orderBy('entity.publishedAt', 'DESC')
                     ->addOrderBy('entity.id', 'DESC');
             })
