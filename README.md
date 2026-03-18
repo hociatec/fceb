@@ -19,7 +19,7 @@ php bin/console doctrine:migrations:migrate --no-interaction
 php -S 127.0.0.1:8000 -t public
 ```
 
-Tests (environnement `test`) : lance `php bin/phpunit`. La suite utilise SQLite dans `var/test.db`, sans base MySQL dédiée.
+Tests (environnement `test`) : la suite utilise MySQL sur une base suffixee `_test`. En local, creez-la une fois avec `php bin/console doctrine:database:create --env=test --if-not-exists`, puis lancez `php bin/phpunit`.
 
 Les migrations inserent aussi le contenu initial editable en base: compte admin de demo, saisons, actualites, matchs, pages, reseaux sociaux et partenaires.
 
@@ -27,8 +27,10 @@ Les migrations inserent aussi le contenu initial editable en base: compte admin 
 
 - Configuration par defaut: MySQL
 - URL locale par defaut: `mysql://app:!ChangeMe!@127.0.0.1:3306/fceb?serverVersion=8.0.32&charset=utf8mb4`
+- URL de test par defaut: `mysql://app:!ChangeMe!@127.0.0.1:3306/fceb?serverVersion=8.0.32&charset=utf8mb4`, resolue vers `fceb_test`
 - Le `docker compose` du projet publie MySQL sur `127.0.0.1:3306`, en coherence avec cette URL par defaut
 - Un fichier `.env.local` ou une vraie variable d'environnement peut surcharger cette URL si vous utilisez une autre instance MySQL
+- Un fichier `.env.test.local` peut surcharger la base de test si votre MySQL local n'utilise pas les identifiants/ports par defaut
 - Pensez a definir `DATABASE_URL` sur le serveur de production avec vos vrais identifiants
 
 ## Mise en production MySQL
