@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Enum\PagePlacement;
 use App\Repository\ClubSettingsRepository;
 use App\Repository\PageRepository;
+use App\Repository\PartnerRepository;
 use App\Repository\SeasonRepository;
 use App\Repository\SocialLinkRepository;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -18,6 +19,7 @@ class SiteContextBuilder
         private readonly SeasonRepository $seasonRepository,
         private readonly PageRepository $pageRepository,
         private readonly SocialLinkRepository $socialLinkRepository,
+        private readonly PartnerRepository $partnerRepository,
         private readonly ClubSettingsRepository $clubSettingsRepository,
         private readonly Security $security,
         #[Autowire(service: 'cache.app')]
@@ -61,6 +63,7 @@ class SiteContextBuilder
         return [
             'site' => [
                 ...$shared,
+                'partners' => $this->partnerRepository->findVisibleOrdered(),
                 'account' => [
                     'is_authenticated' => null !== $user,
                     'user' => $user,

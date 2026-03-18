@@ -62,7 +62,7 @@
                 {% for partner in partners %}
                     <article class="partner-card">
                         {% if partner.logoUrl %}
-                            <img class="partner-logo" src="{{ partner.logoUrl starts with 'http' ? partner.logoUrl : asset('uploads/partners/' ~ partner.logoUrl) }}" alt="Logo de {{ partner.name }}">
+                            <img class="partner-logo" src="{{ partner.logoUrl starts with 'http' ? partner.logoUrl : asset((partner.logoUrl starts with 'assets/' or partner.logoUrl starts with 'uploads/') ? partner.logoUrl : 'uploads/partners/' ~ partner.logoUrl) }}" alt="Logo de {{ partner.name }}">
                         {% endif %}
                         <h3>{{ partner.name }}</h3>
                         {% if partner.websiteUrl %}

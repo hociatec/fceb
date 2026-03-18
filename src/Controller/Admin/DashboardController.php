@@ -22,6 +22,7 @@ use App\Repository\TeamIdentityRepository;
 use App\Repository\TournifySyncRunRepository;
 use App\Repository\UserRepository;
 use App\Service\MatchArticleResolver;
+use App\Service\SiteResetter;
 use App\Service\Tournify\TournifyMatchSyncer;
 use App\Service\Tournify\TournifySyncRunLogger;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
@@ -54,6 +55,7 @@ class DashboardController extends AbstractDashboardController
         private readonly TournifySyncRunRepository $tournifySyncRunRepository,
         private readonly AdminUrlGenerator $adminUrlGenerator,
         private readonly MatchArticleResolver $matchArticleResolver,
+        private readonly SiteResetter $siteResetter,
         private readonly TournifyMatchSyncer $tournifyMatchSyncer,
         private readonly TournifySyncRunLogger $tournifySyncRunLogger,
     ) {
@@ -323,6 +325,43 @@ class DashboardController extends AbstractDashboardController
                 $exception,
             );
             $this->addFlash('danger', sprintf('La synchronisation Tournify a échoué : %s', $exception->getMessage()));
+        }
+
+        return $this->redirectToRoute('admin');
+    }
+
+    #[Route('/admin/site/reset', name: 'admin_reset_site', methods: ['POST'])]
+    public function resetSite(Request $request): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        if (!$this->isCsrfTokenValid('admin_reset_site', (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Jeton CSRF invalide.');
+        }
+
+        $confirmation = trim((string) $request->request->get('confirmation'));
+        if ('REINITIALISER' !== strtoupper($confirmation)) {
+            $this->addFlash('danger', 'Réinitialisation annulée : saisis REINITIALISER pour confirmer.');
+
+            return $this->redirectToRoute('admin');
+        }
+
+        try {
+            $result = $this->siteResetter->resetContent();
+            $this->addFlash(
+                'success',
+                sprintf(
+                    'Réinitialisation terminée : %d enregistrement(s) supprimé(s), %d fichier(s) uploadé(s) nettoyé(s). Les comptes utilisateurs sont conservés.',
+                    $result['total_rows'],
+                    $result['deleted_files'],
+                )
+            );
+
+            foreach ($result['warnings'] as $warning) {
+                $this->addFlash('warning', $warning);
+            }
+        } catch (\Throwable $exception) {
+            $this->addFlash('danger', sprintf('La réinitialisation du site a échoué : %s', $exception->getMessage()));
         }
 
         return $this->redirectToRoute('admin');

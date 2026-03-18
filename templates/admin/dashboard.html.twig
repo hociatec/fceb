@@ -106,6 +106,13 @@
         .admin-button.secondary:focus-visible {
             background: #dcebe4;
         }
+        .admin-button.danger {
+            background: #8f242d;
+        }
+        .admin-button.danger:hover,
+        .admin-button.danger:focus-visible {
+            background: #a82b36;
+        }
         .admin-list {
             display: grid;
             gap: .75rem;
@@ -215,6 +222,27 @@
         }
         .admin-disclosure-body {
             margin-top: 1rem;
+        }
+        .admin-reset-panel {
+            display: grid;
+            gap: .85rem;
+            padding: 1.1rem;
+            border-radius: 18px;
+            border: 1px solid rgba(143, 36, 45, .18);
+            background: linear-gradient(180deg, #fff7f7, #fff1f1);
+        }
+        .admin-reset-confirm {
+            display: grid;
+            gap: .35rem;
+            min-width: min(100%, 280px);
+        }
+        .admin-reset-confirm input {
+            width: 100%;
+            padding: .8rem .9rem;
+            border-radius: 14px;
+            border: 1px solid rgba(15, 35, 24, .14);
+            background: #fff;
+            color: #123a2c;
         }
     </style>
 
@@ -425,5 +453,40 @@
                 </div>
             </details>
         </section>
+
+        {% if is_granted('ROLE_ADMIN') %}
+            <section class="admin-card">
+                <details class="admin-disclosure">
+                    <summary>
+                        <span>Zone sensible</span>
+                        <span class="admin-disclosure-summary-meta">Réservée aux administrateurs</span>
+                    </summary>
+                    <div class="admin-disclosure-body">
+                        <section class="admin-subsection">
+                            <div class="admin-reset-panel">
+                                <div class="admin-subsection-head">
+                                    <h3>Réinitialiser le contenu du site</h3>
+                                    <div class="admin-meta">Suppression irreversible</div>
+                                </div>
+                                <div class="admin-meta">
+                                    Cette action vide les saisons, articles, pages, blocs d'accueil, matchs, classements, joueurs, photos, partenaires, réseaux sociaux, identités équipes, paramètres club, journaux Tournify et fichiers uploadés.
+                                </div>
+                                <div class="admin-meta">
+                                    Les comptes utilisateurs sont conservés pour garder l’accès à l’administration.
+                                </div>
+                                <form method="post" action="{{ path('admin_reset_site') }}" class="admin-form">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('admin_reset_site') }}">
+                                    <label class="admin-reset-confirm">
+                                        <span>Tape <strong>REINITIALISER</strong> pour confirmer</span>
+                                        <input type="text" name="confirmation" required autocomplete="off" spellcheck="false">
+                                    </label>
+                                    <button type="submit" class="admin-button danger">Réinitialiser le site</button>
+                                </form>
+                            </div>
+                        </section>
+                    </div>
+                </details>
+            </section>
+        {% endif %}
     </div>
 {% endblock %}
