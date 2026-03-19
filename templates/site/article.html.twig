@@ -2,6 +2,7 @@
 
 {% set article_url = absolute_url(path('site_article', {slug: article.slug})) %}
 {% set share_text = article.title ~ ' | Cécifoot La Bassée' %}
+{% set hide_join_link = true %}
 
 {% block title %}{{ article.title }} | Cécifoot La Bassée{% endblock %}
 {% block meta_description %}{{ article.metaDescription ?: article.excerpt ?: "Actualité du Cécifoot La Bassée." }}{% endblock %}

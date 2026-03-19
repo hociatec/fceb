@@ -261,6 +261,15 @@
             outline: none;
         }
 
+        .footer-link-group-title {
+            color: var(--green-900);
+            font-size: .74rem;
+            font-weight: 800;
+            letter-spacing: .12em;
+            margin-top: .35rem;
+            text-transform: uppercase;
+        }
+
         .footer {
             margin-top: 2rem;
         }
@@ -1386,6 +1395,7 @@
     </main>
 
     <footer class="footer">
+        {% set footerExcludedSlugs = ['decouvrir-le-cecifoot', 'contact', 'cgu', 'partenaires'] %}
         <div class="footer-inner">
             <div class="footer-brand">
                 <span class="footer-brand-badge">Cécifoot La Bassée</span>
@@ -1450,24 +1460,19 @@
                     </div>
                 </div>
                 <div class="footer-column">
-                    <h3><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2"/><path d="M12 9h.01M11 12h1v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>À propos</span></span></h3>
+                    <h3><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2"/><path d="M12 9h.01M11 12h1v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Liens utiles</span></span></h3>
                     <div class="footer-link-list">
-                        <a href="{{ path('site_page', {slug: 'decouvrir-le-cecifoot'}) }}">Découvrir le cécifoot</a>
-                        <a href="{{ path('site_contact') }}">Contact</a>
-                        <a href="{{ path('site_training') }}">Entraînements</a>
-                        <a href="{{ path('site_access') }}">Accès</a>
-                        <a href="{{ path('site_staff') }}">Encadrement</a>
                         <a href="{{ path('site_faq') }}">FAQ</a>
-                        <a href="{{ path('site_terms') }}">CGU</a>
-                        <a href="{{ path('site_privacy') }}">Confidentialité</a>
                         {% if site.footer_pages is not empty %}
-                            {% set footerExcludedSlugs = ['decouvrir-le-cecifoot'] %}
                             {% for page in site.footer_pages %}
                                 {% if page.slug not in footerExcludedSlugs %}
                                     <a href="{{ path('site_page', {slug: page.slug}) }}">{{ page.title }}</a>
                                 {% endif %}
                             {% endfor %}
                         {% endif %}
+                        <span class="footer-link-group-title">Légal</span>
+                        <a href="{{ path('site_terms') }}">CGU</a>
+                        <a href="{{ path('site_privacy') }}">Confidentialité</a>
                     </div>
                 </div>
                 <div class="footer-bottom">
