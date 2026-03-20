@@ -3,7 +3,7 @@
         <div class="nav-top">
             <div class="brand">
                 <a href="{{ path('site_home') }}">
-                    <strong>Cécifoot La Bassée</strong>
+                    <strong>{{ site.name }}</strong>
                 </a>
             </div>
             <div class="utility-bar">
@@ -27,17 +27,10 @@
         </div>
         <div class="nav-bottom">
             <nav class="menu" aria-label="Navigation principale">
-                <a class="pill" href="{{ path('site_current_season') }}"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="5" width="16" height="15" rx="3" stroke="currentColor" stroke-width="2"/><path d="M8 3v4M16 3v4M4 10h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Saison</span></span></a>
-                <a class="pill" href="{{ path('site_articles') }}"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 7h12M6 12h12M6 17h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Actualités</span></span></a>
-                <a class="pill" href="{{ path('site_calendar') }}"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5" width="17" height="15" rx="3" stroke="currentColor" stroke-width="2"/><path d="M7 3v4M17 3v4M3.5 10h17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 14h3M13 14h3M8 17h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Calendrier</span></span></a>
-                <a class="pill" href="{{ path('site_ranking') }}"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 18V10M12 18V6M18 18v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M4 20h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Classement</span></span></a>
-                <a class="pill" href="{{ path('site_players') }}"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="2"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Effectif</span></span></a>
-                {% if not hide_join_link|default(false) %}
-                    <a class="pill" href="{{ path('site_join') }}"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 6v12M6 12h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Rejoindre</span></span></a>
-                {% endif %}
-                <a class="pill" href="{{ path('site_archives') }}"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="6" width="16" height="13" rx="2.5" stroke="currentColor" stroke-width="2"/><path d="M9 10h6M9 14h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Archives</span></span></a>
-                {% for page in site.header_pages|default([]) %}
-                    <a class="pill" href="{{ path('site_page', {slug: page.slug}) }}">{{ page.title }}</a>
+                {% for item in site.header_navigation|default([]) %}
+                    {% if not hide_join_link|default(false) or item.href != path('site_join') %}
+                        <a class="pill" href="{{ item.href }}"{% if item.open_in_new_tab|default(false) %} target="_blank" rel="noreferrer noopener"{% endif %}>{{ item.label }}</a>
+                    {% endif %}
                 {% endfor %}
             </nav>
         </div>

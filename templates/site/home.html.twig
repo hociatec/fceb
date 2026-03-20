@@ -5,66 +5,66 @@
 {% block body %}
     <section class="home-stack">
         {% for section in homeSections %}
+            {% set titleTag = section.titleTag|default('h2') %}
+            {% set sectionClasses = [
+                'card',
+                section.layoutWidth|default('wide') == 'wide' ? 'wide',
+                'home-section-card',
+                'home-section-' ~ section.key,
+                'home-section-align-' ~ (section.textAlignment|default('left')),
+                'home-section-appearance-' ~ (section.appearance|default('default')),
+                'home-section-tone-' ~ (section.accentTone|default('green'))
+            ]|filter(v => v) %}
+            {% set inlineClasses = [
+                'story-inline',
+                section.imagePosition|default('start') == 'end' ? 'story-inline-reverse'
+            ]|filter(v => v) %}
+
             {% if section.key == 'intro' %}
                 {% set introImage = section.image ? asset('uploads/home-sections/' ~ section.image) : (discoverPage and discoverPage.heroImage ? asset('uploads/pages/' ~ discoverPage.heroImage) : asset('assets/club-placeholder.svg')) %}
-                <article class="card wide home-section-card">
+                <article class="{{ sectionClasses|join(' ') }}">
                     <div class="section-heading">
                         <div>
-                            <h2>{{ section.title }}</h2>
-                            {% if section.subtitle %}
-                                <p class="muted">{{ section.subtitle }}</p>
-                            {% endif %}
+                            <{{ titleTag }}>{{ section.title }}</{{ titleTag }}>
                         </div>
                     </div>
-                    <div class="story-inline">
-                        <img class="story-media tall" src="{{ introImage }}" alt="Visuel de présentation du club">
+                    <div class="{{ inlineClasses|join(' ') }}">
+                        {% if section.showImage|default(true) %}
+                            <img class="story-media tall" src="{{ introImage }}" alt="Visuel de présentation du club">
+                        {% endif %}
                         <div class="home-feature-article">
-                            {% if section.content %}
-                                <p>{{ section.content }}</p>
-                            {% endif %}
-                            {% if section.secondaryContent %}
-                                <p class="muted">{{ section.secondaryContent }}</p>
-                            {% endif %}
-                            <div class="form-actions">
-                                {% if discoverPage %}
-                                    <a class="button secondary" href="{{ path('site_page', {slug: discoverPage.slug}) }}">{{ discoverPage.title }}</a>
-                                {% endif %}
-                                <a class="button primary" href="{{ path('site_join') }}">Rejoindre le club</a>
-                                <a class="button secondary" href="{{ path('site_trial_request') }}">Séance d’essai</a>
-                            </div>
+                            {{ section.content|render_page_content }}
                         </div>
                     </div>
                 </article>
             {% elseif section.key == 'featured_article' %}
                 {% set featuredImage = section.image ? asset('uploads/home-sections/' ~ section.image) : (latestArticle and latestArticle.coverImage ? asset('uploads/articles/' ~ latestArticle.coverImage) : asset('assets/club-placeholder.svg')) %}
-                <article class="card wide home-section-card">
+                <article class="{{ sectionClasses|join(' ') }}">
                     <div class="section-heading">
                         <div>
-                            <h2>{{ section.title }}</h2>
-                            {% if section.subtitle %}
-                                <p>{{ section.subtitle }}</p>
-                            {% endif %}
+                            <{{ titleTag }}>{{ section.title }}</{{ titleTag }}>
                         </div>
                     </div>
 
                     {% if latestArticle %}
-                        <div class="story-inline">
-                            <img class="story-media tall" src="{{ featuredImage }}" alt="Illustration de l’actualité {{ latestArticle.title }}">
+                        <div class="{{ inlineClasses|join(' ') }}">
+                            {% if section.showImage|default(true) %}
+                                <img class="story-media tall" src="{{ featuredImage }}" alt="{{ latestArticle.title }}">
+                            {% endif %}
                             <div class="home-feature-article">
-                                <span class="tag">À la une</span>
                                 <h3><a class="article-link" href="{{ path('site_article', {slug: latestArticle.slug}) }}">{{ latestArticle.title }}</a></h3>
-                                {% if latestArticle.excerpt %}
+                                {% if section.showExcerpt|default(true) and latestArticle.excerpt %}
                                     <p>{{ latestArticle.excerpt }}</p>
                                 {% endif %}
-                                <div class="home-meta-row">
-                                    <span>{{ latestArticle.publishedAt|date('d/m/Y H:i') }}</span>
-                                    {% if latestArticle.season %}
-                                        <span>{{ latestArticle.season.name }}</span>
-                                    {% endif %}
-                                </div>
-                                {% if section.content %}
-                                    <p class="muted">{{ section.content }}</p>
+                                {% if section.showMeta|default(true) %}
+                                    <div class="home-meta-row">
+                                        <span>{{ latestArticle.publishedAt|date('d/m/Y H:i') }}</span>
+                                        {% if latestArticle.season %}
+                                            <span>{{ latestArticle.season.name }}</span>
+                                        {% endif %}
+                                    </div>
                                 {% endif %}
+                                {{ section.content|render_page_content }}
                             </div>
                         </div>
                     {% else %}
@@ -72,47 +72,38 @@
                     {% endif %}
 
                     {% if recentArticles is not empty %}
-                        <div class="home-subsection">
-                            <div class="section-heading">
-                                <div>
-                                    <h3>{{ section.secondaryContent ?: 'Autres actualités' }}</h3>
-                                </div>
-                            </div>
-                            <div class="home-article-list">
-                                {% for article in recentArticles %}
-                                    <article class="home-article-item">
-                                        <div class="home-article-copy">
-                                            <strong><a class="article-link" href="{{ path('site_article', {slug: article.slug}) }}">{{ article.title }}</a></strong>
+                        <div class="home-article-list">
+                            {% for article in recentArticles %}
+                                <article class="home-article-item">
+                                    <div class="home-article-copy">
+                                        <h3><a class="article-link" href="{{ path('site_article', {slug: article.slug}) }}">{{ article.title }}</a></h3>
+                                        {% if section.showMeta|default(true) %}
                                             <p class="muted">{{ article.publishedAt|date('d/m/Y') }}{% if article.season %} · {{ article.season.name }}{% endif %}</p>
-                                            {% if article.excerpt %}
-                                                <p>{{ article.excerpt }}</p>
-                                            {% endif %}
-                                        </div>
-                                    </article>
-                                {% endfor %}
-                            </div>
+                                        {% endif %}
+                                        {% if section.showExcerpt|default(true) and article.excerpt %}
+                                            <p>{{ article.excerpt }}</p>
+                                        {% endif %}
+                                    </div>
+                                </article>
+                            {% endfor %}
                         </div>
                     {% endif %}
                 </article>
             {% elseif section.key == 'next_match' %}
                 {% set nextMatchImage = section.image ? asset('uploads/home-sections/' ~ section.image) : null %}
-                <article class="card">
+                <article class="{{ sectionClasses|join(' ') }}">
                     <div class="section-heading">
                         <div>
-                            <h2>{{ section.title }}</h2>
-                            {% if section.subtitle %}
-                                <p>{{ section.subtitle }}</p>
-                            {% endif %}
+                            <{{ titleTag }}>{{ section.title }}</{{ titleTag }}>
                         </div>
                     </div>
 
-                    {% if nextMatchImage %}
+                    {% if section.showImage|default(true) and nextMatchImage %}
                         <img class="story-media" src="{{ nextMatchImage }}" alt="Visuel du bloc {{ section.title }}">
                     {% endif %}
 
                     {% if nextMatch %}
                         <div class="home-feature-article">
-                            <span class="tag">À venir</span>
                             <div class="team-poster">
                                 <div class="team-side">
                                     <img class="team-logo" src="{{ asset(team_logo(nextMatch.homeTeamName)) }}" alt="Logo de {{ nextMatch.homeTeamName }}">
@@ -124,86 +115,63 @@
                                     <strong>{{ nextMatch.awayTeamName }}</strong>
                                 </div>
                             </div>
-                            <p class="muted">{{ nextMatch.matchDate|date('d/m/Y H:i') }}</p>
-                            {% if nextMatch.location %}
-                                <p>{{ nextMatch.location }}</p>
+                            {% if section.showMeta|default(true) %}
+                                <p class="muted">{{ nextMatch.matchDate|date('d/m/Y H:i') }}</p>
+                                {% if nextMatch.location %}
+                                    <p>{{ nextMatch.location }}</p>
+                                {% endif %}
+                                {% if nextMatch.competition %}
+                                    <p class="muted">{{ nextMatch.competition }}</p>
+                                {% endif %}
                             {% endif %}
-                            {% if nextMatch.competition %}
-                                <p class="muted">{{ nextMatch.competition }}</p>
-                            {% endif %}
-                            {% if section.content %}
-                                <p class="muted">{{ section.content }}</p>
-                            {% endif %}
+                            {{ section.content|render_page_content }}
                         </div>
+
+                        {% if otherUpcomingMatches is not empty and section.upcomingMatchesLimit|default(1) > 1 %}
+                            <div class="home-match-grid">
+                                {% for match in otherUpcomingMatches %}
+                                    <article class="home-match-card">
+                                        <div class="team-poster">
+                                            <div class="team-side">
+                                                <img class="team-logo small" src="{{ asset(team_logo(match.homeTeamName)) }}" alt="Logo de {{ match.homeTeamName }}">
+                                                <strong>{{ match.homeTeamName }}</strong>
+                                            </div>
+                                            <span class="team-vs">vs</span>
+                                            <div class="team-side">
+                                                <img class="team-logo small" src="{{ asset(team_logo(match.awayTeamName)) }}" alt="Logo de {{ match.awayTeamName }}">
+                                                <strong>{{ match.awayTeamName }}</strong>
+                                            </div>
+                                        </div>
+                                        {% if section.showMeta|default(true) %}
+                                            <p class="muted">{{ match.matchDate|date('d/m/Y H:i') }}{% if match.location %} · {{ match.location }}{% endif %}</p>
+                                            {% if match.competition %}
+                                                <p>{{ match.competition }}</p>
+                                            {% endif %}
+                                        {% endif %}
+                                    </article>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
                     {% else %}
                         <p>Aucun match programmé.</p>
                     {% endif %}
                 </article>
-            {% elseif section.key == 'upcoming_matches' %}
-                {% set upcomingMatchesImage = section.image ? asset('uploads/home-sections/' ~ section.image) : null %}
-                <article class="card">
-                    <div class="section-heading">
-                        <div>
-                            <h2>{{ section.title }}</h2>
-                            {% if section.subtitle %}
-                                <p>{{ section.subtitle }}</p>
-                            {% endif %}
-                        </div>
-                    </div>
 
-                    {% if upcomingMatchesImage %}
-                        <img class="story-media" src="{{ upcomingMatchesImage }}" alt="Visuel du bloc {{ section.title }}">
-                    {% endif %}
-
-                    {% if section.content %}
-                        <p class="muted">{{ section.content }}</p>
-                    {% endif %}
-
-                    {% if otherUpcomingMatches is not empty %}
-                        <div class="home-match-grid">
-                            {% for match in otherUpcomingMatches %}
-                                <article class="home-match-card">
-                                    <div class="team-poster">
-                                        <div class="team-side">
-                                            <img class="team-logo small" src="{{ asset(team_logo(match.homeTeamName)) }}" alt="Logo de {{ match.homeTeamName }}">
-                                            <strong>{{ match.homeTeamName }}</strong>
-                                        </div>
-                                        <span class="team-vs">vs</span>
-                                        <div class="team-side">
-                                            <img class="team-logo small" src="{{ asset(team_logo(match.awayTeamName)) }}" alt="Logo de {{ match.awayTeamName }}">
-                                            <strong>{{ match.awayTeamName }}</strong>
-                                        </div>
-                                    </div>
-                                    <p class="muted">{{ match.matchDate|date('d/m/Y H:i') }}{% if match.location %} · {{ match.location }}{% endif %}</p>
-                                    {% if match.competition %}
-                                        <p>{{ match.competition }}</p>
-                                    {% endif %}
-                                </article>
-                            {% endfor %}
-                        </div>
-                    {% elseif nextMatch %}
-                        <p class="muted">Aucun autre match n’est encore programmé après le prochain rendez-vous.</p>
-                    {% else %}
-                        <p>Aucun match à venir.</p>
-                    {% endif %}
-                </article>
             {% elseif section.key == 'last_result' %}
                 {% set lastResultImage = section.image ? asset('uploads/home-sections/' ~ section.image) : (lastMatchArticle and lastMatchArticle.coverImage ? asset('uploads/articles/' ~ lastMatchArticle.coverImage) : asset('assets/club-placeholder.svg')) %}
-                <article class="card wide home-section-card">
+                <article class="{{ sectionClasses|join(' ') }}">
                     <div class="section-heading">
                         <div>
-                            <h2>{{ section.title }}</h2>
-                            {% if section.subtitle %}
-                                <p>{{ section.subtitle }}</p>
-                            {% endif %}
+                            <{{ titleTag }}>{{ section.title }}</{{ titleTag }}>
                         </div>
                     </div>
 
                     {% if lastMatch %}
-                        <div class="story-inline">
-                            <img class="story-media tall" src="{{ lastResultImage }}" alt="Illustration liée au dernier résultat du club">
+                        <div class="{{ inlineClasses|join(' ') }}">
+                            {% if section.showImage|default(true) %}
+                                <img class="story-media tall" src="{{ lastResultImage }}" alt="Illustration liée au dernier résultat du club">
+                            {% endif %}
                             <div class="home-feature-article">
-                                <span class="tag">Dernier résultat</span>
                                 <div class="team-poster">
                                     <div class="team-side">
                                         <img class="team-logo" src="{{ asset(team_logo(lastMatch.homeTeamName)) }}" alt="Logo de {{ lastMatch.homeTeamName }}">
@@ -215,22 +183,24 @@
                                         <strong>{{ lastMatch.awayTeamName }}</strong>
                                     </div>
                                 </div>
-                                {% if lastMatchArticle %}
+                                {% if lastMatchArticle and section.showExcerpt|default(true) %}
                                     <p>
                                         <a class="article-link" href="{{ path('site_article', {slug: lastMatchArticle.slug}) }}">
                                             {{ lastMatchArticle.excerpt ?: 'Voir le compte-rendu du match.' }}
                                         </a>
                                     </p>
                                 {% endif %}
-                                <p class="muted">{{ lastMatch.matchDate|date('d/m/Y H:i') }}{% if lastMatch.location %} · {{ lastMatch.location }}{% endif %}</p>
-                                {% if lastMatch.ourScore is not null and lastMatch.opponentScore is not null %}
-                                    <p><span class="score">{{ lastMatch.ourScore }} - {{ lastMatch.opponentScore }}</span></p>
-                                {% else %}
-                                    <p class="muted">Score à renseigner.</p>
+                                {% if section.showMeta|default(true) %}
+                                    <p class="muted">{{ lastMatch.matchDate|date('d/m/Y H:i') }}{% if lastMatch.location %} · {{ lastMatch.location }}{% endif %}</p>
                                 {% endif %}
-                                {% if section.content %}
-                                    <p class="muted">{{ section.content }}</p>
+                                {% if section.showScore|default(true) %}
+                                    {% if lastMatch.ourScore is not null and lastMatch.opponentScore is not null %}
+                                        <p><span class="score">{{ lastMatch.ourScore }} - {{ lastMatch.opponentScore }}</span></p>
+                                    {% else %}
+                                        <p class="muted">Score à renseigner.</p>
+                                    {% endif %}
                                 {% endif %}
+                                {{ section.content|render_page_content }}
                             </div>
                         </div>
                     {% else %}
@@ -241,3 +211,4 @@
         {% endfor %}
     </section>
 {% endblock %}
+

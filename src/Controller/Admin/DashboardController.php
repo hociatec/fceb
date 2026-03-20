@@ -12,6 +12,7 @@ use App\Repository\ArticleRepository;
 use App\Repository\ClubSettingsRepository;
 use App\Repository\HomeSectionRepository;
 use App\Repository\MatchGameRepository;
+use App\Repository\NavigationItemRepository;
 use App\Repository\PageRepository;
 use App\Repository\PartnerRepository;
 use App\Repository\PlayerRepository;
@@ -49,6 +50,7 @@ class DashboardController extends AbstractDashboardController
         private readonly HomeSectionRepository $homeSectionRepository,
         private readonly ClubSettingsRepository $clubSettingsRepository,
         private readonly MatchGameRepository $matchGameRepository,
+        private readonly NavigationItemRepository $navigationItemRepository,
         private readonly PageRepository $pageRepository,
         private readonly SocialLinkRepository $socialLinkRepository,
         private readonly PartnerRepository $partnerRepository,
@@ -77,6 +79,7 @@ class DashboardController extends AbstractDashboardController
         $partnerCount = $this->partnerRepository->count([]);
         $socialCount = $this->socialLinkRepository->count([]);
         $homeSectionCount = $this->homeSectionRepository->count([]);
+        $navigationItemCount = $this->navigationItemRepository->count([]);
         $clubSettingsCount = $this->clubSettingsRepository->count([]);
         $teamIdentityCount = $this->teamIdentityRepository->count([]);
         $currentSeasonCount = $this->seasonRepository->count(['isCurrent' => true]);
@@ -141,6 +144,7 @@ class DashboardController extends AbstractDashboardController
                 'items' => [
                     ['label' => 'Saisons', 'value' => $this->seasonRepository->count([]), 'icon' => 'fa fa-calendar', 'url' => $this->crudUrl(SeasonCrudController::class)],
                     ['label' => 'Articles publiés', 'value' => $publishedArticles, 'icon' => 'fa fa-newspaper', 'url' => $this->crudUrl(ArticleCrudController::class)],
+                    ['label' => 'Header / Footer', 'value' => $navigationItemCount, 'icon' => 'fa fa-bars', 'url' => $this->crudUrl(NavigationItemCrudController::class)],
                     ['label' => 'Blocs accueil', 'value' => $homeSectionCount, 'icon' => 'fa fa-panorama', 'url' => $this->crudUrl(HomeSectionCrudController::class)],
                     ['label' => 'Paramètres club', 'value' => $clubSettingsCount, 'icon' => 'fa fa-sliders', 'url' => $this->crudUrl(ClubSettingsCrudController::class)],
                     ['label' => 'Pages publiées', 'value' => $publishedPages, 'icon' => 'fa fa-file-lines', 'url' => $this->crudUrl(PageCrudController::class)],
@@ -454,6 +458,11 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::section('Contenus');
         yield MenuItem::linkTo(SeasonCrudController::class, 'Saisons', 'fa fa-calendar');
         yield MenuItem::linkTo(ArticleCrudController::class, 'Articles', 'fa fa-newspaper');
+        yield MenuItem::linkToUrl(
+            'Header / Footer',
+            'fa fa-bars',
+            $this->crudUrl(NavigationItemCrudController::class)
+        );
         yield MenuItem::linkTo(HomeSectionCrudController::class, "Blocs d'accueil", 'fa fa-panorama');
         yield MenuItem::linkTo(ClubSettingsCrudController::class, 'Paramètres du club', 'fa fa-sliders');
         yield MenuItem::linkTo(MatchGameCrudController::class, 'Matchs', 'fa fa-futbol');

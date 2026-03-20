@@ -10,7 +10,6 @@
         <div class="hero-card">
             <img class="hero-media" src="{{ page.heroImage ? asset('uploads/pages/' ~ page.heroImage) : asset('assets/club-placeholder.svg') }}" alt="Visuel de la page {{ page.title }}">
             <div class="page-hero">
-                <div class="eyebrow">Page</div>
                 <h1>{{ page.title }}</h1>
             </div>
         </div>
@@ -21,4 +20,29 @@
     <article class="card wide html-content">
         {{ page.content|render_page_content }}
     </article>
+
+    {% if partners is defined %}
+        <article class="card wide">
+            <div class="section-heading">
+                <div>
+                    <h2>Partenaires et soutiens</h2>
+                </div>
+            </div>
+            <div class="partner-grid" style="margin-top: 1rem;">
+                {% for partner in partners %}
+                    <article class="partner-card">
+                        {% if partner.logoUrl %}
+                            <img class="partner-logo" src="{{ partner.logoUrl starts with 'http' ? partner.logoUrl : asset((partner.logoUrl starts with 'assets/' or partner.logoUrl starts with 'uploads/') ? partner.logoUrl : 'uploads/partners/' ~ partner.logoUrl) }}" alt="Logo de {{ partner.name }}">
+                        {% endif %}
+                        <h3>{{ partner.name }}</h3>
+                        {% if partner.websiteUrl %}
+                            <p><a class="article-link" href="{{ partner.websiteUrl }}" target="_blank" rel="noreferrer">Visiter le site</a></p>
+                        {% endif %}
+                    </article>
+                {% else %}
+                    <p>Aucun partenaire n’est encore affiché publiquement.</p>
+                {% endfor %}
+            </div>
+        </article>
+    {% endif %}
 {% endblock %}

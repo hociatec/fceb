@@ -3,6 +3,8 @@
 namespace App\Service;
 
 use App\Enum\PagePlacement;
+use App\Enum\NavigationItemType;
+use App\Repository\NavigationItemRepository;
 use App\Repository\ClubSettingsRepository;
 use App\Repository\PageRepository;
 use App\Repository\PartnerRepository;
@@ -10,6 +12,7 @@ use App\Repository\SeasonRepository;
 use App\Repository\SocialLinkRepository;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
@@ -18,10 +21,12 @@ class SiteContextBuilder
     public function __construct(
         private readonly SeasonRepository $seasonRepository,
         private readonly PageRepository $pageRepository,
+        private readonly NavigationItemRepository $navigationItemRepository,
         private readonly SocialLinkRepository $socialLinkRepository,
         private readonly PartnerRepository $partnerRepository,
         private readonly ClubSettingsRepository $clubSettingsRepository,
         private readonly Security $security,
+        private readonly UrlGeneratorInterface $urlGenerator,
         #[Autowire(service: 'cache.app')]
         private readonly CacheInterface $cache,
         #[Autowire('%app.club_name%')]
@@ -46,6 +51,11 @@ class SiteContextBuilder
 
             return [
                 'name' => $settings?->getClubName() ?: $this->clubName,
+                'footer' => [
+                    'badge' => $settings?->getFooterBadge(),
+                    'headline' => $settings?->getFooterHeadline(),
+                    'text' => $settings?->getFooterText(),
+                ],
                 'current_season' => $this->seasonRepository->findCurrentSeason(),
                 'archives' => $this->seasonRepository->findArchives(),
                 'header_pages' => $this->pageRepository->findForPlacement(PagePlacement::Header),
@@ -63,6 +73,8 @@ class SiteContextBuilder
         return [
             'site' => [
                 ...$shared,
+                'header_navigation' => $this->buildNavigation('header'),
+                'footer_navigation' => $this->buildNavigation('footer'),
                 'partners' => $this->partnerRepository->findVisibleOrdered(),
                 'account' => [
                     'is_authenticated' => null !== $user,
@@ -71,5 +83,36 @@ class SiteContextBuilder
                 ],
             ],
         ];
+    }
+
+    /**
+     * @return array<int, array{label: string, href: string, open_in_new_tab: bool}>
+     */
+    private function buildNavigation(string $location): array
+    {
+        $enumLocation = 'header' === $location
+            ? \App\Enum\NavigationItemLocation::Header
+            : \App\Enum\NavigationItemLocation::Footer;
+
+        $links = [];
+        foreach ($this->navigationItemRepository->findEnabledByLocationOrdered($enumLocation) as $item) {
+            $href = match ($item->getType()) {
+                NavigationItemType::Route => $item->getRouteName() ? $this->urlGenerator->generate($item->getRouteName()) : null,
+                NavigationItemType::Page => $item->getPage()?->getSlug() ? $this->urlGenerator->generate('site_page', ['slug' => $item->getPage()?->getSlug()]) : null,
+                NavigationItemType::Url => $item->getExternalUrl(),
+            };
+
+            if (!$href || null === $item->getLabel()) {
+                continue;
+            }
+
+            $links[] = [
+                'label' => $item->getLabel(),
+                'href' => $href,
+                'open_in_new_tab' => $item->isOpenInNewTab(),
+            ];
+        }
+
+        return $links;
     }
 }

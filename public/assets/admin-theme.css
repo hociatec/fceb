@@ -350,6 +350,12 @@ a:focus-visible {
     box-shadow: none;
 }
 
+.field-text_editor trix-toolbar .trix-button--cta {
+    min-width: 3.4rem;
+    font-weight: 800;
+    letter-spacing: .04em;
+}
+
 .field-text_editor trix-editor {
     min-height: 22rem;
     border: 1px solid var(--admin-border);
@@ -386,6 +392,173 @@ a:focus-visible {
     background: var(--admin-accent-soft);
     outline: 3px solid var(--admin-focus);
     outline-offset: 2px;
+}
+
+.page-editor-cta-panel {
+    display: grid;
+    gap: .9rem;
+    margin: 0 0 1rem;
+    padding: 1rem;
+    border: 1px solid var(--admin-border);
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 10px 24px rgba(19, 39, 29, 0.05);
+}
+
+.page-editor-cta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: .8rem;
+}
+
+.page-editor-cta-field,
+.page-editor-cta-check {
+    display: grid;
+    gap: .35rem;
+    align-content: start;
+}
+
+.page-editor-cta-field span,
+.page-editor-cta-check span {
+    font-weight: 700;
+    color: var(--admin-accent-strong);
+}
+
+.page-editor-cta-field input,
+.page-editor-cta-field select {
+    width: 100%;
+    padding: .75rem .85rem;
+    border: 1px solid var(--admin-border);
+    border-radius: 12px;
+    background: #fff;
+}
+
+.page-editor-cta-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .55rem;
+}
+
+.home-section-admin-preview {
+    display: grid;
+    gap: .8rem;
+    margin: 1rem 0 1.25rem;
+}
+
+.home-section-admin-preview__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: .75rem;
+    color: var(--admin-accent-strong);
+}
+
+.home-section-admin-preview__header span {
+    color: var(--admin-muted);
+    font-size: .92rem;
+}
+
+.home-section-admin-preview__card {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--admin-border);
+    border-radius: 22px;
+    background: linear-gradient(180deg, rgba(255,255,255,.94), rgba(249,244,236,.92));
+    box-shadow: 0 12px 30px rgba(19, 39, 29, 0.06);
+    padding: 1.15rem;
+}
+
+.home-section-admin-preview__accent {
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 5px;
+    background: linear-gradient(90deg, #1c5f47, #c6942f);
+}
+
+.home-section-admin-preview__accent[data-tone="gold"] {
+    background: linear-gradient(90deg, #c6942f, #f0ca72);
+}
+
+.home-section-admin-preview__accent[data-tone="ink"] {
+    background: linear-gradient(90deg, #18372d, #46675b);
+}
+
+.home-section-admin-preview__inner {
+    display: grid;
+    grid-template-columns: minmax(160px, 220px) minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.home-section-admin-preview__inner[data-image-position="end"] {
+    grid-template-columns: minmax(0, 1fr) minmax(160px, 220px);
+}
+
+.home-section-admin-preview__inner[data-image-position="end"] .home-section-admin-preview__media {
+    order: 2;
+}
+
+.home-section-admin-preview__inner[data-image-position="end"] .home-section-admin-preview__content {
+    order: 1;
+}
+
+.home-section-admin-preview__media {
+    aspect-ratio: 4 / 4.5;
+    border-radius: 16px;
+    border: 1px solid var(--admin-border);
+    background: linear-gradient(135deg, #eef5f1, #f7efe1);
+    display: grid;
+    place-items: center;
+    color: var(--admin-muted);
+    font-weight: 700;
+}
+
+.home-section-admin-preview__content {
+    display: grid;
+    gap: .8rem;
+}
+
+.home-section-admin-preview__content[data-align="center"] {
+    text-align: center;
+    justify-items: center;
+}
+
+.home-section-admin-preview__section-key {
+    color: var(--admin-muted);
+    font-size: .82rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.home-section-admin-preview__title h1,
+.home-section-admin-preview__title h2,
+.home-section-admin-preview__title h3 {
+    margin: 0;
+    color: var(--admin-accent-strong);
+    line-height: 1.1;
+}
+
+.home-section-admin-preview__body {
+    color: var(--admin-ink);
+    line-height: 1.65;
+}
+
+.home-section-admin-preview__body p:last-child {
+    margin-bottom: 0;
+}
+
+.home-section-admin-preview__body .button {
+    display: inline-flex;
+    margin-top: .35rem;
+}
+
+.home-section-admin-preview__card[data-appearance="soft"] {
+    background: linear-gradient(180deg, #f7fbf8, #fcfaf5);
+}
+
+.home-section-admin-preview__card[data-appearance="accent"] {
+    background: linear-gradient(180deg, #ebf3ee, #fff7ea);
 }
 
 .pagination .page-item.active .page-link {

@@ -2,7 +2,6 @@
 
 {% set article_url = absolute_url(path('site_article', {slug: article.slug})) %}
 {% set share_text = article.title ~ ' | Cécifoot La Bassée' %}
-{% set hide_join_link = true %}
 
 {% block title %}{{ article.title }} | Cécifoot La Bassée{% endblock %}
 {% block meta_description %}{{ article.metaDescription ?: article.excerpt ?: "Actualité du Cécifoot La Bassée." }}{% endblock %}
@@ -15,7 +14,6 @@
         <div class="hero-card">
             <img class="hero-media" src="{{ article.coverImage ? asset('uploads/articles/' ~ article.coverImage) : asset('assets/club-placeholder.svg') }}" alt="Illustration de l’article {{ article.title }}">
             <div class="article-hero">
-                <div class="eyebrow">Actualité</div>
                 <h1>{{ article.title }}</h1>
                 <div class="article-meta">
                     <span><strong>Date de publication :</strong> {{ article.publishedAt|date('d/m/Y H:i') }}</span>
@@ -64,3 +62,5 @@
         </article>
     </section>
 {% endblock %}
+
+

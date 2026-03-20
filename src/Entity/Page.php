@@ -13,6 +13,15 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[UniqueEntity(fields: ['slug'], message: 'Ce slug existe deja.')]
 class Page
 {
+    public const SYSTEM_KEY_FAQ = 'faq';
+    public const SYSTEM_KEY_JOIN = 'join';
+    public const SYSTEM_KEY_PARTNERS = 'partners';
+    public const SYSTEM_KEY_TERMS = 'terms';
+    public const SYSTEM_KEY_PRIVACY = 'privacy';
+    public const SYSTEM_KEY_TRAINING = 'training';
+    public const SYSTEM_KEY_ACCESS = 'access';
+    public const SYSTEM_KEY_STAFF = 'staff';
+
     public function __toString(): string
     {
         return $this->title ?? 'Page';
@@ -30,6 +39,9 @@ class Page
     #[ORM\Column(length: 180, unique: true)]
     #[Assert\NotBlank]
     private ?string $slug = null;
+
+    #[ORM\Column(length: 80, unique: true, nullable: true)]
+    private ?string $systemKey = null;
 
     #[ORM\Column(length: 180, nullable: true)]
     private ?string $metaTitle = null;
@@ -81,6 +93,18 @@ class Page
     public function setSlug(string $slug): static
     {
         $this->slug = $slug;
+
+        return $this;
+    }
+
+    public function getSystemKey(): ?string
+    {
+        return $this->systemKey;
+    }
+
+    public function setSystemKey(?string $systemKey): static
+    {
+        $this->systemKey = $systemKey;
 
         return $this;
     }

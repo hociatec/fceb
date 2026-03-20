@@ -4,19 +4,19 @@ namespace App\Controller\Admin;
 
 use App\Entity\Article;
 use App\Entity\HomeSection;
+use App\Repository\ArticleRepository;
 use App\Repository\HomeSectionRepository;
-use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
 class HomeSectionCrudController extends AbstractCrudController
@@ -37,7 +37,11 @@ class HomeSectionCrudController extends AbstractCrudController
             ->setEntityLabelInPlural("Blocs d'accueil")
             ->setDefaultSort(['displayOrder' => 'ASC'])
             ->setPaginatorPageSize(10)
-            ->setSearchFields(['title', 'subtitle', 'content', 'secondaryContent', 'sectionKey'])
+            ->setSearchFields([
+                'title',
+                'content',
+                'sectionKey',
+            ])
             ->showEntityActionsInlined();
     }
 
@@ -61,6 +65,13 @@ class HomeSectionCrudController extends AbstractCrudController
         $sectionChoices = Crud::PAGE_NEW === $pageName
             ? $this->homeSectionRepository->missingSectionChoices()
             : HomeSection::availableSectionChoices();
+
+        if (Crud::PAGE_INDEX === $pageName) {
+            yield ChoiceField::new('sectionKey', 'Bloc')
+                ->setChoices(HomeSection::availableSectionChoices());
+
+            return;
+        }
 
         yield FormField::addFieldset("Configuration de l'accueil")
             ->renderCollapsed()
@@ -87,38 +98,103 @@ class HomeSectionCrudController extends AbstractCrudController
             ])
             ->setHelp('Titre visible au-dessus du bloc.');
 
-        yield TextField::new('subtitle', 'Sous-titre affiché')
+        yield ChoiceField::new('titleTag', 'Niveau du titre')
+            ->setChoices(HomeSection::availableTitleTagChoices())
+            ->renderAsNativeWidget()
+            ->setColumns(6)
+            ->setHelp('Permet de choisir la balise HTML du titre du bloc.');
+
+        yield TextEditorField::new('content', 'Contenu du bloc')
             ->setColumns(12)
             ->setRequired(false)
-            ->setFormTypeOption('attr', [
-                'aria-label' => 'Sous-titre de la section',
-                'placeholder' => 'Phrase courte sous le titre',
+            ->setNumOfRows(10)
+            ->setTrixEditorConfig([
+                'blockAttributes' => [
+                    'default' => ['tagName' => 'p'],
+                    'heading1' => ['tagName' => 'h2'],
+                    'heading2' => ['tagName' => 'h3'],
+                ],
             ])
-            ->setHelp("Petit texte d'accompagnement sous le titre.");
+            ->setFormTypeOption('attr', [
+                'aria-label' => 'Contenu du bloc',
+                'data-page-rich-editor' => '1',
+            ])
+            ->setHelp('Rédige librement tout le contenu du bloc ici. Exemples : [cta label="Mon bouton" url="/mon-lien"], [cta label="Site externe" url="https://..." style="secondary" target="blank"], [separator], [quote]Citation[/quote].');
 
-        yield TextareaField::new('content', 'Contenu principal')
+        yield ImageField::new('image', 'Image du bloc')
             ->setColumns(12)
+            ->setBasePath('uploads/home-sections')
+            ->setUploadDir('public/uploads/home-sections')
+            ->setUploadedFileNamePattern('[contenthash].[extension]')
             ->setRequired(false)
-            ->setNumOfRows(5)
-            ->setHelp("Texte éditorial principal du bloc. Selon le bloc, il sert d'introduction, d'accroche ou d'explication.");
+            ->setHelp("Image spécifique au bloc. Si elle est vide, l'accueil utilise le visuel dynamique disponible.")
+            ->hideOnIndex();
 
-        yield TextareaField::new('secondaryContent', 'Contenu complémentaire')
-            ->setColumns(12)
-            ->setRequired(false)
-            ->setNumOfRows(4)
-            ->setHelp("Texte secondaire du bloc. Utilise-le pour une note, un libellé complémentaire ou une seconde accroche.");
+        yield FormField::addFieldset('Mise en forme')
+            ->renderCollapsed()
+            ->setHelp('Réglages visuels du bloc sur la page d’accueil.');
+
+        yield ChoiceField::new('textAlignment', 'Alignement du texte')
+            ->setChoices(HomeSection::availableTextAlignmentChoices())
+            ->renderAsNativeWidget()
+            ->setColumns(4);
+        yield ChoiceField::new('layoutWidth', 'Largeur du bloc')
+            ->setChoices(HomeSection::availableLayoutWidthChoices())
+            ->renderAsNativeWidget()
+            ->setColumns(4);
+        yield ChoiceField::new('appearance', 'Variante visuelle')
+            ->setChoices(HomeSection::availableAppearanceChoices())
+            ->renderAsNativeWidget()
+            ->setColumns(4);
+        yield ChoiceField::new('accentTone', 'Couleur d’accent')
+            ->setChoices(HomeSection::availableAccentToneChoices())
+            ->renderAsNativeWidget()
+            ->setColumns(4);
+
+        yield BooleanField::new('showImage', 'Afficher l’image')
+            ->renderAsSwitch(false)
+            ->setColumns(6);
+        yield ChoiceField::new('imagePosition', "Position de l'image")
+            ->setChoices(HomeSection::availableImagePositionChoices())
+            ->renderAsNativeWidget()
+            ->setColumns(6);
+
+        yield FormField::addFieldset('Éléments internes')
+            ->renderCollapsed()
+            ->setHelp("Affiche ou masque certains éléments du bloc sans toucher au contenu source.");
+
+        yield BooleanField::new('showTag', 'Afficher le tag')
+            ->renderAsSwitch(false)
+            ->setColumns(3);
+        yield BooleanField::new('showMeta', 'Afficher les métadonnées')
+            ->renderAsSwitch(false)
+            ->setColumns(3);
+        yield BooleanField::new('showExcerpt', 'Afficher les extraits')
+            ->renderAsSwitch(false)
+            ->setColumns(3);
+        yield BooleanField::new('showScore', 'Afficher le score')
+            ->renderAsSwitch(false)
+            ->setColumns(3);
+
+        yield IntegerField::new('upcomingMatchesLimit', 'Nombre de matchs à afficher')
+            ->setColumns(4)
+            ->setHelp("Utilisé surtout par le bloc « Prochain match ». 1 = seulement le prochain match, 4 = le prochain + 3 suivants.")
+            ->setFormTypeOption('attr', [
+                'min' => 1,
+                'inputmode' => 'numeric',
+            ]);
 
         yield FormField::addFieldset('Actualités pilotées')
             ->renderCollapsed()
-            ->setHelp("Ces champs sont utilisés uniquement par le bloc « Actualité à la une ». Ils permettent de choisir manuellement l’article principal et l’ordre des autres actualités.");
+            ->setHelp("Ces champs sont utilisés uniquement par le bloc « Actualité à la une ». Ils permettent de choisir manuellement l'article principal et l'ordre des autres actualités.");
 
         yield AssociationField::new('featuredArticle', 'Article principal')
             ->renderAsNativeWidget()
             ->setColumns(12)
             ->setRequired(false)
             ->setFormTypeOption('placeholder', 'Utiliser la sélection automatique')
-            ->setFormTypeOption('query_builder', static function (QueryBuilder $queryBuilder): QueryBuilder {
-                return $queryBuilder
+            ->setFormTypeOption('query_builder', static function (ArticleRepository $repository) {
+                return $repository->createQueryBuilder('entity')
                     ->orderBy('entity.publishedAt', 'DESC')
                     ->addOrderBy('entity.id', 'DESC');
             })
@@ -136,15 +212,15 @@ class HomeSectionCrudController extends AbstractCrudController
             ->setFormTypeOption('attr', [
                 'aria-label' => "Article principal du bloc d'accueil",
             ])
-            ->setHelp("Si ce champ est vide, l'accueil reprend automatiquement l’article marqué « Actualité à la une » le plus récent.");
+            ->setHelp("Si ce champ est vide, l'accueil reprend automatiquement l'article marqué « Actualité à la une » le plus récent.");
 
         yield AssociationField::new('secondaryArticleOne', 'Autre actualité n°1')
             ->renderAsNativeWidget()
             ->setColumns(4)
             ->setRequired(false)
             ->setFormTypeOption('placeholder', 'Sélection automatique')
-            ->setFormTypeOption('query_builder', static function (QueryBuilder $queryBuilder): QueryBuilder {
-                return $queryBuilder
+            ->setFormTypeOption('query_builder', static function (ArticleRepository $repository) {
+                return $repository->createQueryBuilder('entity')
                     ->orderBy('entity.publishedAt', 'DESC')
                     ->addOrderBy('entity.id', 'DESC');
             })
@@ -158,18 +234,15 @@ class HomeSectionCrudController extends AbstractCrudController
                     (string) $article->getTitle(),
                     $article->getPublishedAt()?->format('d/m/Y') ?? 'sans date'
                 );
-            })
-            ->setFormTypeOption('attr', [
-                'aria-label' => 'Première autre actualité du bloc accueil',
-            ]);
+            });
 
         yield AssociationField::new('secondaryArticleTwo', 'Autre actualité n°2')
             ->renderAsNativeWidget()
             ->setColumns(4)
             ->setRequired(false)
             ->setFormTypeOption('placeholder', 'Sélection automatique')
-            ->setFormTypeOption('query_builder', static function (QueryBuilder $queryBuilder): QueryBuilder {
-                return $queryBuilder
+            ->setFormTypeOption('query_builder', static function (ArticleRepository $repository) {
+                return $repository->createQueryBuilder('entity')
                     ->orderBy('entity.publishedAt', 'DESC')
                     ->addOrderBy('entity.id', 'DESC');
             })
@@ -183,18 +256,15 @@ class HomeSectionCrudController extends AbstractCrudController
                     (string) $article->getTitle(),
                     $article->getPublishedAt()?->format('d/m/Y') ?? 'sans date'
                 );
-            })
-            ->setFormTypeOption('attr', [
-                'aria-label' => 'Deuxième autre actualité du bloc accueil',
-            ]);
+            });
 
         yield AssociationField::new('secondaryArticleThree', 'Autre actualité n°3')
             ->renderAsNativeWidget()
             ->setColumns(4)
             ->setRequired(false)
             ->setFormTypeOption('placeholder', 'Sélection automatique')
-            ->setFormTypeOption('query_builder', static function (QueryBuilder $queryBuilder): QueryBuilder {
-                return $queryBuilder
+            ->setFormTypeOption('query_builder', static function (ArticleRepository $repository) {
+                return $repository->createQueryBuilder('entity')
                     ->orderBy('entity.publishedAt', 'DESC')
                     ->addOrderBy('entity.id', 'DESC');
             })
@@ -208,19 +278,7 @@ class HomeSectionCrudController extends AbstractCrudController
                     (string) $article->getTitle(),
                     $article->getPublishedAt()?->format('d/m/Y') ?? 'sans date'
                 );
-            })
-            ->setFormTypeOption('attr', [
-                'aria-label' => 'Troisième autre actualité du bloc accueil',
-            ]);
-
-        yield ImageField::new('image', 'Image du bloc')
-            ->setColumns(12)
-            ->setBasePath('uploads/home-sections')
-            ->setUploadDir('public/uploads/home-sections')
-            ->setUploadedFileNamePattern('[contenthash].[extension]')
-            ->setRequired(false)
-            ->setHelp("Image spécifique au bloc. Si elle est vide, l'accueil utilise le visuel dynamique disponible.")
-            ->hideOnIndex();
+            });
 
         yield IntegerField::new('displayOrder', "Ordre d'affichage")
             ->setColumns(3)

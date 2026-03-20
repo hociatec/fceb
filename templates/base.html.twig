@@ -933,6 +933,18 @@
             align-items: start;
         }
 
+        .story-inline-reverse {
+            grid-template-columns: minmax(0, 1fr) minmax(180px, 280px);
+        }
+
+        .story-inline-reverse > :first-child {
+            order: 2;
+        }
+
+        .story-inline-reverse > :last-child {
+            order: 1;
+        }
+
         .story-media {
             width: 100%;
             aspect-ratio: 16 / 8.5;
@@ -944,6 +956,45 @@
         }
 
         .story-media.tall { aspect-ratio: 4 / 4.7; }
+
+        .home-section-align-center,
+        .home-section-align-center .section-heading,
+        .home-section-align-center .section-heading > div,
+        .home-section-align-center .home-feature-article {
+            text-align: center;
+            justify-items: center;
+        }
+
+        .home-section-align-center .form-actions,
+        .home-section-align-center .home-meta-row,
+        .home-section-align-center .team-poster {
+            justify-content: center;
+        }
+
+        .home-section-appearance-soft {
+            background:
+                linear-gradient(180deg, rgba(247, 251, 248, 0.95), rgba(252, 250, 245, 0.98)),
+                var(--panel-strong);
+        }
+
+        .home-section-appearance-accent {
+            background:
+                linear-gradient(180deg, rgba(231, 240, 234, 0.98), rgba(255, 250, 240, 0.98)),
+                var(--panel-strong);
+            border-color: rgba(34, 92, 73, 0.14);
+        }
+
+        .home-section-tone-green::before {
+            background: linear-gradient(90deg, var(--green-600), var(--gold-500));
+        }
+
+        .home-section-tone-gold::before {
+            background: linear-gradient(90deg, var(--gold-500), #f3c96a);
+        }
+
+        .home-section-tone-ink::before {
+            background: linear-gradient(90deg, #17352a, #44685a);
+        }
 
         .home-meta-row,
         .match-card-meta {
@@ -1396,11 +1447,18 @@
 
     <footer class="footer">
         {% set footerExcludedSlugs = ['decouvrir-le-cecifoot', 'contact', 'cgu', 'partenaires'] %}
+        {% set footerContent = site.footer|default({}) %}
         <div class="footer-inner">
             <div class="footer-brand">
-                <span class="footer-brand-badge">Cécifoot La Bassée</span>
-                <strong>Un club visible, lisible et ancré localement.</strong>
-                <p class="footer-copy">Le site met en avant les matchs, les actualités, les parcours pour rejoindre le club et les informations utiles sans perdre la dimension humaine du projet.</p>
+                {% if footerContent.badge|default(null) %}
+                    <span class="footer-brand-badge">{{ footerContent.badge }}</span>
+                {% endif %}
+                {% if footerContent.headline|default(null) %}
+                    <strong>{{ footerContent.headline }}</strong>
+                {% endif %}
+                {% if footerContent.text|default(null) %}
+                    <p class="footer-copy">{{ footerContent.text }}</p>
+                {% endif %}
             </div>
             <div class="footer-meta">
                 <div class="footer-column">
@@ -1448,9 +1506,11 @@
                                         <a class="footer-partner-link footer-partner-name" href="{{ partner.websiteUrl }}" target="_blank" rel="noreferrer">{{ partner.name }}</a>
                                     {% else %}
                                         {% if partnerLogo %}
-                                            <img class="footer-partner-logo" src="{{ partnerLogo }}" alt="Logo de {{ partner.name }}">
+                                            <a class="footer-partner-link" href="{{ path('site_partners_static') }}">
+                                                <img class="footer-partner-logo" src="{{ partnerLogo }}" alt="Logo de {{ partner.name }}">
+                                            </a>
                                         {% endif %}
-                                        <div class="footer-partner-name">{{ partner.name }}</div>
+                                        <a class="footer-partner-link footer-partner-name" href="{{ path('site_partners_static') }}">{{ partner.name }}</a>
                                     {% endif %}
                                 </div>
                             {% endfor %}
@@ -1462,17 +1522,9 @@
                 <div class="footer-column">
                     <h3><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="2"/><path d="M12 9h.01M11 12h1v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Liens utiles</span></span></h3>
                     <div class="footer-link-list">
-                        <a href="{{ path('site_faq') }}">FAQ</a>
-                        {% if site.footer_pages is not empty %}
-                            {% for page in site.footer_pages %}
-                                {% if page.slug not in footerExcludedSlugs %}
-                                    <a href="{{ path('site_page', {slug: page.slug}) }}">{{ page.title }}</a>
-                                {% endif %}
-                            {% endfor %}
-                        {% endif %}
-                        <span class="footer-link-group-title">Légal</span>
-                        <a href="{{ path('site_terms') }}">CGU</a>
-                        <a href="{{ path('site_privacy') }}">Confidentialité</a>
+                        {% for item in site.footer_navigation|default([]) %}
+                            <a href="{{ item.href }}"{% if item.open_in_new_tab|default(false) %} target="_blank" rel="noreferrer noopener"{% endif %}>{{ item.label }}</a>
+                        {% endfor %}
                     </div>
                 </div>
                 <div class="footer-bottom">

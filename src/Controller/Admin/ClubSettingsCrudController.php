@@ -9,6 +9,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
 class ClubSettingsCrudController extends AbstractCrudController
@@ -50,12 +51,27 @@ class ClubSettingsCrudController extends AbstractCrudController
     {
         yield FormField::addFieldset('Informations du club')
             ->renderCollapsed()
-            ->setHelp('Ces informations servent aux coordonnées, au footer et aux formulaires. Le contenu de la page d’accueil se gère désormais dans Blocs d’accueil.');
+            ->setHelp("Ces informations servent aux coordonnées, au footer et aux formulaires. Le contenu de la page d'accueil se gère désormais dans Blocs d'accueil.");
 
         yield TextField::new('clubName', 'Nom du club')->setColumns(6);
         yield TextField::new('publicEmail', 'E-mail public')->setColumns(6);
         yield TextField::new('phone', 'Téléphone')->setColumns(6);
         yield TextField::new('address', 'Adresse')->setColumns(6);
         yield TextField::new('mapUrl', 'Lien carte')->setColumns(12);
+
+        yield FormField::addFieldset('Footer')
+            ->renderCollapsed()
+            ->setHelp("Ces champs pilotent le bloc éditorial du footer. Laisse-les vides pour ne rien afficher.");
+
+        yield TextField::new('footerBadge', 'Badge footer')
+            ->setColumns(4)
+            ->setRequired(false);
+        yield TextField::new('footerHeadline', 'Titre footer')
+            ->setColumns(8)
+            ->setRequired(false);
+        yield TextareaField::new('footerText', 'Texte footer')
+            ->setColumns(12)
+            ->setRequired(false)
+            ->setNumOfRows(4);
     }
 }

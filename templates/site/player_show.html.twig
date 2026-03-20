@@ -13,7 +13,6 @@
         <div class="hero-card">
             <img class="hero-media" src="{{ displayPhoto ? asset('uploads/players/' ~ displayPhoto) : asset('assets/club-placeholder.svg') }}" alt="Portrait de {{ player.name }}">
             <div class="page-hero">
-                <div class="eyebrow"><span class="label-with-icon"><span class="icon-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="2"/><path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><span>Effectif</span></span></div>
                 <h1>{{ player.name }}</h1>
                 <div class="hero-stats">
                     {% if player.age %}

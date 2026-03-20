@@ -39,6 +39,17 @@ class ClubSettings
     #[ORM\Column(name: 'singleton_key', type: 'smallint', unique: true, options: ['default' => 1])]
     private int $singletonKey = 1;
 
+    #[ORM\Column(length: 160, nullable: true)]
+    #[Assert\Length(max: 160)]
+    private ?string $footerBadge = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
+    private ?string $footerHeadline = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $footerText = null;
+
     public function __toString(): string
     {
         return $this->clubName ?? 'Paramètres du club';
@@ -112,5 +123,41 @@ class ClubSettings
     public function getSingletonKey(): int
     {
         return $this->singletonKey;
+    }
+
+    public function getFooterBadge(): ?string
+    {
+        return $this->footerBadge;
+    }
+
+    public function setFooterBadge(?string $footerBadge): static
+    {
+        $this->footerBadge = $footerBadge;
+
+        return $this;
+    }
+
+    public function getFooterHeadline(): ?string
+    {
+        return $this->footerHeadline;
+    }
+
+    public function setFooterHeadline(?string $footerHeadline): static
+    {
+        $this->footerHeadline = $footerHeadline;
+
+        return $this;
+    }
+
+    public function getFooterText(): ?string
+    {
+        return $this->footerText;
+    }
+
+    public function setFooterText(?string $footerText): static
+    {
+        $this->footerText = $footerText;
+
+        return $this;
     }
 }

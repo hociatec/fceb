@@ -4,7 +4,6 @@ namespace App\Controller\Admin;
 
 use App\Entity\Page;
 use App\Enum\ContentStatus;
-use App\Enum\PagePlacement;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -12,7 +11,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
@@ -28,9 +26,9 @@ class PageCrudController extends AbstractCrudController
         return $crud
             ->setEntityLabelInSingular('Page')
             ->setEntityLabelInPlural('Pages')
-            ->setDefaultSort(['menuOrder' => 'ASC'])
+            ->setDefaultSort(['title' => 'ASC'])
             ->setPaginatorPageSize(10)
-            ->setSearchFields(['title', 'slug'])
+            ->setSearchFields(['title', 'slug', 'systemKey'])
             ->showEntityActionsInlined();
     }
 
@@ -56,7 +54,7 @@ class PageCrudController extends AbstractCrudController
     {
         yield FormField::addFieldset('Contenu de la page')
             ->renderCollapsed()
-            ->setHelp('Crée ou modifie une page d’information visible sur le site.');
+            ->setHelp('Crée ou modifie une page d’information visible sur le site. La présence dans le header et le footer se gère désormais dans Navigation.');
 
         yield TextField::new('title', 'Titre')
             ->setColumns(8)
@@ -66,7 +64,7 @@ class PageCrudController extends AbstractCrudController
                 'aria-label' => 'Titre de la page',
                 'placeholder' => 'Exemple : Découvrir le cécifoot',
             ])
-            ->setHelp('Titre visible dans la page et éventuellement dans la navigation.');
+            ->setHelp('Titre visible dans la page.');
 
         yield TextField::new('slug', 'Adresse web')
             ->setColumns(4)
@@ -78,12 +76,18 @@ class PageCrudController extends AbstractCrudController
             ->setHelp('Générée automatiquement depuis le titre, modifiable si besoin.')
             ->hideOnIndex();
 
+        yield TextField::new('systemKey', 'Clé système')
+            ->setColumns(4)
+            ->setRequired(false)
+            ->setHelp('Réservé aux pages structurelles du site. À ne pas modifier sans besoin technique.')
+            ->hideOnIndex();
+
         yield ImageField::new('heroImage', "Image d'en-tête")
             ->setColumns(12)
             ->setBasePath('uploads/pages')
             ->setUploadDir('public/uploads/pages')
             ->setUploadedFileNamePattern('[contenthash].[extension]')
-            ->setHelp("Image illustrant la page.")
+            ->setHelp('Image illustrant la page.')
             ->hideOnIndex();
 
         yield TextEditorField::new('content', 'Contenu complet')
@@ -102,30 +106,6 @@ class PageCrudController extends AbstractCrudController
             ])
             ->setHelp('Utilise les boutons du haut pour structurer la page.')
             ->hideOnIndex();
-
-        yield FormField::addFieldset('Affichage')
-            ->renderCollapsed()
-            ->setHelp('Définis où la page apparaît et dans quel ordre.');
-
-        yield ChoiceField::new('placement', 'Où afficher cette page')
-            ->setChoices([
-                'Nulle part dans le menu' => PagePlacement::None,
-                'Menu du haut' => PagePlacement::Header,
-                'Pied de page' => PagePlacement::Footer,
-                'Menu du haut + pied de page' => PagePlacement::Both,
-            ])
-            ->renderExpanded()
-            ->setColumns(8)
-            ->setHelp('Choisis si cette page doit être accessible depuis la navigation.');
-
-        yield IntegerField::new('menuOrder', "Ordre d'affichage")
-            ->setColumns(4)
-            ->setFormTypeOption('attr', [
-                'min' => 0,
-                'inputmode' => 'numeric',
-                'aria-label' => "Ordre d'affichage",
-            ])
-            ->setHelp('Plus le chiffre est petit, plus la page remonte.');
 
         yield ChoiceField::new('status', 'Visibilité')
             ->setChoices([

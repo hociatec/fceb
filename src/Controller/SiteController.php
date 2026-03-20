@@ -60,6 +60,13 @@ class SiteController extends AbstractController
         $featuredHomeSection = $homeSectionRepository->findConfiguredByKey(HomeSection::KEY_FEATURED_ARTICLE);
         $latestArticle = $this->resolveHomepageFeaturedArticle($featuredHomeSection, $articleRepository);
         $upcomingMatches = $matchRepository->findUpcomingMatches();
+        $nextMatchDisplayLimit = 4;
+        foreach ($homeSections as $section) {
+            if (($section['key'] ?? null) === HomeSection::KEY_NEXT_MATCH) {
+                $nextMatchDisplayLimit = max(1, (int) ($section['upcomingMatchesLimit'] ?? 4));
+                break;
+            }
+        }
         $lastMatch = $matchRepository->findLastMatch();
         $candidateArticles = $articleRepository->findLatestPublished(50);
         $recentArticles = $this->resolveHomepageSecondaryArticles($featuredHomeSection, $articleRepository, $latestArticle);
@@ -71,7 +78,7 @@ class SiteController extends AbstractController
             'latestArticle' => $latestArticle,
             'homeSections' => $homeSections,
             'nextMatch' => $upcomingMatches[0] ?? null,
-            'otherUpcomingMatches' => array_slice($upcomingMatches, 1, 3),
+            'otherUpcomingMatches' => array_slice($upcomingMatches, 1, max(0, $nextMatchDisplayLimit - 1)),
             'recentArticles' => $recentArticles,
             'lastMatch' => $lastMatch,
             'lastMatchArticle' => $this->findMatchingArticleForMatch($lastMatch, $candidateArticles),
@@ -264,7 +271,7 @@ class SiteController extends AbstractController
                 ->replyTo((string) $data->email)
                 ->subject('[Contact site] '.($subject !== '' ? $subject : 'Sans objet'))
                 ->text(implode(PHP_EOL.PHP_EOL, [
-                    'Nouveau message de contact reçu depuis le site.',
+                    'Nouveau message de contact reÃ§u depuis le site.',
                     'Nom : '.trim((string) $data->name),
                     'E-mail : '.trim((string) $data->email),
                     'Objet : '.($subject !== '' ? $subject : 'Sans objet'),
@@ -273,7 +280,7 @@ class SiteController extends AbstractController
                 ]));
 
             $mailer->send($email);
-            $this->addFlash('success', 'Votre message a bien été envoyé au club.');
+            $this->addFlash('success', 'Votre message a bien Ã©tÃ© envoyÃ© au club.');
 
             return $this->redirectToRoute('site_contact');
         }
@@ -285,20 +292,17 @@ class SiteController extends AbstractController
     }
 
     #[Route('/partenaires', name: 'site_partners_static', methods: ['GET'])]
-    public function partnersStatic(PartnerRepository $partnerRepository): Response
+    public function partnersStatic(PageRepository $pageRepository, PartnerRepository $partnerRepository, Request $request): Response
     {
-        return $this->render('site/partners.html.twig', [
-            ...$this->siteContextBuilder->build(),
+        return $this->renderManagedPage(Page::SYSTEM_KEY_PARTNERS, $pageRepository, $request, [
             'partners' => $partnerRepository->findVisibleOrdered(),
         ]);
     }
 
     #[Route('/rejoindre-le-club', name: 'site_join', methods: ['GET'])]
-    public function join(): Response
+    public function join(PageRepository $pageRepository, Request $request): Response
     {
-        return $this->render('site/join.html.twig', [
-            ...$this->siteContextBuilder->build(),
-        ]);
+        return $this->renderManagedPage(Page::SYSTEM_KEY_JOIN, $pageRepository, $request);
     }
 
     #[Route('/seance-decouverte', name: 'site_trial_request', methods: ['GET', 'POST'])]
@@ -313,20 +317,20 @@ class SiteController extends AbstractController
                 ->from((string) $this->getParameter('app.contact_from_email'))
                 ->to((string) $this->getParameter('app.contact_to_email'))
                 ->replyTo((string) $data->email)
-                ->subject('[Séance découverte] '.trim((string) $data->name))
+                ->subject('[SÃ©ance dÃ©couverte] '.trim((string) $data->name))
                 ->text(implode(PHP_EOL.PHP_EOL, [
-                    'Nouvelle demande de séance découverte.',
+                    'Nouvelle demande de sÃ©ance dÃ©couverte.',
                     'Nom : '.trim((string) $data->name),
                     'E-mail : '.trim((string) $data->email),
-                    'Téléphone : '.trim((string) ($data->phone ?: 'Non renseigné')),
+                    'TÃ©lÃ©phone : '.trim((string) ($data->phone ?: 'Non renseignÃ©')),
                     'Profil : '.trim((string) $data->profile),
-                    'Disponibilités : '.trim((string) ($data->availability ?: 'Non renseignées')),
+                    'DisponibilitÃ©s : '.trim((string) ($data->availability ?: 'Non renseignÃ©es')),
                     'Message :',
-                    trim((string) ($data->message ?: 'Aucun message complémentaire.')),
+                    trim((string) ($data->message ?: 'Aucun message complÃ©mentaire.')),
                 ]));
 
             $mailer->send($email);
-            $this->addFlash('success', 'Votre demande a bien été envoyée. Le club reviendra vers vous rapidement.');
+            $this->addFlash('success', 'Votre demande a bien Ã©tÃ© envoyÃ©e. Le club reviendra vers vous rapidement.');
 
             return $this->redirectToRoute('site_trial_request');
         }
@@ -349,20 +353,20 @@ class SiteController extends AbstractController
                 ->from((string) $this->getParameter('app.contact_from_email'))
                 ->to((string) $this->getParameter('app.contact_to_email'))
                 ->replyTo((string) $data->email)
-                ->subject('[Bénévolat] '.trim((string) $data->name))
+                ->subject('[BÃ©nÃ©volat] '.trim((string) $data->name))
                 ->text(implode(PHP_EOL.PHP_EOL, [
-                    'Nouvelle proposition de bénévolat.',
+                    'Nouvelle proposition de bÃ©nÃ©volat.',
                     'Nom : '.trim((string) $data->name),
                     'E-mail : '.trim((string) $data->email),
-                    'Téléphone : '.trim((string) ($data->phone ?: 'Non renseigné')),
-                    'Disponibilités : '.trim((string) ($data->availability ?: 'Non renseignées')),
-                    'Compétences : '.trim((string) ($data->skills ?: 'Non renseignées')),
+                    'TÃ©lÃ©phone : '.trim((string) ($data->phone ?: 'Non renseignÃ©')),
+                    'DisponibilitÃ©s : '.trim((string) ($data->availability ?: 'Non renseignÃ©es')),
+                    'CompÃ©tences : '.trim((string) ($data->skills ?: 'Non renseignÃ©es')),
                     'Message :',
                     trim((string) $data->message),
                 ]));
 
             $mailer->send($email);
-            $this->addFlash('success', 'Votre proposition de bénévolat a bien été envoyée.');
+            $this->addFlash('success', 'Votre proposition de bÃ©nÃ©volat a bien Ã©tÃ© envoyÃ©e.');
 
             return $this->redirectToRoute('site_volunteer');
         }
@@ -391,15 +395,15 @@ class SiteController extends AbstractController
                     'Structure : '.trim((string) $data->organization),
                     'Contact : '.trim((string) $data->contactName),
                     'E-mail : '.trim((string) $data->email),
-                    'Téléphone : '.trim((string) ($data->phone ?: 'Non renseigné')),
+                    'TÃ©lÃ©phone : '.trim((string) ($data->phone ?: 'Non renseignÃ©')),
                     'Type de soutien : '.trim((string) $data->supportType),
-                    'Site web : '.trim((string) ($data->website ?: 'Non renseigné')),
+                    'Site web : '.trim((string) ($data->website ?: 'Non renseignÃ©')),
                     'Message :',
                     trim((string) $data->message),
                 ]));
 
             $mailer->send($email);
-            $this->addFlash('success', 'Votre demande de partenariat a bien été envoyée.');
+            $this->addFlash('success', 'Votre demande de partenariat a bien Ã©tÃ© envoyÃ©e.');
 
             return $this->redirectToRoute('site_partner_request');
         }
@@ -411,97 +415,39 @@ class SiteController extends AbstractController
     }
 
     #[Route('/faq', name: 'site_faq', methods: ['GET'])]
-    public function faq(): Response
+    public function faq(PageRepository $pageRepository, Request $request): Response
     {
-        return $this->render('site/static_page.html.twig', [
-            ...$this->siteContextBuilder->build(),
-            'eyebrow' => 'FAQ',
-            'title' => 'Questions fréquentes',
-            'lead' => 'Des réponses simples aux questions les plus courantes sur le club, l’accueil et la découverte du cécifoot.',
-            'content' => [
-                'Le club accueille des joueurs, des proches, des bénévoles et des personnes qui souhaitent découvrir le cécifoot dans un cadre structuré.',
-                'Le plus simple pour commencer est de passer par la page de séance découverte ou la page de contact afin d’échanger sur ton profil et tes attentes.',
-                'Le matériel, les créneaux et les modalités d’accueil peuvent être précisés directement par le club après un premier échange.',
-            ],
-        ]);
+        return $this->renderManagedPage(Page::SYSTEM_KEY_FAQ, $pageRepository, $request);
     }
 
     #[Route('/entrainements', name: 'site_training', methods: ['GET'])]
-    public function training(): Response
+    public function training(PageRepository $pageRepository, Request $request): Response
     {
-        return $this->render('site/static_page.html.twig', [
-            ...$this->siteContextBuilder->build(),
-            'eyebrow' => 'Entraînements',
-            'title' => 'Entraînements et rythme du club',
-            'lead' => 'Une page pour présenter le cadre de pratique, le rythme général et la logique d’accueil des nouveaux arrivants.',
-            'content' => [
-                'Les entraînements s’organisent autour d’un cadre collectif, de repères de jeu précis et d’un accompagnement progressif selon le profil de chacun.',
-                'Les nouveaux arrivants peuvent être orientés vers une première prise de contact avant d’intégrer un créneau régulier.',
-                'Le club peut préciser les horaires, le matériel utile et les conditions de présence au moment de l’échange.',
-            ],
-        ]);
+        return $this->renderManagedPage(Page::SYSTEM_KEY_TRAINING, $pageRepository, $request);
     }
 
     #[Route('/acces', name: 'site_access', methods: ['GET'])]
-    public function access(): Response
+    public function access(PageRepository $pageRepository, Request $request): Response
     {
-        return $this->render('site/static_page.html.twig', [
-            ...$this->siteContextBuilder->build(),
-            'eyebrow' => 'Accès',
-            'title' => 'Venir au club',
-            'lead' => 'Adresse, repères de venue et informations pratiques pour rejoindre le site d’entraînement ou de match.',
-            'content' => [
-                'Le club est implanté à La Bassée et centralise ses informations de contact pour faciliter la première venue.',
-                'L’objectif est de rendre l’accès lisible, avec une prise de contact préalable si un accompagnement spécifique est utile.',
-                'Pour préparer un déplacement, le plus simple est d’utiliser la carte de contact ou d’écrire directement au club.',
-            ],
-        ]);
+        return $this->renderManagedPage(Page::SYSTEM_KEY_ACCESS, $pageRepository, $request);
     }
 
     #[Route('/encadrement', name: 'site_staff', methods: ['GET'])]
-    public function staff(): Response
+    public function staff(PageRepository $pageRepository, Request $request): Response
     {
-        return $this->render('site/static_page.html.twig', [
-            ...$this->siteContextBuilder->build(),
-            'eyebrow' => 'Encadrement',
-            'title' => 'Encadrement et vie du club',
-            'lead' => 'Une présentation du cadre humain du club, de la logique d’accompagnement et de la place des bénévoles.',
-            'content' => [
-                'Le club repose sur un encadrement sportif, associatif et bénévole qui permet de structurer les séances, les matchs et l’accueil.',
-                'Les proches, bénévoles et partenaires peuvent aussi contribuer à la vie du club selon leurs disponibilités.',
-                'Le projet du club cherche un équilibre entre exigence sportive, accessibilité et continuité associative.',
-            ],
-        ]);
+        return $this->renderManagedPage(Page::SYSTEM_KEY_STAFF, $pageRepository, $request);
     }
 
     #[Route('/cgu', name: 'site_terms', methods: ['GET'])]
-    public function terms(): Response
+    public function terms(PageRepository $pageRepository, Request $request): Response
     {
-        return $this->render('site/static_page.html.twig', [
-            ...$this->siteContextBuilder->build(),
-            'eyebrow' => 'Informations légales',
-            'title' => "Conditions générales d'utilisation",
-            'content' => [
-                "Le site a pour objet de présenter l'activité du club, ses actualités, ses saisons et ses informations pratiques.",
-                "L'utilisateur s'engage à utiliser les formulaires et les espaces de connexion de manière loyale, sans nuire au fonctionnement du site.",
-                "Le club se réserve le droit de faire évoluer les contenus, les accès et l'organisation du site à tout moment.",
-            ],
-        ]);
+        return $this->renderManagedPage(Page::SYSTEM_KEY_TERMS, $pageRepository, $request);
     }
 
     #[Route('/politique-de-confidentialite', name: 'site_privacy', methods: ['GET'])]
-    public function privacy(): Response
+    public function privacy(PageRepository $pageRepository, Request $request): Response
     {
-        return $this->render('site/static_page.html.twig', [
-            ...$this->siteContextBuilder->build(),
-            'eyebrow' => 'Données personnelles',
-            'title' => 'Politique de confidentialité',
-            'content' => [
-                'Les données envoyées via le formulaire de contact sont utilisées uniquement pour répondre aux demandes adressées au club.',
-                'Le site limite la collecte aux informations nécessaires au traitement de la demande : nom, e-mail, objet et message.',
-                'Toute demande relative aux données personnelles peut être adressée au club via la page de contact.',
-            ],
-        ]);
+        return $this->renderManagedPage(Page::SYSTEM_KEY_PRIVACY, $pageRepository, $request);
     }
 
     #[IsGranted('ROLE_USER')]
@@ -529,7 +475,7 @@ class SiteController extends AbstractController
             $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => mb_strtolower((string) $data->email)]);
 
             if ($existingUser instanceof User && $existingUser->getId() !== $user->getId()) {
-                $form->get('email')->addError(new FormError('Cette adresse e-mail est déjà utilisée par un autre compte.'));
+                $form->get('email')->addError(new FormError('Cette adresse e-mail est dÃ©jÃ  utilisÃ©e par un autre compte.'));
             } else {
                 $user
                     ->setFullName((string) $data->fullName)
@@ -540,7 +486,7 @@ class SiteController extends AbstractController
                 }
 
                 $entityManager->flush();
-                $this->addFlash('success', 'Ton compte a bien été mis à jour.');
+                $this->addFlash('success', 'Ton compte a bien Ã©tÃ© mis Ã  jour.');
 
                 return $this->redirectToRoute('site_account');
             }
@@ -637,10 +583,20 @@ class SiteController extends AbstractController
      * @return array<int, array{
      *     key: string,
      *     title: string,
-     *     subtitle: ?string,
      *     content: ?string,
-     *     secondaryContent: ?string,
      *     image: ?string,
+     *     titleTag: string,
+     *     textAlignment: string,
+     *     layoutWidth: string,
+     *     showImage: bool,
+     *     imagePosition: string,
+     *     appearance: string,
+     *     accentTone: string,
+     *     showTag: bool,
+     *     showMeta: bool,
+     *     showExcerpt: bool,
+     *     showScore: bool,
+     *     upcomingMatchesLimit: int,
      *     displayOrder: int
      * }>
      */
@@ -651,10 +607,20 @@ class SiteController extends AbstractController
             $resolved[$definition['sectionKey']] = [
                 'key' => $definition['sectionKey'],
                 'title' => $definition['title'],
-                'subtitle' => $definition['subtitle'],
                 'content' => $definition['content'],
-                'secondaryContent' => $definition['secondaryContent'],
                 'image' => $definition['image'] ?? null,
+                'titleTag' => $definition['titleTag'] ?? 'h2',
+                'textAlignment' => $definition['textAlignment'] ?? 'left',
+                'layoutWidth' => $definition['layoutWidth'] ?? 'wide',
+                'showImage' => $definition['showImage'] ?? true,
+                'imagePosition' => $definition['imagePosition'] ?? 'start',
+                'appearance' => $definition['appearance'] ?? 'default',
+                'accentTone' => $definition['accentTone'] ?? 'green',
+                'showTag' => $definition['showTag'] ?? true,
+                'showMeta' => $definition['showMeta'] ?? true,
+                'showExcerpt' => $definition['showExcerpt'] ?? true,
+                'showScore' => $definition['showScore'] ?? true,
+                'upcomingMatchesLimit' => $definition['upcomingMatchesLimit'] ?? 4,
                 'displayOrder' => $definition['displayOrder'],
                 'isEnabled' => $definition['isEnabled'],
             ];
@@ -669,10 +635,20 @@ class SiteController extends AbstractController
             $resolved[$key] = [
                 'key' => $section->getSectionKey(),
                 'title' => $section->getTitle() ?? '',
-                'subtitle' => $section->getSubtitle(),
                 'content' => $section->getContent(),
-                'secondaryContent' => $section->getSecondaryContent(),
                 'image' => $section->getImage(),
+                'titleTag' => $section->getTitleTag(),
+                'textAlignment' => $section->getTextAlignment(),
+                'layoutWidth' => $section->getLayoutWidth(),
+                'showImage' => $section->isShowImage(),
+                'imagePosition' => $section->getImagePosition(),
+                'appearance' => $section->getAppearance(),
+                'accentTone' => $section->getAccentTone(),
+                'showTag' => $section->isShowTag(),
+                'showMeta' => $section->isShowMeta(),
+                'showExcerpt' => $section->isShowExcerpt(),
+                'showScore' => $section->isShowScore(),
+                'upcomingMatchesLimit' => $section->getUpcomingMatchesLimit(),
                 'displayOrder' => $section->getDisplayOrder(),
                 'isEnabled' => $section->isEnabled(),
             ];
@@ -692,10 +668,20 @@ class SiteController extends AbstractController
             static fn (array $section): array => [
                 'key' => $section['key'],
                 'title' => $section['title'],
-                'subtitle' => $section['subtitle'],
                 'content' => $section['content'],
-                'secondaryContent' => $section['secondaryContent'],
                 'image' => $section['image'],
+                'titleTag' => $section['titleTag'],
+                'textAlignment' => $section['textAlignment'],
+                'layoutWidth' => $section['layoutWidth'],
+                'showImage' => $section['showImage'],
+                'imagePosition' => $section['imagePosition'],
+                'appearance' => $section['appearance'],
+                'accentTone' => $section['accentTone'],
+                'showTag' => $section['showTag'],
+                'showMeta' => $section['showMeta'],
+                'showExcerpt' => $section['showExcerpt'],
+                'showScore' => $section['showScore'],
+                'upcomingMatchesLimit' => $section['upcomingMatchesLimit'],
                 'displayOrder' => $section['displayOrder'],
             ],
             $resolved
@@ -705,5 +691,23 @@ class SiteController extends AbstractController
     private function canPreview(Request $request): bool
     {
         return $request->query->getBoolean('preview') && $this->isGranted('ROLE_ADMIN');
+    }
+
+    private function renderManagedPage(string $systemKey, PageRepository $pageRepository, Request $request, array $context = []): Response
+    {
+        $page = $this->canPreview($request)
+            ? $pageRepository->findAnyBySystemKey($systemKey)
+            : $pageRepository->findPublishedBySystemKey($systemKey);
+
+        if (!$page instanceof Page) {
+            throw new NotFoundHttpException('Page introuvable.');
+        }
+
+        return $this->render('site/page.html.twig', [
+            ...$this->siteContextBuilder->build(),
+            ...$context,
+            'page' => $page,
+            'preview_mode' => $this->canPreview($request),
+        ]);
     }
 }

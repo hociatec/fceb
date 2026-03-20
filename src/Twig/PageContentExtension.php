@@ -51,14 +51,26 @@ class PageContentExtension extends AbstractExtension
                 $attributes = self::parseAttributes($matches[1]);
                 $label = trim($attributes['label'] ?? '');
                 $url = trim($attributes['url'] ?? '');
+                $style = trim($attributes['style'] ?? 'primary');
+                $target = trim($attributes['target'] ?? '');
 
                 if ('' === $label || '' === $url) {
                     return '';
                 }
 
+                $buttonClass = in_array($style, ['primary', 'secondary'], true) ? $style : 'primary';
+                $isExternal = str_starts_with($url, 'http://') || str_starts_with($url, 'https://');
+                $targetAttributes = '';
+
+                if ('blank' === $target || $isExternal) {
+                    $targetAttributes = ' target="_blank" rel="noreferrer noopener"';
+                }
+
                 return sprintf(
-                    '<p class="content-cta-wrap"><a class="button primary content-cta" href="%s">%s</a></p>',
+                    '<p class="content-cta-wrap"><a class="button %s content-cta" href="%s"%s>%s</a></p>',
+                    htmlspecialchars($buttonClass, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
                     htmlspecialchars($url, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
+                    $targetAttributes,
                     htmlspecialchars($label, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
                 );
             },

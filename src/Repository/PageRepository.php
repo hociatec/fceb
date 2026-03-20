@@ -48,4 +48,17 @@ class PageRepository extends ServiceEntityRepository
     {
         return $this->findOneBy(['slug' => $slug]);
     }
+
+    public function findPublishedBySystemKey(string $systemKey): ?Page
+    {
+        return $this->findOneBy([
+            'systemKey' => $systemKey,
+            'status' => ContentStatus::Published,
+        ]);
+    }
+
+    public function findAnyBySystemKey(string $systemKey): ?Page
+    {
+        return $this->findOneBy(['systemKey' => $systemKey]);
+    }
 }

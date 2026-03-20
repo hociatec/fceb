@@ -6,7 +6,6 @@
     <section class="hero">
         <div class="hero-card">
             <div class="page-hero">
-                <div class="eyebrow">{% if isArchive %}Archives{% else %}Saison en cours{% endif %}</div>
                 <h1>{{ season.name }}</h1>
                 <p class="page-lead">Du {{ season.startDate|date('d/m/Y') }} au {{ season.endDate|date('d/m/Y') }}, retrouve l’ensemble des articles, matchs et temps forts de la saison.</p>
                 <div class="hero-stats">
